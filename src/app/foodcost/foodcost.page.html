@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title class="ion-text-center">Food Cost</ion-title>
+  </ion-toolbar>
+  <ion-row>
+    <ion-col>
+      <ion-searchbar type="text"
+                     placeholder="Cerca un alimento"
+                     [(ngModel)]="ricerca.searchText"
+      ></ion-searchbar>
+    </ion-col>
+  </ion-row>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-card *ngFor="let item of ricerca.alimentiFullList | foodcost:ricerca.searchText" style="cursor: pointer" >
+      <ion-card-header>
+        <ion-card-title style="margin-right: 45px">{{item.Ali_desc}}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-row>
+          <ion-col>
+            <p>{{item.Ali_kcal | number:'1.2-2'}} kcal</p>
+            <p>{{item.Ali_edi | number:'1.2-2'}} edibile %</p>
+          </ion-col>
+          <ion-col>
+            <p>{{item.Ali_prot | number:'1.2-2'}} prot</p>
+            <p>{{item.Ali_anim | number:'1.2-2'}} prot anim</p>
+          </ion-col>
+          <ion-col>
+            <p>{{item.Ali_veg | number:'1.2-2'}} prot veg</p>
+            <p>{{item.Ali_glu | number:'1.2-2'}} glucidi</p>
+          </ion-col>
+          <ion-col>
+            <p>{{item.Ali_amid | number:'1.2-2'}} amidi</p>
+            <p>{{item.Ali_lup | number:'1.2-2'}} lipidi</p>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+  <!--<ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)">
+    <ion-infinite-scroll-content
+            loadingSpinner="bubbles"
+            loadingText="Loading more commissions...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>-->
+</ion-content>

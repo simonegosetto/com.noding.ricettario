@@ -1,5 +1,7 @@
 {
   "name": "com.noding.ricettario",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }
