@@ -6,8 +6,11 @@ const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', loadChildren: () => import('./home/home.module').then(m => m.HomePageModule), canActivate: [AuthGuard]},
   { path: 'login', loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)},
+
   { path: 'ricette', loadChildren: () => import('./ricette/ricette.module').then( m => m.RicettePageModule), canActivate: [AuthGuard]},
-  { path: 'foodcost', loadChildren: () => import('./foodcost/foodcost.module').then( m => m.FoodcostPageModule), canActivate: [AuthGuard] },
+  { path: 'ricetta/:id', loadChildren: () => import('./ricetta/ricetta.module').then( m => m.RicettaPageModule), canActivate: [AuthGuard]},
+
+  { path: 'foodcost', loadChildren: () => import('./foodcost/foodcost.module').then( m => m.FoodcostPageModule), canActivate: [AuthGuard]},
 ];
 
 @NgModule({

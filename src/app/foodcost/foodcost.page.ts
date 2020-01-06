@@ -13,7 +13,6 @@ export class FoodcostPage implements OnInit {
   ) { }
 
   public ricerca = {
-    tutte: true,
     searchText: '',
     pageSize: 10,
     progressSize: 10,

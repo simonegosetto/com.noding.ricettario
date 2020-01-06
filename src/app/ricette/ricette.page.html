@@ -1,9 +1,45 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>ricette</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title class="ion-text-center">
+      Ricerca ricette
+    </ion-title>
+    <ion-buttons slot="end" >
+      <ion-button (click)="nuovaRicetta()"><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon></ion-button>
+    </ion-buttons>
   </ion-toolbar>
+  <ion-row>
+    <ion-col>
+      <ion-searchbar type="text" placeholder="Cerca una ricetta" [(ngModel)]="ricerca.searchText" ></ion-searchbar>
+    </ion-col>
+  </ion-row>
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="estrazioneRicette($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
+  <ion-list>
+    <ion-card *ngFor="let ricetta of ricerca.ricetteList | ricette:ricerca.searchText" style="cursor: pointer" (click)="openRicetta(ricetta)" >
+      <ion-card-content>
+        <ion-row>
+          <ion-col size="1">
+            <ion-icon name="document" color="dark"></ion-icon>
+          </ion-col>
+          <ion-col size="9">
+            <p>{{ricetta.nome_ric}}</p>
+          </ion-col>
+          <ion-col size="1">
+            <ion-icon name="print" color="dark" (click)="printRicetta($event, ricetta)"></ion-icon>
+          </ion-col>
+          <ion-col size="1">
+            <ion-icon name="trash" color="danger" (click)="deleteRicetta($event, ricetta)"></ion-icon>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
 </ion-content>

@@ -1,13 +1,13 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
     <ion-title class="ion-text-center">Food Cost</ion-title>
   </ion-toolbar>
   <ion-row>
     <ion-col>
-      <ion-searchbar type="text"
-                     placeholder="Cerca un alimento"
-                     [(ngModel)]="ricerca.searchText"
-      ></ion-searchbar>
+      <ion-searchbar type="text" placeholder="Cerca un alimento" [(ngModel)]="ricerca.searchText" ></ion-searchbar>
     </ion-col>
   </ion-row>
 </ion-header>
@@ -16,7 +16,7 @@
   <ion-list>
     <ion-card *ngFor="let item of ricerca.alimentiFullList | foodcost:ricerca.searchText" style="cursor: pointer" >
       <ion-card-header>
-        <ion-card-title style="margin-right: 45px">{{item.Ali_desc}}</ion-card-title>
+        <ion-card-title>{{item.Ali_desc}}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-row>
