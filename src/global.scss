@@ -38,10 +38,25 @@ ion-toolbar {
   --ion-color-primary-shade: #6a5646;
   --ion-color-primary-tint: #867262;
 
+  --ion-color-secondary: #d49850;
+  --ion-color-secondary-rgb: 121,98,80;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255,255,255;
+  --ion-color-secondary-shade: #d49850;
+  --ion-color-secondary-tint: #d49850;
+
   --ion-background-color: #d6d7d2;
 }
 
-div, p, ion-item, ion-card, ion-list, ion-label{
+div, p, ion-item, ion-card, ion-list, ion-label {
+  background-color: #d6d7d2 !important;
   color: black;
+}
+
+input {
+  width: 100%;
+  background-color: #d6d7d2 !important;
+  color: black;
+  border: none;
 }
 

@@ -101,10 +101,13 @@ export class GlobalService {
     }
 
     public focusInput(input) {
-        input.setFocus();
+        setTimeout(() => {
+            input.setFocus();
+        },150);
+
     }
 
-    public isnull(value, replace = '') {
+    public isnull(value, replace: any = '') {
         if (value === null || value === undefined || value === 'null') {
             if (replace !== null && replace !== undefined) {
                 return replace;

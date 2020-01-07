@@ -12,16 +12,25 @@ import {Device} from "@ionic-native/device/ngx";
 import { Network } from '@ionic-native/network/ngx';
 import {FormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
+import {ModalSearchRicettaComponent} from "./ricetta/modal-search-ricetta.component";
 
 @NgModule({
-  declarations: [AppComponent],
-  entryComponents: [],
+  declarations: [
+    AppComponent,
+    ModalSearchRicettaComponent
+  ],
+  entryComponents: [
+    ModalSearchRicettaComponent
+  ],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
     IonicModule.forRoot(),
     AppRoutingModule
+  ],
+  exports: [
+    ModalSearchRicettaComponent
   ],
   providers: [
     StatusBar,
