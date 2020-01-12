@@ -15,7 +15,7 @@
     </ion-col>
   </ion-row>
   <br/>
-  <ion-row>
+  <ion-row *ngIf="ricetta.cod_p > 0">
     <ion-col class="ion-text-center">
       <label class="fileUpload button button-positive button-small" >
         <span>Carica/Aggiorna immagine</span>
