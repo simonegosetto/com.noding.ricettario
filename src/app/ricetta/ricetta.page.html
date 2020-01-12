@@ -10,13 +10,22 @@
 <ion-content>
   <ion-row padding-top>
     <ion-col class="ion-text-center">
-      <!--<h2 style="text-decoration: underline;font-style: italic">{{Ricetta.nome_ric}}</h2>-->
       <input style="text-decoration: underline;font-style: italic;width: 100%;font-size: 22px;text-align: center" type="text" autocomplete="off"
              [(ngModel)]="ricetta.nome_ric" placeholder="Nome ricetta" (keydown.enter)="saveRicetta()">
     </ion-col>
   </ion-row>
-
-  <br/><br/>
+  <br/>
+  <ion-row>
+    <ion-col class="ion-text-center">
+      <label class="fileUpload button button-positive button-small" >
+        <span>Carica/Aggiorna immagine</span>
+        <ion-input id="myFile" type="file" [(ngModel)]="ricetta.file" accept="image/png,image/jpeg" (change)="pubblicaImmagine($event)"></ion-input>
+      </label>
+      <img style="max-width: 400px;" *ngIf="ricetta.image" [src]="ricetta?.image" width="50%" >
+      <span style="cursor: pointer" *ngIf="ricetta.image" placeholder="Elimna immagine" (click)="ricettaImageRemove()">X</span>
+    </ion-col>
+  </ion-row>
+  <br/>
   <ion-row *ngIf="ricetta?.cod_p > 0">
     <ion-col>
       <h4 style="text-decoration: underline;font-style: italic;padding-left: 5px">
@@ -43,16 +52,6 @@
 
 
     </ion-col>
-
-    <!--<div class="col col-50 responsive-sm noPaddingAll text-center">
-        <img style="max-width: 400px;" ng-src="{{Ricetta.image}}" width="50%" >
-        <br/>
-        <label class="fileUpload button button-positive button-small" >
-            <span>Carica/Aggiorna immagine</span>
-            <input id="myFile" type="file" class="upload" file-model="Search.myFile" [(ngModel)]="Search.file"
-                    app-filereader accept="image/*" ng-change="PubblicaImmagine()"/>
-        </label>
-    </div>-->
 
   </ion-row>
   <!-- mobile -->
@@ -85,4 +84,12 @@
       <ion-button (click)="saveRicetta()">Salva Ricetta</ion-button>
     </ion-col>
   </ion-row>
+
+  <ion-row>
+    <ion-col sizeXs="12" sizeMd="4" sizeLg="3" *ngFor="let ricetta of ricetta.ricetteComposteList">
+      <ric-ricetta-mini [cod_p]="ricetta.ricettaid"></ric-ricetta-mini>
+    </ion-col>
+  </ion-row>
+
+
 </ion-content>

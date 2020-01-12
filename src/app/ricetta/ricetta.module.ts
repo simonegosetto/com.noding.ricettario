@@ -7,13 +7,16 @@ import { IonicModule } from '@ionic/angular';
 import { RicettaPageRoutingModule } from './ricetta-routing.module';
 
 import { RicettaPage } from './ricetta.page';
+import {RicettaMiniModule} from "./ricetta-mini.module";
+
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    RicettaPageRoutingModule
+    RicettaPageRoutingModule,
+    RicettaMiniModule
   ],
   declarations: [
     RicettaPage

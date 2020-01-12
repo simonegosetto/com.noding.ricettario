@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
 import {GlobalService} from "../core/services/global.service";
 import {ActivatedRoute} from "@angular/router";
 import {ToastService} from "../core/services/toast.service";
@@ -6,6 +6,7 @@ import {LoadingService} from "../core/services/loading.service";
 import {AlertService} from "../core/services/alert.service";
 import {ModalSearchRicettaComponent} from "./modal-search-ricetta.component";
 import {ModalService} from "../core/services/modal.service";
+import {DropboxService} from "../core/services/dropbox.service";
 
 @Component({
   selector: 'ric-ricetta',
@@ -22,7 +23,9 @@ export class RicettaPage implements OnInit {
       private _toast: ToastService,
       private _loading: LoadingService,
       private _alert: AlertService,
-      private _modal: ModalService
+      private _modal: ModalService,
+      private _ds: DropboxService,
+      public changeDetection: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -36,7 +39,10 @@ export class RicettaPage implements OnInit {
   }
 
   public ricetta: any = {
-    ingredientiList: []
+    file: undefined,
+    base64textString: undefined,
+    ingredientiList: [],
+    ricetteComposteList: []
   };
   public ricettaRow: any = {
     nome: undefined,
@@ -51,17 +57,31 @@ export class RicettaPage implements OnInit {
 
   }
 
-  getRicetta() {
+  getRicetta(forImage = false) {
     this.gs.callGateway('3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@',`${this.ricetta.cod_p}`).subscribe(data => {
           if (data.hasOwnProperty('error')) {
             this.gs.toast.present(data.error);
             return;
           }
           this.ricetta = {...this.ricetta, ...data.recordset[0]};
-          this._estrazioneRighe();
+          if (this.ricetta.id_storage) {
+              this._getRicettaImage();
+          } else {
+              this.ricetta.image = undefined;
+          }
+          if (!forImage) {
+              this._estrazioneRighe();
+          }
           this.gs.loading.dismiss();
         },
         error => this.gs.toast.present(error.message));
+  }
+
+  private _getRicettaImage() {
+      this._ds.get({mode: 4, path: this.ricetta.id_storage}).subscribe(image => {
+          this.ricetta.image = image.link;
+          this.changeDetection.detectChanges();
+      }, error => this.gs.toast.present(error.message));
   }
 
   private _estrazioneRighe() {
@@ -72,8 +92,21 @@ export class RicettaPage implements OnInit {
           }
           this.ricetta.ingredientiList = data.recordset ? [...data.recordset] : [];
           this.gs.loading.dismiss();
+          this._estrazioneRicetteCollegate();
         },
         error => this.gs.toast.present(error.message));
+  }
+
+  private _estrazioneRicetteCollegate() {
+      this.gs.callGateway('VwCLXZp2b7f0ntDBmDtjQiMqA71icSP05BfmU0Opi4ydvEX+uB0U2OIODrusGLmNjWldKOX7EhnVg0nsIWMR4S1bLS1JVi1bLQBR2FofNJE57bLSH6oD630781d1Qx+bHhnMTeAjnNz7',`${this.ricetta.cod_p}`).subscribe(data => {
+              if (data.hasOwnProperty('error')) {
+                  this.gs.toast.present(data.error);
+                  return;
+              }
+              this.ricetta.ricetteComposteList = data.recordset ? [...data.recordset] : [];
+              this.gs.loading.dismiss();
+          },
+          error => this.gs.toast.present(error.message));
   }
 
   saveRicetta() {
@@ -106,6 +139,17 @@ export class RicettaPage implements OnInit {
       }
     });
   }
+
+    ricettaImageRemove() {
+        const alertElimina = this._alert.confirm('Attenzione', `Sicuro di voler eliminare l'immagine ?`);
+        alertElimina.then(result => {
+            if (result.role === 'OK') {
+                this._ds.delete({mode: 3, path: this.ricetta.id_storage}).subscribe(data => {
+                  this.getRicetta(true);
+                }, error => this.gs.toast.present(error.message));
+            }
+        });
+    }
 
   ricettaRigaSave() {
     if (this.gs.isnull(this.ricettaRow.nome) === '') return;
@@ -151,14 +195,8 @@ export class RicettaPage implements OnInit {
   }
 
   updateIngredienteOrdinamento(ev: any) {
-    // The `from` and `to` properties contain the index of the item
-    // when the drag started and ended, respectively
-    console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
-    console.log(this.ricetta.ingredientiList);
-
-    // Finish the reorder and position the item in the DOM based on
-    // where the gesture ended. This method can also be called directly
-    // by the reorder group
+    // console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
+    // console.log(this.ricetta.ingredientiList);
     ev.detail.complete();
 
     this.gs.callGateway('3mCyL/kBibh2lxoVmwfXrDPeU5rjJJ7fj0BElNWNGMktWy0tSVYtWy2QzxShP4q87m0hlQWrr6NcMc9AyewbbxiMqrPsK6c0Lg@@',
@@ -173,15 +211,43 @@ export class RicettaPage implements OnInit {
         error => this.gs.toast.present(error.message));
   }
 
-  private _clearAndFocus() {
-    this.ricettaRow.nome = '';
-    this.ricettaRow.quantita = undefined;
-    this.ricettaRow.ricettaid = 0;
-    setTimeout(() => {
-      this.nomeIngrediente.setFocus();
-    },150);
+    private _clearAndFocus() {
+        this.ricettaRow.nome = '';
+        this.ricettaRow.quantita = undefined;
+        this.ricettaRow.ricettaid = 0;
+        setTimeout(() => {
+          this.nomeIngrediente.setFocus();
+        },150);
+    }
 
-  }
+    pubblicaImmagine(event) {
+      this.ricetta.file = event.target.files[0];
+      if (this.ricetta.file.size > 1000000) {
+          this.gs.toast.present('L\'immagine non può superare 1 MB di peso !');
+          return;
+      }
+      if (this.ricetta.file) {
+          const reader = new FileReader();
+          reader.onload = this._handleReaderLoaded.bind(this);
+          reader.readAsBinaryString(this.ricetta.file);
+      }
+    }
+
+    _handleReaderLoaded(readerEvt) {
+        const binaryString = readerEvt.target.result;
+        this.ricetta.base64textString = btoa(binaryString);
+        const dropboxObject = {
+            mode: 1,
+            path: 'ricette/',
+            id: this.ricetta.cod_p,
+            name: this.ricetta.file.name,
+            type: this.ricetta.file.type,
+            data: `data:image/${this.ricetta.file.type.indexOf('png') >-1 ? 'png' : 'jpeg'};base64,${this.ricetta.base64textString}`
+        };
+        this._ds.upload(dropboxObject).subscribe(data => {
+            this.getRicetta(true);
+        },error => this.gs.toast.present(error.message));
+    }
 
 }
 

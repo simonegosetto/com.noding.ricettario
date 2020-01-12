@@ -36,21 +36,37 @@ export class GlobalService {
 
     public callGateway(process, params, loader = true, gtw = '', loaderDuration = 2000): Observable<IGatewayResponse> {
         if (loader) { this.loading.present(loaderDuration); }
-            return this._http.post<IGatewayResponse>(
-                environment.apiDBox + '?gest=2',
-                {
-                    type: 1,
-                    process: process,
-                    params: params,
-                    token: localStorage.getItem('token')
-                },
-                {
-                    headers: this.http_json_headers
-                }
-            ).pipe(
-                catchError(this.error_handler)
-            );
-        // }
+        return this._http.post<IGatewayResponse>(
+            environment.apiDBox + '?gest=2',
+            {
+                type: 1,
+                process: process,
+                params: params,
+                token: localStorage.getItem('token')
+            },
+            {
+                headers: this.http_json_headers
+            }
+        ).pipe(
+            catchError(this.error_handler)
+        );
+    }
+
+
+    public callDropbox(action, loader = true, loaderDuration = 2000): Observable<any> {
+        if (loader) { this.loading.present(loaderDuration); }
+        return this._http.post<IGatewayResponse>(
+            environment.apiDropbox + '?gest=2',
+            {
+                action: action,
+                token: localStorage.getItem('token')
+            },
+            {
+                headers: this.http_json_headers
+            }
+        ).pipe(
+            catchError(this.error_handler)
+        );
     }
 
     public checkUser(): boolean {
