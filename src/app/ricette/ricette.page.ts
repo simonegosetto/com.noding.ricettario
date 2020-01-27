@@ -60,6 +60,15 @@ export class RicettePage implements OnInit {
     }
   }
 
+  printRicetta2($event, ricetta:any) {
+      $event.stopPropagation();
+      if (ricetta != null) {
+          window.open(environment.apiReport + "?gest=3&type=1&process=" + encodeURIComponent("3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@") +
+              "&params="+ricetta.cod_p+"&token="+localStorage.getItem("token")+"&report=ricetta.html",
+              "_blank");
+      }
+  }
+
   deleteRicetta($event, ricetta: any) {
     $event.stopPropagation();
     const alertElimina = this._alert.confirm('Attenzione', `Confermi di eliminare la ricetta ${ricetta.nome_ric} ?`);

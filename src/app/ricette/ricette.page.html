@@ -33,6 +33,9 @@
             <p>{{ricetta.nome_ric}}</p>
           </ion-col>
           <ion-col size="1">
+            <ion-icon name="print" color="dark" (click)="printRicetta2($event, ricetta)"></ion-icon>
+          </ion-col>
+          <ion-col size="1">
             <ion-icon name="print" color="dark" (click)="printRicetta($event, ricetta)"></ion-icon>
           </ion-col>
           <ion-col size="1">
