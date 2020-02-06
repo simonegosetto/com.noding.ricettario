@@ -33,7 +33,7 @@ import {GlobalService} from "../core/services/global.service";
       <ion-footer>
           <ion-toolbar>
               <ion-row>
-                  <ion-col><ion-button class="button-block" color="secondary" (click)="esci()">Exit</ion-button></ion-col>
+                  <ion-col><ion-button class="button-block" color="secondary" (click)="esci()">Chiudi</ion-button></ion-col>
               </ion-row>
           </ion-toolbar>
       </ion-footer>

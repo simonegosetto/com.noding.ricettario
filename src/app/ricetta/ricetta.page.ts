@@ -7,6 +7,7 @@ import {AlertService} from "../core/services/alert.service";
 import {ModalSearchRicettaComponent} from "./modal-search-ricetta.component";
 import {ModalService} from "../core/services/modal.service";
 import {DropboxService} from "../core/services/dropbox.service";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'ric-ricetta',
@@ -222,10 +223,10 @@ export class RicettaPage implements OnInit {
 
     pubblicaImmagine(event) {
       this.ricetta.file = event.target.files[0];
-      if (this.ricetta.file.size > 1000000) {
+      /*if (this.ricetta.file.size > 1000000) {
           this.gs.toast.present('L\'immagine non può superare 1 MB di peso !');
           return;
-      }
+      }*/
       if (this.ricetta.file) {
           const reader = new FileReader();
           reader.onload = this._handleReaderLoaded.bind(this);
@@ -247,6 +248,18 @@ export class RicettaPage implements OnInit {
         this._ds.upload(dropboxObject).subscribe(data => {
             this.getRicetta(true);
         },error => this.gs.toast.present(error.message));
+    }
+
+    print() {
+      if (this.ricetta.ricetteComposteList.length > 0) {
+          window.open(environment.apiReport + "?gest=3&type=1&process=" + encodeURIComponent("3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@") +
+              "&params="+this.ricetta.cod_p+"&token="+localStorage.getItem("token")+"&report=ricetta.html",
+              "_blank");
+      } else {
+          window.open(environment.apiDBox + "?gest=3&type=1&process=" + encodeURIComponent("3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@") +
+              "&params="+this.ricetta.cod_p+"&token="+localStorage.getItem("token")+"&report=ricetta.xml",
+              "_blank");
+      }
     }
 
 }

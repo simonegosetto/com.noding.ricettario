@@ -25,6 +25,11 @@ export class AppComponent {
       icon: 'document'
     },
     {
+      title: 'Schede tecniche',
+      url: '/schedetecniche',
+      icon: 'clipboard'
+    },
+    {
       title: 'Archivio documenti',
       url: '/archiviodocumenti',
       icon: 'filing'
