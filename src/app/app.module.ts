@@ -13,14 +13,17 @@ import { Network } from '@ionic-native/network/ngx';
 import {FormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
 import {ModalSearchRicettaComponent} from "./ricetta/modal-search-ricetta.component";
+import {ModalCaricaFileComponent} from "./archiviodocumento/modal-carica-file.component";
 
 @NgModule({
   declarations: [
     AppComponent,
-    ModalSearchRicettaComponent
+    ModalSearchRicettaComponent,
+    ModalCaricaFileComponent
   ],
   entryComponents: [
-    ModalSearchRicettaComponent
+    ModalSearchRicettaComponent,
+    ModalCaricaFileComponent
   ],
   imports: [
     BrowserModule,
@@ -30,7 +33,8 @@ import {ModalSearchRicettaComponent} from "./ricetta/modal-search-ricetta.compon
     AppRoutingModule
   ],
   exports: [
-    ModalSearchRicettaComponent
+    ModalSearchRicettaComponent,
+    ModalCaricaFileComponent
   ],
   providers: [
     StatusBar,

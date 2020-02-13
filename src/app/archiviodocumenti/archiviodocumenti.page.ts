@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {Router} from "@angular/router";
 import {GlobalService} from "../core/services/global.service";
+import {ModalCaricaFileComponent} from "../archiviodocumento/modal-carica-file.component";
+import {ModalService} from "../core/services/modal.service";
 
 @Component({
   selector: 'ric-archiviodocumenti',
@@ -12,6 +14,7 @@ export class ArchiviodocumentiPage implements OnInit {
   constructor(
       private _router: Router,
       public gs: GlobalService,
+      private _modal: ModalService,
   ) { }
 
   public ricerca = {
@@ -40,11 +43,15 @@ export class ArchiviodocumentiPage implements OnInit {
         error => this.gs.toast.present(error.message, 5000));
   }
 
-  nuovoFile() {
-    // this._router.navigate(['archiviodocumento/0']);
-  }
+    nuovoFile() {
+        const modalCliente = this._modal.present(ModalCaricaFileComponent, {});
+        modalCliente.then(result => {
+            this.estrazioneCategorieDocumenti();
+        });
+    }
 
   openCategoria(categoria: any) {
+    sessionStorage.setItem('descrizioneCategoria', categoria.arc_tipo);
     this._router.navigate([`archiviodocumento/${categoria.arc_tipo}`]);
   }
 

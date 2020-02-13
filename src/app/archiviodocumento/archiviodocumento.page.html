@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title class="ion-text-center">Lista file</ion-title>
+    <ion-title class="ion-text-center">{{ricerca?.descrizioneCategoria}}</ion-title>
     <ion-buttons slot="end" >
       <ion-button (click)="nuovoFile()"><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon></ion-button>
     </ion-buttons>
@@ -23,7 +23,7 @@
   <ion-list>
     <ion-reorder-group [disabled]="false" (ionItemReorder)="updateFileOrdinamento($event)">
         <ion-card *ngFor="let item of ricerca.documentiList | archiviodocumento:ricerca.searchText" style="cursor: pointer"  >
-          <ion-reorder slot="start" style="position: fixed;padding-top: 10px;"></ion-reorder>
+          <ion-reorder slot="start" style="position: fixed;padding-top: 10px;" ></ion-reorder>
           <ion-row>
             <ion-col size="1"></ion-col>
             <ion-col size="9">

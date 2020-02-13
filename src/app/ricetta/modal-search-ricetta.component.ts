@@ -31,11 +31,9 @@ import {GlobalService} from "../core/services/global.service";
       </ion-content>
 
       <ion-footer>
-          <ion-toolbar>
-              <ion-row>
-                  <ion-col><ion-button class="button-block" color="secondary" (click)="esci()">Chiudi</ion-button></ion-col>
-              </ion-row>
-          </ion-toolbar>
+          <ion-row>
+              <ion-col><ion-button class="button-block" color="secondary" (click)="esci()">Chiudi</ion-button></ion-col>
+          </ion-row>
       </ion-footer>
   `,
   styles: []

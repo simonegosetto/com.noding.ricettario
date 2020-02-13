@@ -4,6 +4,7 @@ import {GlobalService} from "../core/services/global.service";
 import {ModalService} from "../core/services/modal.service";
 import {DropboxService} from "../core/services/dropbox.service";
 import {AlertService} from "../core/services/alert.service";
+import {ModalCaricaFileComponent} from "./modal-carica-file.component";
 
 @Component({
     selector: 'ric-archiviodocumento',
@@ -27,6 +28,7 @@ export class ArchiviodocumentoPage implements OnInit {
         pageSize: 10,
         progressSize: 10,
         codiceCategoria: '',
+        descrizioneCategoria: '',
         documentiList: []
     };
 
@@ -34,6 +36,7 @@ export class ArchiviodocumentoPage implements OnInit {
         const param = this._route.snapshot.paramMap.get('id');
         if (param) {
             this.ricerca.codiceCategoria = param;
+            this.ricerca.descrizioneCategoria = sessionStorage.getItem('descrizioneCategoria');
             this.estrazioneDocumenti();
         }
     }
@@ -54,28 +57,32 @@ export class ArchiviodocumentoPage implements OnInit {
     }
 
     updateFileOrdinamento(ev: any) {
-        console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
-        console.log(this.ricerca.documentiList);
+        // console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
         ev.detail.complete();
 
-        /*this.gs.callGateway('2H6fgL8RL3pOrFGxXCopTYpWYOhLkBlwYhnnhWceTe4tWy0tSVYtWy1fTzDMAyCc1Um89Bg3UOXRiuG1dWW+NMqxJksng9UkOg@@',
-            `${this.ricetta.ingredientiList[ev.detail.from].id},${ev.detail.to+1},${this.ricetta.cod_p}`).subscribe(data => {
+        this.gs.callGateway('BQuK1LQg1K1++H0R/llVW5VK2rjpxhAOceDnHZvLp7wtWy0tSVYtWy2hg/4BRkQV74v335KWniLlITaXsGO194qC1y/y5nhAiA@@',
+            `${this.ricerca.documentiList[ev.detail.from].arc_codi},${ev.detail.to+1}`).subscribe(data => {
               if (data.hasOwnProperty('error')) {
                 this.gs.toast.present(data.error);
                 return;
               }
               this.gs.loading.dismiss();
-              this._clearAndFocus();
             },
-            error => this.gs.toast.present(error.message));*/
+            error => this.gs.toast.present(error.message));
     }
 
     nuovoFile() {
-
+        const modalCliente = this._modal.present(ModalCaricaFileComponent, {});
+        modalCliente.then(result => {
+            this.estrazioneDocumenti();
+        });
     }
 
     download($event, file: any) {
-
+        $event.stopPropagation();
+        this._ds.get({mode: 4, path: file.id_storage}).subscribe(file => {
+            window.open(file.link, "_blank");
+        }, error => this.gs.toast.present(error.message));
     }
 
     delete($event, file: any) {
