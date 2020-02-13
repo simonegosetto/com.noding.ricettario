@@ -57,7 +57,7 @@ export class ModalSearchRicettaComponent implements OnInit {
     };
 
     ngOnInit() {
-        this.gs.focusInput(this.inputSearchToForceFocus);
+        // this.gs.focusInput(this.inputSearchToForceFocus);
     }
 
     search() {

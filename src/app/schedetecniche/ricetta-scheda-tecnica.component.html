@@ -1,0 +1,26 @@
+<div class="box-ricetta">
+  <!--<ion-row>
+    <ion-col class="ion-text-center" no-padding>
+      <h6 style="text-decoration: underline;font-style: italic;" >{{ricetta.nome_ric}}</h6>
+    </ion-col>
+  </ion-row>-->
+
+  <ion-row>
+    <ion-col size="8" >
+      <h6 class="ion-text-center" style="text-decoration: underline;font-style: italic;" >{{ricetta.nome_ric}}</h6>
+      <ion-item *ngFor="let item of ricetta.ingredientiList">
+        <ion-col size="6" >
+          <span>{{item.nome}}</span>
+        </ion-col>
+        <ion-col size="4" >
+          <span>{{item.quantita | number:'1.1-2'}}</span>g
+        </ion-col>
+        <ion-col size="2">{{item.perc | number:'1.1-2'}}%</ion-col>
+      </ion-item>
+    </ion-col>
+    <ion-col size="4" class="box-procedimento center" >
+      <span>{{ricetta.procedimento}}</span>
+    </ion-col>
+  </ion-row>
+
+</div>

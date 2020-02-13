@@ -252,7 +252,7 @@ export class RicettaPage implements OnInit {
 
     print() {
       if (this.ricetta.ricetteComposteList.length > 0) {
-          window.open(environment.apiReport + "?gest=3&type=1&process=" + encodeURIComponent("3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@") +
+          window.open(environment.apiReportRicetta + "?gest=3&type=1&process=" + encodeURIComponent("3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@") +
               "&params="+this.ricetta.cod_p+"&token="+localStorage.getItem("token")+"&report=ricetta.html",
               "_blank");
       } else {

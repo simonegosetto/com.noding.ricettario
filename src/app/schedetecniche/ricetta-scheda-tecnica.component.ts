@@ -4,11 +4,11 @@ import {DropboxService} from "../core/services/dropbox.service";
 import {Router} from "@angular/router";
 
 @Component({
-  selector: 'ric-ricetta-mini',
-  templateUrl: './ricetta-mini.component.html',
-  styleUrls: ['./ricetta-mini.component.scss'],
+  selector: 'ric-ricetta-scheda-tecnica',
+  templateUrl: './ricetta-scheda-tecnica.component.html',
+  styleUrls: ['./ricetta-scheda-tecnica.component.scss'],
 })
-export class RicettaMiniComponent implements OnInit {
+export class RicettaSchedaTecnicaComponent implements OnInit {
 
   constructor(
       public gs: GlobalService,
@@ -39,19 +39,10 @@ export class RicettaMiniComponent implements OnInit {
             return;
           }
           this.ricetta = {...this.ricetta, ...data.recordset[0]};
-          if (this.ricetta.id_storage) {
-            this._getRicettaImage();
-          }
           this._estrazioneRighe();
           this.gs.loading.dismiss();
         },
         error => this.gs.toast.present(error.message));
-  }
-
-  private _getRicettaImage() {
-    this._ds.get({mode: 4, path: this.ricetta.id_storage}).subscribe(image => {
-      this.ricetta.image = image.link;
-    }, error => this.gs.toast.present(error.message));
   }
 
   private _estrazioneRighe() {
@@ -64,10 +55,6 @@ export class RicettaMiniComponent implements OnInit {
           this.gs.loading.dismiss();
         },
         error => this.gs.toast.present(error.message));
-  }
-
-  public navToRicetta() {
-    this._router.navigate([`ricetta/${this.cod_p}`]);
   }
 
 }
