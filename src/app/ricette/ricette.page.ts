@@ -19,6 +19,7 @@ export class RicettePage implements OnInit {
 
   public ricerca = {
     searchText: '',
+    tipo:  1,
     pageSize: 10,
     progressSize: 10,
     ricetteList: []
@@ -29,7 +30,7 @@ export class RicettePage implements OnInit {
   }
 
   estrazioneRicette(event = null) {
-    this.gs.callGateway('LTIPxL5qjowQfb/12AHQot46g9fczTHMoStuciq8lgEtWy0tSVYtWy3EIrwqBu/HHPPx2OwlvV5lj+BlS3Aoc5ax+VAEzrSFsw@@',``).subscribe(data => {
+    this.gs.callGateway('uZ+/JDG/PtCiDhrc9YiYjA7p3tmqsWYz8VP7y8teKAUtWy0tSVYtWy3Wbn4vVzxB2eEOOUDqUe1WQxdC6MGkch0xB7XUzRjtKA@@',`${this.ricerca.tipo}`).subscribe(data => {
           if (data.hasOwnProperty('error')) {
             this.gs.toast.present(data.error);
             return;

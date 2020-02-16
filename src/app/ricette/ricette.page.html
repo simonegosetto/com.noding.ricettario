@@ -14,6 +14,12 @@
     <ion-col>
       <ion-searchbar type="text" placeholder="Cerca una ricetta" [(ngModel)]="ricerca.searchText" ></ion-searchbar>
     </ion-col>
+    <ion-col size="3" style="padding-left: 0;margin-left: 0">
+      <select name="tipo" class="center" style="width: 100%;padding: 8px 8px 8px 0;margin: 8px 8px 8px 0" [(ngModel)]="ricerca.tipo" (ngModelChange)="estrazioneRicette(null)" >
+        <option value="1">Ricette</option>
+        <option value="2">Schede tecniche</option>
+      </select>
+    </ion-col>
   </ion-row>
 </ion-header>
 

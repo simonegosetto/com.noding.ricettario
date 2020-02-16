@@ -25,7 +25,7 @@ export class AppComponent {
       icon: 'document'
     },
     {
-      title: 'Schede tecniche',
+      title: 'Tabelle tecniche',
       url: '/schedetecniche',
       icon: 'clipboard'
     },
