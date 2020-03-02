@@ -72,7 +72,7 @@ export class ArchiviodocumentoPage implements OnInit {
     }
 
     nuovoFile() {
-        const modalCliente = this._modal.present(ModalCaricaFileComponent, {});
+        const modalCliente = this._modal.present(ModalCaricaFileComponent, {descrizione: this.ricerca.descrizioneCategoria});
         modalCliente.then(result => {
             this.estrazioneDocumenti();
         });

@@ -29,11 +29,14 @@
           <ion-col size="1">
             <ion-icon name="document" color="dark"></ion-icon>
           </ion-col>
-          <ion-col size="9">
-            <p>{{item.arc_tipo}}</p>
+          <ion-col size="8">
+            <p><ion-input [(ngModel)]="item.arc_tipo" (click)="$event.stopPropagation()" (ionBlur)="updateCategoria(item)"></ion-input></p>
           </ion-col>
           <ion-col size="2" >
             <p>N. files {{item.numero_file}}</p>
+          </ion-col>
+          <ion-col size="1">
+            <ion-icon name="trash" color="danger" (click)="deleteCategoria($event, item)"></ion-icon>
           </ion-col>
         </ion-row>
       </ion-card-content>

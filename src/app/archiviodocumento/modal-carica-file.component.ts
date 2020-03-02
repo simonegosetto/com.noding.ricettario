@@ -1,7 +1,8 @@
-import {Component} from '@angular/core';
+import {AfterViewInit, Component} from '@angular/core';
 import {ModalService} from "../core/services/modal.service";
 import {GlobalService} from "../core/services/global.service";
 import {DropboxService} from "../core/services/dropbox.service";
+import {NavParams} from "@ionic/angular";
 
 @Component({
   selector: 'app-modal-carica-file',
@@ -35,12 +36,13 @@ import {DropboxService} from "../core/services/dropbox.service";
   `,
   styles: []
 })
-export class ModalCaricaFileComponent {
+export class ModalCaricaFileComponent implements AfterViewInit {
 
   constructor(
       public gs: GlobalService,
       public modal: ModalService,
       private _ds: DropboxService,
+      private _params: NavParams,
   ) { }
 
 
@@ -50,8 +52,14 @@ export class ModalCaricaFileComponent {
     public file = {
         base64: undefined,
         file: undefined,
-        categoria: undefined
+        categoria: undefined,
     };
+
+    ngAfterViewInit() {
+        if (this._params.data.hasOwnProperty('descrizione')) {
+            this.file.categoria = this._params.data.descrizione;
+        }
+    }
 
     acquisisciFile(event) {
         this.file.file = event.target.files[0];
