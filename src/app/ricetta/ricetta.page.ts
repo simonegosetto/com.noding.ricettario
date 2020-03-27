@@ -8,6 +8,7 @@ import {ModalSearchRicettaComponent} from "./modal-search-ricetta.component";
 import {ModalService} from "../core/services/modal.service";
 import {DropboxService} from "../core/services/dropbox.service";
 import {environment} from "../../environments/environment";
+import {Platform} from "@ionic/angular";
 
 @Component({
   selector: 'ric-ricetta',
@@ -26,7 +27,8 @@ export class RicettaPage implements OnInit {
       private _alert: AlertService,
       private _modal: ModalService,
       private _ds: DropboxService,
-      public changeDetection: ChangeDetectorRef
+      public changeDetection: ChangeDetectorRef,
+      private _platform: Platform
   ) { }
 
   ngOnInit() {

@@ -38,13 +38,13 @@
       <ion-reorder-group [disabled]="false" (ionItemReorder)="updateIngredienteOrdinamento($event)">
         <ion-item *ngFor="let item of ricetta.ingredientiList">
           <ion-reorder slot="start"></ion-reorder>
-          <ion-col size="6" style="font-size: 18px">
+          <ion-col size="6" class="ingredienti">
             <input type="text" [(ngModel)]="item.nome" placeholder="nome" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)" [disabled]="item.ricettaid > 0">
           </ion-col>
-          <ion-col size="3" style="font-size: 18px">
-            <input type="number" [(ngModel)]="item.quantita" placeholder="quantità" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)" style="width: 85px;">g
+          <ion-col size="3" class="ingredienti">
+            <input type="number" class="ingredienti-quantity" [(ngModel)]="item.quantita" placeholder="quantità" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)">g
           </ion-col>
-          <ion-col size="2" style="font-size: 18px">{{item.perc | number:'1.2-2'}}%</ion-col>
+          <ion-col size="2" class="ingredienti">{{item.perc | number:'1.2-2'}}%</ion-col>
           <ion-col size="1"><span style="cursor: pointer" (click)="ricettaRigaRemove(item)">X</span></ion-col>
         </ion-item>
       </ion-reorder-group>

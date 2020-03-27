@@ -3,3 +3,20 @@ li {
   list-style: disc;
   margin: 10px 0px;
 }
+
+.ingredienti {
+  font-size: 18px !important;
+}
+
+.ingredienti-quantity {
+  width: 85px;
+}
+
+@media (max-width: 767px) {
+  .ingredienti {
+    font-size: 12px !important;
+  }
+  .ingredienti-quantity {
+    width: 50px;
+  }
+}
