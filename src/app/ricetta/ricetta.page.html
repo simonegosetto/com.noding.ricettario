@@ -44,7 +44,7 @@
           <ion-col size="3" class="ingredienti">
             <input type="number" class="ingredienti-quantity" [(ngModel)]="item.quantita" placeholder="quantità" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)">g
           </ion-col>
-          <ion-col size="2" class="ingredienti">{{item.perc | number:'1.2-2'}}%</ion-col>
+          <ion-col size="2" class="ingredienti">{{item.perc | number:'1.1-2'}}%</ion-col>
           <ion-col size="1"><span style="cursor: pointer" (click)="ricettaRigaRemove(item)">X</span></ion-col>
         </ion-item>
       </ion-reorder-group>
