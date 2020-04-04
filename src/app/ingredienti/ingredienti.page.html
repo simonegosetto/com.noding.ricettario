@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title class="ion-text-center">
+      Ingredienti
+    </ion-title>
+    <!--<ion-buttons slot="end" >
+      <ion-button (click)="nuovaingrediente()"><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon></ion-button>
+    </ion-buttons>-->
+  </ion-toolbar>
+  <ion-row>
+    <ion-col>
+      <ion-searchbar type="text" placeholder="Cerca un ingrediente" [(ngModel)]="ricerca.searchText" ></ion-searchbar>
+    </ion-col>
+    <ion-col size="3" style="padding-left: 0;margin-left: 0">
+      <select name="tipo" class="center" style="width: 100%;padding: 8px 8px 8px 0;margin: 8px 8px 8px 0" [(ngModel)]="ricerca.categoria" (ngModelChange)="estrazioneIngredienti(null)" >
+        <option value="0">Tutte</option>
+        <option *ngFor="let categoria of ricerca.categorieList" [ngValue]="categoria.id">{{categoria.descrizione}}</option>
+      </select>
+    </ion-col>
+  </ion-row>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="estrazioneIngredienti($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list>
+    <ion-card *ngFor="let ingrediente of ricerca.ingredientiList | ingredienti:ricerca.searchText" style="cursor: pointer" (click)="openIngrediente(ingrediente)" >
+      <ion-card-content>
+        <ion-row>
+          <ion-col size="1">
+            <ion-icon name="flask" color="dark"></ion-icon>
+          </ion-col>
+          <ion-col size="10">
+            <p>{{ingrediente.descrizione}}</p>
+          </ion-col>
+          <ion-col size="1">
+            <ion-icon name="trash" color="danger" (click)="deleteIngrediente($event, ingrediente)"></ion-icon>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+
+</ion-content>

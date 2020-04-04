@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title class="ion-text-center">Dettaglio Ingrediente</ion-title>
+    <ion-buttons slot="end" >
+      <ion-button (click)="delete()"><ion-icon style="font-size: 25px" name="trash"></ion-icon></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row padding-top>
+    <ion-col class="ion-text-center">
+      <h2>{{ingredienteForm.controls.descrizione.value}}</h2>
+    </ion-col>
+  </ion-row>
+  <br/>
+
+  <form [formGroup]="ingredienteForm" (ngSubmit)="salvaIngrediente()">
+
+    <ion-card>
+      <ion-input type="hidden" formControlName="id" readonly></ion-input>
+      <ion-item>
+        <ion-label position="fixed">% Edibile</ion-label>
+        <ion-input type="number" formControlName="edibile" ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="fixed">Grammatura</ion-label>
+        <ion-input type="number" formControlName="grammatura" ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="fixed">Prezzo</ion-label>
+        <ion-input type="number" formControlName="prezzo"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="fixed">Categoria</ion-label>
+        <select formControlName="categoriaid" style="width: 100%" >
+          <option *ngFor="let categoria of categorieList" [ngValue]="categoria.id">{{categoria.descrizione}}</option>
+        </select>
+      </ion-item>
+
+      <ion-row>
+        <ion-col class="ion-text-center">
+          <ion-button type="submit" color="success" [disabled]="ingredienteForm.invalid">Salva</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-card>
+  </form>
+
+</ion-content>

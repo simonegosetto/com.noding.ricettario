@@ -25,6 +25,11 @@ export class AppComponent {
       icon: 'document'
     },
     {
+      title: 'Ingredienti',
+      url: '/ingredienti',
+      icon: 'flask'
+    },
+    {
       title: 'Tabelle tecniche',
       url: '/schedetecniche',
       icon: 'clipboard'

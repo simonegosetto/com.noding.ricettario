@@ -16,6 +16,9 @@ const routes: Routes = [
   { path: 'archiviodocumento/:id', loadChildren: () => import('./archiviodocumento/archiviodocumento.module').then( m => m.ArchiviodocumentoPageModule), canActivate: [AuthGuard]},
 
   { path: 'foodcost', loadChildren: () => import('./foodcost/foodcost.module').then( m => m.FoodcostPageModule), canActivate: [AuthGuard]},
+
+  { path: 'ingredienti', loadChildren: () => import('./ingredienti/ingredienti.module').then( m => m.IngredientiPageModule), canActivate: [AuthGuard] },
+  { path: 'ingrediente/:id', loadChildren: () => import('./ingrediente/ingrediente.module').then( m => m.IngredientePageModule), canActivate: [AuthGuard] },
 ];
 
 @NgModule({
