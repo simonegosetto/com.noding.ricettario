@@ -8,7 +8,7 @@ import {ModalSearchRicettaComponent} from "./modal-search-ricetta.component";
 import {ModalService} from "../core/services/modal.service";
 import {DropboxService} from "../core/services/dropbox.service";
 import {environment} from "../../environments/environment";
-import {Platform} from "@ionic/angular";
+import {Observable, Subject} from "rxjs";
 
 @Component({
   selector: 'ric-ricetta',
@@ -27,8 +27,7 @@ export class RicettaPage implements OnInit {
       private _alert: AlertService,
       private _modal: ModalService,
       private _ds: DropboxService,
-      public changeDetection: ChangeDetectorRef,
-      private _platform: Platform
+      public changeDetection: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -41,6 +40,7 @@ export class RicettaPage implements OnInit {
     }
   }
 
+  public refreshChild: Subject<any> = new Subject();
   public ricetta: any = {
     file: undefined,
     base64textString: undefined,
@@ -112,14 +112,15 @@ export class RicettaPage implements OnInit {
           error => this.gs.toast.present(error.message));
   }
 
-  saveRicetta() {
+  saveRicetta(prezzoVendita = 0) {
     this.gs.callGateway('yQyvP6kwRmZ4Y01UsKulxCxG7MGV0B1QcUxCK6U5SEItWy0tSVYtWy2d8paOBfaJ5qGKfIV63SdsTxDcVhwM2zTsER5z6D9tRA@@',
-        `${this.ricetta.cod_p},'${this.ricetta.nome_ric}','${this.ricetta.procedimento}',@out_id`).subscribe(data => {
+        `${this.ricetta.cod_p},'${this.ricetta.nome_ric}','${this.ricetta.procedimento}',${prezzoVendita},@out_id`).subscribe(data => {
           if (data.hasOwnProperty('error')) {
             this.gs.toast.present(data.error);
             return;
           }
           this.ricetta.cod_p = data.output[0].out_id;
+          this.refreshChild.next();
           this.gs.loading.dismiss();
         },
         error => this.gs.toast.present(error.message));
@@ -135,6 +136,7 @@ export class RicettaPage implements OnInit {
                 return;
               }
               this._estrazioneRighe();
+              this.refreshChild.next();
               this.gs.loading.dismiss();
               this._clearAndFocus();
             },
@@ -163,6 +165,7 @@ export class RicettaPage implements OnInit {
             return;
           }
           this._estrazioneRighe();
+          this.refreshChild.next();
           this.gs.loading.dismiss();
           this._clearAndFocus();
         },
@@ -178,6 +181,7 @@ export class RicettaPage implements OnInit {
             return;
           }
           this._estrazioneRighe();
+          this.refreshChild.next();
           this.gs.loading.dismiss();
           this._clearAndFocus();
         },
@@ -208,6 +212,7 @@ export class RicettaPage implements OnInit {
             this.gs.toast.present(data.error);
             return;
           }
+          this.refreshChild.next();
           this.gs.loading.dismiss();
           this._clearAndFocus();
         },

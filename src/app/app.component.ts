@@ -20,29 +20,34 @@ export class AppComponent {
       icon: 'home'
     },
     {
-      title: 'Ricerca ricette',
+      title: 'Ricette',
       url: '/ricette',
       icon: 'document'
     },
-    {
+    /*{
       title: 'Ingredienti',
       url: '/ingredienti',
       icon: 'flask'
-    },
+    },*/
     {
-      title: 'Tabelle tecniche',
+      title: 'Schede Produzione',
       url: '/schedetecniche',
       icon: 'clipboard'
     },
     {
-      title: 'Archivio documenti',
+      title: 'Archivio',
       url: '/archiviodocumenti',
       icon: 'filing'
     },
     {
-      title: 'Food cost',
+      title: 'Listini Prezzi',
+      url: '/listini',
+      icon: 'list'
+    },
+    {
+      title: 'Dizionario Ingredienti',
       url: '/foodcost',
-      icon: 'logo-euro'
+      icon: 'book'
     }
   ];
 

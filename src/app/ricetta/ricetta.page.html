@@ -31,7 +31,7 @@
   <br/>
   <ion-row *ngIf="ricetta?.cod_p > 0">
     <ion-col>
-      <h4 style="text-decoration: underline;font-style: italic;padding-left: 5px">
+      <h4 style="text-decoration: underline;font-style: italic;padding-left: 15px">
         Ingredienti: <ion-icon name="search" style="cursor: pointer" (click)="searchRicetta()"></ion-icon>
       </h4>
 
@@ -72,15 +72,13 @@
 
   <!-- --------------- -->
   <br/>
-  <div class="row">
-
-    <div class="col noPaddingAll" style="padding-left: 15px">
+  <ion-row>
+    <ion-col class="ion-no-padding" style="padding-left: 15px">
       <h4 style="text-decoration: underline;font-style: italic;padding-left: 5px">Procedimento:</h4>
       <br/>
       <textarea [(ngModel)]="ricetta.procedimento" style="width: 100%;font-size: 16px;padding: 5px" rows="15" autocomplete="off"></textarea>
-    </div>
-
-  </div>
+    </ion-col>
+  </ion-row>
   <br/>
   <ion-row>
     <ion-col class="ion-text-center">
@@ -91,6 +89,13 @@
   <ion-row>
     <ion-col sizeXs="12" sizeMd="4" sizeLg="3" *ngFor="let ricetta of ricetta.ricetteComposteList">
       <ric-ricetta-mini [cod_p]="ricetta.ricettaid"></ric-ricetta-mini>
+    </ion-col>
+  </ion-row>
+
+  <br/>
+  <ion-row *ngIf="ricetta?.cod_p > 0">
+    <ion-col style="padding-left: 15px">
+      <ric-ricetta-foodcost [cod_p]="ricetta.cod_p" [doRefresh]="refreshChild.asObservable()" (prezzoUpdate)="saveRicetta($event)"></ric-ricetta-foodcost>
     </ion-col>
   </ion-row>
 

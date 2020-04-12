@@ -29,7 +29,7 @@
   </ion-refresher>
 
   <ion-list>
-    <ion-card *ngFor="let ingrediente of ricerca.ingredientiList | ingredienti:ricerca.searchText" style="cursor: pointer" (click)="openIngrediente(ingrediente)" >
+    <ion-card *ngFor="let ingrediente of ricerca.ingredientiList | descrizione:ricerca.searchText" style="cursor: pointer" (click)="openIngrediente(ingrediente)" >
       <ion-card-content>
         <ion-row>
           <ion-col size="1">

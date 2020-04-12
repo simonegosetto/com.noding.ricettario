@@ -19,6 +19,9 @@ const routes: Routes = [
 
   { path: 'ingredienti', loadChildren: () => import('./ingredienti/ingredienti.module').then( m => m.IngredientiPageModule), canActivate: [AuthGuard] },
   { path: 'ingrediente/:id', loadChildren: () => import('./ingrediente/ingrediente.module').then( m => m.IngredientePageModule), canActivate: [AuthGuard] },
+
+  { path: 'listini', loadChildren: () => import('./listini/listini.module').then( m => m.ListiniPageModule), canActivate: [AuthGuard] },
+  { path: 'listino/:id', loadChildren: () => import('./listino/listino.module').then(m => m.ListinoPageModule), canActivate: [AuthGuard] },
 ];
 
 @NgModule({

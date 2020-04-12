@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title class="ion-text-center">
+      Listini Prezzi
+    </ion-title>
+    <ion-buttons slot="end" >
+      <ion-button (click)="nuovoListino()"><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-row>
+    <ion-col>
+      <ion-searchbar type="text" placeholder="Cerca un listino" [(ngModel)]="ricerca.searchText" ></ion-searchbar>
+    </ion-col>
+  </ion-row>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="estrazioneListini($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list>
+    <ion-card *ngFor="let listino of ricerca.listiniList | descrizione:ricerca.searchText" style="cursor: pointer" (click)="openListino(listino)" >
+      <ion-card-content>
+        <ion-row>
+          <ion-col size="1">
+            <ion-icon name="list" color="dark"></ion-icon>
+          </ion-col>
+          <ion-col size="9">
+            <p>{{listino.descrizione}}</p>
+          </ion-col>
+          <ion-col size="1">
+            <ion-icon name="create" color="dark" (click)="edit($event, listino)"></ion-icon>
+          </ion-col>
+          <ion-col size="1">
+            <ion-icon name="trash" color="danger" (click)="deleteListino($event, listino)"></ion-icon>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+
+</ion-content>

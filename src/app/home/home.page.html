@@ -12,35 +12,20 @@
 <ion-content>
   <br><br>
   <ion-row *ngIf="gs.isDesktop()">
-    <ion-col size="3">
-      <ion-button size="full" (click)="navTo('ricette')">Ricerca Ricetta</ion-button>
-    </ion-col>
-    <ion-col size="3">
+    <ion-col sizeMd="3" sizeXs="6">
       <ion-button size="full" (click)="navTo('ricetta/0')">Nuova Ricetta</ion-button>
     </ion-col>
-    <ion-col size="3">
-      <ion-button size="full" (click)="navTo('archiviodocumenti')">Archivio</ion-button>
+    <ion-col sizeMd="3" sizeXs="6">
+      <ion-button size="full" (click)="navTo('menu/0')">Nuovo Menù</ion-button>
     </ion-col>
-    <ion-col size="3">
-      <ion-button size="full" (click)="navTo('foodcost')">Food Cost</ion-button>
+    <ion-col sizeMd="3" sizeXs="6">
+      <ion-button size="full" (click)="navTo('schedetecniche')">Nuova scheda</ion-button>
     </ion-col>
-  </ion-row>
-  <ion-row *ngIf="!gs.isDesktop()">
-    <ion-col size="6">
-      <ion-button size="full" (click)="navTo('ricette')">Ricerca Ricetta</ion-button>
-    </ion-col>
-    <ion-col size="6">
-      <ion-button size="full" (click)="navTo('ricetta/0')">Nuova Ricetta</ion-button>
+    <ion-col sizeMd="3" sizeXs="6">
+      <ion-button size="full" (click)="navTo('listini')">Nuovo Listino</ion-button>
     </ion-col>
   </ion-row>
-  <ion-row *ngIf="!gs.isDesktop()">
-    <ion-col size="6">
-      <ion-button size="full" (click)="navTo('archiviodocumenti')">Archivio</ion-button>
-    </ion-col>
-    <ion-col size="6">
-      <ion-button size="full" (click)="navTo('foodcost')">Food Cost</ion-button>
-    </ion-col>
-  </ion-row>
+
   <br><br>
   <ion-item lines="none">
       <ion-label>Blocco Note</ion-label>

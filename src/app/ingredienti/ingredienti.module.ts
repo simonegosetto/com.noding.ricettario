@@ -7,18 +7,20 @@ import { IonicModule } from '@ionic/angular';
 import { IngredientiPageRoutingModule } from './ingredienti-routing.module';
 
 import { IngredientiPage } from './ingredienti.page';
-import {IngredientiPipe} from './ingredienti.pipe';
+import {AppModule} from "../app.module";
+import {SharedModule} from "../shared/shared.module";
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    IngredientiPageRoutingModule
-  ],
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        IngredientiPageRoutingModule,
+        AppModule,
+        SharedModule
+    ],
   declarations: [
     IngredientiPage,
-    IngredientiPipe
   ]
 })
 export class IngredientiPageModule {}

@@ -1,0 +1,32 @@
+<h4 style="text-decoration: underline;font-style: italic;padding-left: 5px">Foodcost:</h4>
+<select name="tipo" class="center" style="width: 250px;padding: 8px 8px 8px 0;margin: 8px 8px 8px 0" [(ngModel)]="listinoID" (ngModelChange)="getFoodcost()" >
+  <option *ngFor="let listino of listiniList" [ngValue]="listino.id">{{listino.descrizione}}</option>
+</select>
+<ion-item *ngFor="let item of ingredientiFoodcostList" >
+  <ion-col size="6" >{{item.descrizione}}</ion-col>
+  <ion-col size="2" class="ion-text-right" >{{item.peso | number:'1.1-2'}}g</ion-col>
+  <ion-col size="2" class="ion-text-right">{{item.kcal | number:'1.1-2'}}kcal</ion-col>
+  <ion-col size="2" class="ion-text-right" >{{item.foodcost | currency:'EUR':''}}€</ion-col>
+</ion-item>
+<ion-item class="totali">
+  <ion-col size="6" >Foodcost:</ion-col>
+  <ion-col size="2" class="ion-text-right" >{{totali.peso | number:'1.1-2'}}g</ion-col>
+  <ion-col size="2" class="ion-text-right">{{totali.kcal | number:'1.1-2'}}kcal</ion-col>
+  <ion-col size="2" class="ion-text-right" >{{totali.foodcost | number:'1.1-2'}}€</ion-col>
+</ion-item>
+<ion-item class="totali">
+  <ion-col size="6" >Prezzo vendita Lordo:</ion-col>
+  <ion-col size="6" class="ion-text-right" ><ion-input type="number" [(ngModel)]="totali.prezzoVenditaLordo" (keydown.enter)="aggiornaRicetta()"></ion-input></ion-col>
+</ion-item>
+<ion-item class="totali">
+  <ion-col size="6" >Ratio:</ion-col>
+  <ion-col size="6" class="ion-text-right" >{{totali.ratio | number:'1.1-2'}}%</ion-col>
+</ion-item>
+<ion-item class="totali">
+  <ion-col size="6" >Prezzo vendita Netto:</ion-col>
+  <ion-col size="6" class="ion-text-right" >{{totali.prezzoVenditaNetto | number:'1.1-2'}}€</ion-col>
+</ion-item>
+<ion-item class="totali">
+  <ion-col size="6" >Margine Netto:</ion-col>
+  <ion-col size="6" class="ion-text-right" >{{totali.margineNetto | number:'1.1-2'}}€</ion-col>
+</ion-item>
