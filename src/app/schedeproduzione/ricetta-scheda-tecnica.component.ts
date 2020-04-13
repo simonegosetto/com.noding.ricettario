@@ -1,7 +1,8 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {GlobalService} from "../core/services/global.service";
 import {DropboxService} from "../core/services/dropbox.service";
 import {Router} from "@angular/router";
+import {AlertService} from "../core/services/alert.service";
 
 @Component({
   selector: 'ric-ricetta-scheda-tecnica',
@@ -12,8 +13,6 @@ export class RicettaSchedaTecnicaComponent implements OnInit {
 
   constructor(
       public gs: GlobalService,
-      private _ds: DropboxService,
-      private _router: Router
   ) { }
 
   private _cod_p: number;
@@ -25,6 +24,7 @@ export class RicettaSchedaTecnicaComponent implements OnInit {
   get cod_p(): number {
     return this._cod_p;
   }
+  @Output() onDelete = new EventEmitter();
 
   public ricetta: any = {
     ingredientiList: []
@@ -43,6 +43,10 @@ export class RicettaSchedaTecnicaComponent implements OnInit {
           this.gs.loading.dismiss();
         },
         error => this.gs.toast.present(error.message));
+  }
+
+  delete() {
+    this.onDelete.emit(null);
   }
 
   private _estrazioneRighe() {

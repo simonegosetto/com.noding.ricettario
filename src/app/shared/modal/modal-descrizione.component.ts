@@ -14,7 +14,7 @@ import {ModalConfig} from "../../core/interfaces/modal-config";
 
         <ion-content>
             <ion-item>
-                <ion-label position="fixed">Nome Listino</ion-label>
+                <ion-label position="fixed">Nome</ion-label>
                 <ion-input type="text" *ngIf="modalConfig?.data" [(ngModel)]="modalConfig.data.descrizione" required ></ion-input>
             </ion-item>
         </ion-content>

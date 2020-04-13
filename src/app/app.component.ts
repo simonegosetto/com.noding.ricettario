@@ -31,7 +31,7 @@ export class AppComponent {
     },*/
     {
       title: 'Schede Produzione',
-      url: '/schedetecniche',
+      url: '/schedeproduzione',
       icon: 'clipboard'
     },
     {

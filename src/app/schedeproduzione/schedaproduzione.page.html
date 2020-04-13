@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title class="ion-text-center">{{schedaProduzione?.descrizione}}</ion-title>
+    <ion-buttons slot="end" >
+      <ion-button (click)="print(false)" [disabled]="ricetteList.length === 0"><ion-icon style="font-size: 25px" name="print"></ion-icon></ion-button>
+      <ion-button (click)="print(true)" [disabled]="ricetteList.length === 0"><ion-icon style="font-size: 25px" name="logo-euro"></ion-icon></ion-button>
+      <ion-button (click)="nuovaRicetta()"><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-row>
+    <ion-col>
+      <select name="tipo" class="center" style="width: 250px;padding: 8px 8px 8px 0;margin: 8px 8px 8px 0" [(ngModel)]="listinoID"  >
+        <option *ngFor="let listino of listiniList" [ngValue]="listino.id">{{listino.descrizione}}</option>
+      </select>
+    </ion-col>
+  </ion-row>
+</ion-header>
+
+<ion-content no-padding>
+  <ion-list>
+    <ion-card *ngFor="let ricetta of ricetteList" style="cursor: pointer"  >
+      <ric-ricetta-scheda-tecnica [cod_p]="ricetta.ricettaid" (onDelete)="delete(ricetta)"></ric-ricetta-scheda-tecnica>
+    </ion-card>
+  </ion-list>
+</ion-content>

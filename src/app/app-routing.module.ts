@@ -10,7 +10,8 @@ const routes: Routes = [
   { path: 'ricette', loadChildren: () => import('./ricette/ricette.module').then( m => m.RicettePageModule), canActivate: [AuthGuard]},
   { path: 'ricetta/:id', loadChildren: () => import('./ricetta/ricetta.module').then( m => m.RicettaPageModule), canActivate: [AuthGuard]},
 
-  { path: 'schedetecniche', loadChildren: () => import('./schedetecniche/schedetecniche.module').then( m => m.SchedetecnichePageModule), canActivate: [AuthGuard] },
+  { path: 'schedeproduzione', loadChildren: () => import('./schedeproduzione/schedeproduzione.module').then(m => m.SchedeproduzionePageModule), canActivate: [AuthGuard] },
+  { path: 'schedaproduzione/:id', loadChildren: () => import('./schedeproduzione/schedaproduzione.module').then(m => m.SchedaproduzionePageModule), canActivate: [AuthGuard] },
 
   { path: 'archiviodocumenti', loadChildren: () => import('./archiviodocumenti/archiviodocumenti.module').then( m => m.ArchiviodocumentiPageModule), canActivate: [AuthGuard] },
   { path: 'archiviodocumento/:id', loadChildren: () => import('./archiviodocumento/archiviodocumento.module').then( m => m.ArchiviodocumentoPageModule), canActivate: [AuthGuard]},

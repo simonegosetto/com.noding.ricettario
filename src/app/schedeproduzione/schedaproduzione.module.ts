@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { SchedetecnichePageRoutingModule } from './schedetecniche-routing.module';
+import { SchedaproduzionePageRoutingModule } from './schedaproduzione-routing.module';
 
-import { SchedetecnichePage } from './schedetecniche.page';
+import { SchedaproduzionePage } from './schedaproduzione.page';
 import {RicettaSchedaTecnicaComponent} from "./ricetta-scheda-tecnica.component";
 
 @NgModule({
@@ -14,8 +14,8 @@ import {RicettaSchedaTecnicaComponent} from "./ricetta-scheda-tecnica.component"
     CommonModule,
     FormsModule,
     IonicModule,
-    SchedetecnichePageRoutingModule
+    SchedaproduzionePageRoutingModule
   ],
-  declarations: [SchedetecnichePage, RicettaSchedaTecnicaComponent]
+  declarations: [SchedaproduzionePage,RicettaSchedaTecnicaComponent]
 })
-export class SchedetecnichePageModule {}
+export class SchedaproduzionePageModule {}
