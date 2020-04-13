@@ -27,6 +27,7 @@ export class RicettaFoodcostComponent implements OnInit {
   @Input() cod_p: number;
   @Input() doRefresh: Observable<any>;
   @Output() prezzoUpdate = new EventEmitter();
+  @Output() listinoChange = new EventEmitter();
 
   public ingredientiFoodcostList: IngredienteFoodcostRead[] = [];
   public listinoID: number;
@@ -57,6 +58,7 @@ export class RicettaFoodcostComponent implements OnInit {
           this.listiniList = data.recordset ? data.recordset : [];
           if (this.listiniList.length > 0) {
             this.listinoID = this.listiniList[0].id;
+            this.listinoChange.emit(this.listinoID);
             this.getFoodcost();
           }
           this.gs.loading.dismiss();

@@ -5,7 +5,11 @@
     </ion-buttons>
     <ion-title class="ion-text-center">Dettaglio ricetta</ion-title>
     <ion-buttons slot="end" >
-      <ion-button (click)="print()"><ion-icon style="font-size: 25px" name="print"></ion-icon></ion-button>
+      <ion-button (click)="print(false)"><ion-icon style="font-size: 25px" name="print"></ion-icon></ion-button>
+      <ion-button (click)="print(true)">
+        <ion-icon style="font-size: 25px" name="print"></ion-icon>
+        <ion-icon style="font-size: 25px" name="logo-euro"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -95,7 +99,11 @@
   <br/>
   <ion-row *ngIf="ricetta?.cod_p > 0">
     <ion-col style="padding-left: 15px">
-      <ric-ricetta-foodcost [cod_p]="ricetta.cod_p" [doRefresh]="refreshChild.asObservable()" (prezzoUpdate)="saveRicetta($event)"></ric-ricetta-foodcost>
+      <ric-ricetta-foodcost [cod_p]="ricetta.cod_p"
+                            [doRefresh]="refreshChild.asObservable()"
+                            (prezzoUpdate)="saveRicetta($event)"
+                            (listinoChange)="getListino($event)"
+      ></ric-ricetta-foodcost>
     </ion-col>
   </ion-row>
 
