@@ -13,7 +13,7 @@ import {Network} from '@ionic-native/network/ngx';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
 import {ModalSearchRicettaComponent} from "./ricetta/modal-search-ricetta.component";
-import {ModalCaricaFileComponent} from "./archiviodocumento/modal-carica-file.component";
+import {ModalCaricaFileComponent} from "./archiviodocumenti/modal-carica-file.component";
 import {ModalDescrizioneComponent} from "./shared/modal/modal-descrizione.component";
 import {ModalSearchRicettaListinoComponent} from "./listino/modal-search-ricetta-listino.component";
 import {ModalSearchIngredienteListinoComponent} from "./listino/modal-search-ingrediente-listino.component";

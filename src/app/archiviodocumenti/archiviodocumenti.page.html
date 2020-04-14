@@ -4,39 +4,53 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title class="ion-text-center">
-      Archivio Documenti
+      {{ricerca?.folderName || 'Archivio Documenti'}}
     </ion-title>
     <ion-buttons slot="end" >
-      <ion-button (click)="nuovoFile()"><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon></ion-button>
+      <ion-button (click)="nuovoCartella()"><ion-icon style="font-size: 25px" name="folder" title="Aggiungi Cartella"></ion-icon></ion-button>
+      <ion-button (click)="nuovoFile()"><ion-icon style="font-size: 25px" name="add-circle-outline" title="Aggiungi File"></ion-icon></ion-button>
     </ion-buttons>
   </ion-toolbar>
   <ion-row>
     <ion-col>
-      <ion-searchbar type="text" placeholder="Cerca una categoria" [(ngModel)]="ricerca.searchText" ></ion-searchbar>
+      <ion-searchbar type="text" placeholder="Cerca file o cartelle" [(ngModel)]="ricerca.searchText" ></ion-searchbar>
     </ion-col>
   </ion-row>
 </ion-header>
 
 <ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="estrazioneCategorieDocumenti($event)">
+  <ion-refresher slot="fixed" (ionRefresh)="estrazioneFileFolder($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
   <ion-list>
-    <ion-card *ngFor="let item of ricerca.categorieDocumentiList | archiviodocumenti:ricerca.searchText" style="cursor: pointer" (click)="openCategoria(item)" >
+    <ion-card style="cursor: pointer;background-color: #949494 !important;color: white;max-height: 55px" *ngIf="ricerca.folderid > 0" >
+      <ion-card-content>
+        <ion-row (click)="back()">
+          <ion-col size="1">
+            <ion-icon name="undo" style="color: white"></ion-icon>
+          </ion-col>
+          <ion-col size="11"><strong>Indietro</strong></ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+    <ion-card *ngFor="let item of ricerca.fileFolderList | descrizione:ricerca.searchText" style="cursor: pointer" (click)="open(item)" >
       <ion-card-content>
         <ion-row>
           <ion-col size="1">
-            <ion-icon name="document" color="dark"></ion-icon>
+            <ion-icon [name]="item.icon" color="dark"></ion-icon>
           </ion-col>
-          <ion-col size="8">
-            <p><ion-input [(ngModel)]="item.arc_tipo" (click)="$event.stopPropagation()" (ionBlur)="updateCategoria(item)"></ion-input></p>
-          </ion-col>
+          <ion-col size="7">{{item.descrizione | noextension}}</ion-col>
           <ion-col size="2" >
-            <p>N. files {{item.numero_file}}</p>
+            <p *ngIf="item.icon === 'folder'">N. File {{item.numero_file}}</p>
           </ion-col>
           <ion-col size="1">
-            <ion-icon name="trash" color="danger" (click)="deleteCategoria($event, item)"></ion-icon>
+            <ion-icon *ngIf="item.icon === 'folder'" name="create" color="dark" (click)="edit($event, item)"></ion-icon>
+            <ion-icon *ngIf="item.icon !== 'folder'" name="cloud-download" color="dark" (click)="download($event, item)"></ion-icon>
+          </ion-col>
+          <ion-col size="1">
+            <ion-icon *ngIf="item.icon === 'folder'" name="trash" color="danger" (click)="deleteFolder($event, item)"></ion-icon>
+            <ion-icon *ngIf="item.icon !== 'folder'" name="trash" color="danger" (click)="deleteFile($event, item)"></ion-icon>
           </ion-col>
         </ion-row>
       </ion-card-content>

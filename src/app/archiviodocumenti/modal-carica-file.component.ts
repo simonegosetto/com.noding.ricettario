@@ -8,9 +8,9 @@ import {NavParams} from "@ionic/angular";
   selector: 'app-modal-carica-file',
   template: `
       <ion-header>
-          <ion-title class="ion-text-center">
-              Caricamento file
-          </ion-title>
+          <ion-toolbar>
+            <ion-title class="ion-text-center">Caricamento file</ion-title>
+          </ion-toolbar>
       </ion-header>
 
       <ion-content>
@@ -21,16 +21,13 @@ import {NavParams} from "@ionic/angular";
                   </label>
               </ion-col>
           </ion-row>
-          <ion-row  class="ion-text-center">
-              <ion-col><input type="text" [(ngModel)]="file.categoria" placeholder="Tipologia file" autocomplete="off" (keydown.enter)="carica()"></ion-col>
-          </ion-row>
           
       </ion-content>
 
       <ion-footer>
           <ion-row>
               <ion-col><ion-button class="button-block" color="secondary" (click)="esci()">Chiudi</ion-button></ion-col>
-              <ion-col><ion-button class="button-block" (click)="carica()" [disabled]="file.file === undefined || file.categoria === undefined">Carica file</ion-button></ion-col>
+              <ion-col><ion-button class="button-block" (click)="carica()" [disabled]="file.file === undefined">Carica file</ion-button></ion-col>
           </ion-row>
       </ion-footer>
   `,
@@ -52,12 +49,14 @@ export class ModalCaricaFileComponent implements AfterViewInit {
     public file = {
         base64: undefined,
         file: undefined,
-        categoria: undefined,
+        folderid: undefined
     };
 
     ngAfterViewInit() {
-        if (this._params.data.hasOwnProperty('descrizione')) {
-            this.file.categoria = this._params.data.descrizione;
+        if (this._params.data.hasOwnProperty('folderid')) {
+            this.file.folderid = this._params.data.folderid;
+        } else {
+            this.esci();
         }
     }
 
@@ -81,10 +80,8 @@ export class ModalCaricaFileComponent implements AfterViewInit {
         const binaryString = readerEvt.target.result;
         this.file.base64 = btoa(binaryString);
 
-        this.file.categoria = this.gs.isnull(this.file.categoria);
-
         this.gs.callGateway('aQWu1SmmaITFs0wPPtAi4mvH+ZEphShyYYeUM98pg4ItWy0tSVYtWy1e+2qzPC9u9O9elSJdaZHz9f7O3jqBQcRNBlkfcApwog@@',
-            `'${this.file.file.name}','${this.file.file.name}','${this.file.categoria}',${this.file.file.size},'${this.file.file.type}',@out_id`).subscribe(data => {
+            `'${this.file.file.name}','${this.file.file.name}',${this.file.folderid},${this.file.file.size},'${this.file.file.type}',@out_id`).subscribe(data => {
                 if (data.hasOwnProperty('error')) {
                     this.gs.toast.present(data.error);
                     return;
@@ -96,18 +93,18 @@ export class ModalCaricaFileComponent implements AfterViewInit {
                     id: arcCodi,
                     name: this.file.file.name,
                     type: this.file.file.type,
-                    data: `data:image/${this.file.file.type.indexOf('png') >-1 ? 'png' : 'jpeg'};base64,${this.file.base64}`
+                    data: `data:${this.file.file.type};base64,${this.file.base64}`
                 };
                 this._ds.upload(dropboxObject).subscribe(data => {
                     this.gs.loading.dismiss();
-                    this.esci();
+                    this.esci(true);
                 },error => this.gs.toast.present(error.message));
             },
             error => this.gs.toast.present(error.message, 5000));
     }
 
-    esci() {
-        this.modal.dismiss(undefined);
+    esci(feedback = false) {
+        this.modal.dismiss(feedback);
     }
 
 }

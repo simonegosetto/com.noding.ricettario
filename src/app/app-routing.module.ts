@@ -14,7 +14,6 @@ const routes: Routes = [
   { path: 'schedaproduzione/:id', loadChildren: () => import('./schedeproduzione/schedaproduzione.module').then(m => m.SchedaproduzionePageModule), canActivate: [AuthGuard] },
 
   { path: 'archiviodocumenti', loadChildren: () => import('./archiviodocumenti/archiviodocumenti.module').then( m => m.ArchiviodocumentiPageModule), canActivate: [AuthGuard] },
-  { path: 'archiviodocumento/:id', loadChildren: () => import('./archiviodocumento/archiviodocumento.module').then( m => m.ArchiviodocumentoPageModule), canActivate: [AuthGuard]},
 
   { path: 'foodcost', loadChildren: () => import('./foodcost/foodcost.module').then( m => m.FoodcostPageModule), canActivate: [AuthGuard]},
 
