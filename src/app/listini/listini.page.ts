@@ -54,18 +54,18 @@ export class ListiniPage implements OnInit {
   }
 
   nuovoListino() {
-      const modalNew = this._modal.present(ModalDescrizioneComponent, {title: 'Nuovo Listino', cancelText: 'Annulla', confirmText: 'Salva', data: {}} as ModalConfig);
+      const modalNew = this._modal.present(ModalDescrizioneComponent, {title: 'Nuovo Listino', cancelText: 'Annulla', confirmText: 'Salva', data: { aliquota: 0}} as ModalConfig);
       modalNew.then(result => {
           if (result.data && result.data.descrizione) {
-              const {descrizione} = result.data;
-              this._saveListino({id: 0, descrizione} as Listino);
+              const {descrizione, aliquota} = result.data;
+              this._saveListino({id: 0, descrizione, aliquota} as Listino);
           }
       });
   }
 
   private _saveListino(listino: Listino) {
       this.gs.callGateway('+qE5v3SYnfwew9ERUdNFtDBPcIEX1WHvlPw2rWnt9Z4tWy0tSVYtWy32eWs2dLQzwdu3PT0V1eHN6VOHoiA8WwUBNx9X9PtdvA@@',
-          `${listino.id},'${listino.descrizione}'`).subscribe(data => {
+          `${listino.id},'${listino.descrizione}',${listino.aliquota}`).subscribe(data => {
               if (data.hasOwnProperty('error')) {
                   this.gs.toast.present(data.error);
                   return;
@@ -81,8 +81,8 @@ export class ListiniPage implements OnInit {
       const modalNew = this._modal.present(ModalDescrizioneComponent, {title: 'Modifica Listino', cancelText: 'Annulla', confirmText: 'Salva', data: {...listino}} as ModalConfig);
       modalNew.then(result => {
           if (result.data && result.data.descrizione) {
-              const {id, descrizione} = result.data;
-              this._saveListino({id, descrizione} as Listino);
+              const {id, descrizione, aliquota} = result.data;
+              this._saveListino({id, descrizione, aliquota} as Listino);
           }
       });
   }

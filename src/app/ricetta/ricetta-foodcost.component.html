@@ -15,8 +15,12 @@
   <ion-col size="2" class="ion-text-right" >{{totali.foodcost | number:'1.1-2'}}€</ion-col>
 </ion-item>
 <ion-item class="totali">
-  <ion-col size="6" >Prezzo vendita Lordo</ion-col>
-  <ion-col size="6" class="ion-text-right" ><ion-input type="number" [(ngModel)]="totali.prezzoVenditaLordo" (keydown.enter)="aggiornaRicetta()"></ion-input></ion-col>
+  <ion-col size="6" >Peso Effettivo (g)</ion-col>
+  <ion-col size="6" class="ion-text-right" ><ion-input type="number" [(ngModel)]="totali.pesoEffettivo" (keydown.enter)="aggiornaPeso()"></ion-input></ion-col>
+</ion-item>
+<ion-item class="totali">
+  <ion-col size="6" >Prezzo vendita Lordo (€)</ion-col>
+  <ion-col size="6" class="ion-text-right" ><ion-input type="number" [(ngModel)]="totali.prezzoVenditaLordo" (keydown.enter)="aggiornaPrezzo()"></ion-input></ion-col>
 </ion-item>
 <ion-item class="totali">
   <ion-col size="6" >Ratio</ion-col>

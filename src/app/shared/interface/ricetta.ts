@@ -7,4 +7,6 @@ export interface Ricetta {
     chef: string;
     peso: number;
     ingredienti: string;
+    peso_effettivo?: number;
+    prezzo_vendita?: number;
 }

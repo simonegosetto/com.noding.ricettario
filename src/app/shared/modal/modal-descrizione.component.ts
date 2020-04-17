@@ -17,6 +17,10 @@ import {ModalConfig} from "../../core/interfaces/modal-config";
                 <ion-label position="fixed">Nome</ion-label>
                 <ion-input type="text" *ngIf="modalConfig?.data" [(ngModel)]="modalConfig.data.descrizione" required ></ion-input>
             </ion-item>
+            <ion-item *ngIf="modalConfig?.data?.aliquota !== undefined">
+                <ion-label position="fixed">Aliquota (%)</ion-label>
+                <ion-input type="number" *ngIf="modalConfig?.data" [(ngModel)]="modalConfig.data.aliquota" max="100" ></ion-input>
+            </ion-item>
         </ion-content>
 
         <ion-footer>

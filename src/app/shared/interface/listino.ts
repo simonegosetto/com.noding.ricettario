@@ -1,6 +1,7 @@
 export interface Listino {
     id: number;
     descrizione: string;
+    aliquota: number;
 }
 
 export type ListinoRead = Readonly<Listino>;
@@ -16,4 +17,5 @@ export interface ListinoRiga {
     categoriaid: number;
     categorianome: string;
     kcal: number;
+    ricette?: string;
 }

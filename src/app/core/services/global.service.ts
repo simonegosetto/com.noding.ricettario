@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpErrorResponse, HttpClient } from '@angular/common/http';
 import { throwError } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
-import { catchError } from 'rxjs/operators';
+import {catchError, map, tap} from 'rxjs/operators';
 import { Platform } from '@ionic/angular';
 import { LoadingService } from './loading.service';
 import { ToastService } from './toast.service';
@@ -48,6 +48,13 @@ export class GlobalService {
                 headers: this.http_json_headers
             }
         ).pipe(
+            tap(data => {
+                if (data.error === 'Invalid token 4 !') {
+                    this.logout();
+                    window.location.reload();
+                    return data;
+                }
+            }),
             catchError(this.error_handler)
         );
     }

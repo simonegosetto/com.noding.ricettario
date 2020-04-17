@@ -114,9 +114,24 @@ export class RicettaPage implements OnInit {
             error => this.gs.toast.present(error.message));
     }
 
-    saveRicetta(prezzoVendita = 0) {
-        this.gs.callGateway('yQyvP6kwRmZ4Y01UsKulxCxG7MGV0B1QcUxCK6U5SEItWy0tSVYtWy2d8paOBfaJ5qGKfIV63SdsTxDcVhwM2zTsER5z6D9tRA@@',
-            `${this.ricetta.cod_p},'${this.ricetta.nome_ric}','${this.ricetta.procedimento}',${prezzoVendita},@out_id`).subscribe(data => {
+    updatePrezzoVenditaRicetta(prezzoVendita) {
+        this.saveRicetta(prezzoVendita, 'prezzo')
+    }
+
+    updatePesoEffettivoRicetta(pesoEffettivo) {
+        this.saveRicetta(pesoEffettivo, 'peso')
+    }
+
+    saveRicetta(parametro: number = undefined, tipo: 'prezzo' | 'peso' = undefined) {
+        let params = '';
+        if (!parametro && !tipo) {
+            params = `${this.ricetta.cod_p},'${this.ricetta.nome_ric}','${this.ricetta.procedimento}',${this.gs.isnull(this.ricetta.prezzo_vendita,0)},${this.gs.isnull(this.ricetta.peso_effettivo,0)},@out_id`;
+        } else if(tipo === 'peso') {
+            params = `${this.ricetta.cod_p},'${this.ricetta.nome_ric}','${this.ricetta.procedimento}',${this.gs.isnull(this.ricetta.prezzo_vendita,0)},${this.gs.isnull(parametro,0)},@out_id`;
+        } else if (tipo === 'prezzo') {
+            params = `${this.ricetta.cod_p},'${this.ricetta.nome_ric}','${this.ricetta.procedimento}',${this.gs.isnull(parametro,0)},${this.gs.isnull(this.ricetta.peso_effettivo,0)},@out_id`;
+        }
+        this.gs.callGateway('yQyvP6kwRmZ4Y01UsKulxCxG7MGV0B1QcUxCK6U5SEItWy0tSVYtWy2d8paOBfaJ5qGKfIV63SdsTxDcVhwM2zTsER5z6D9tRA@@', params).subscribe(data => {
                 if (data.hasOwnProperty('error')) {
                     this.gs.toast.present(data.error);
                     return;
