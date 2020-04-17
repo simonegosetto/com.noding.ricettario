@@ -30,7 +30,9 @@ inner join ricette r on vi.ricettaid = r.cod_p
 inner join ricette_ingredienti ri on vi.ricettaid = ri.ricettaid
 group by vi.listinoid,
          vi.ricettaid,
+         r.nome_ric,
          ri.quantita,
+         ri.cod_p,
          ifnull(ri.ordinamento,0)
 
 
