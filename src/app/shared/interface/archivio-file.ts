@@ -10,6 +10,7 @@ export interface ArchivioFile {
     parentid?: number;
     descrizione: string; // descrizione cartella
     numero_file?: number;
+    numero_cartelle?: number;
     icon?: string;
     id_storage?: string;
 }

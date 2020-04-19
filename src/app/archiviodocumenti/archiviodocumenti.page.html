@@ -43,6 +43,7 @@
           <ion-col size="7">{{item.descrizione | noextension}}</ion-col>
           <ion-col size="2" >
             <p *ngIf="item.icon === 'folder'">N. File {{item.numero_file}}</p>
+            <p *ngIf="item.icon === 'folder'">N. Cartelle {{item.numero_cartelle}}</p>
           </ion-col>
           <ion-col size="1">
             <ion-icon *ngIf="item.icon === 'folder'" name="create" color="dark" (click)="edit($event, item)"></ion-icon>

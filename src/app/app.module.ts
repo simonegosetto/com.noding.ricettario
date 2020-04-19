@@ -18,6 +18,8 @@ import {ModalDescrizioneComponent} from "./shared/modal/modal-descrizione.compon
 import {ModalSearchRicettaListinoComponent} from "./listino/modal-search-ricetta-listino.component";
 import {ModalSearchIngredienteListinoComponent} from "./listino/modal-search-ingrediente-listino.component";
 import {ModalEditIngredienteListinoComponent} from "./listino/modal-edit-ingrediente-listino.component";
+import {ModalSearchIngredientiComponent} from "./ricetta/modal-search-ingredienti.component";
+import {SharedModule} from "./shared/shared.module";
 
 @NgModule({
     declarations: [
@@ -28,6 +30,7 @@ import {ModalEditIngredienteListinoComponent} from "./listino/modal-edit-ingredi
         ModalSearchRicettaListinoComponent,
         ModalSearchIngredienteListinoComponent,
         ModalEditIngredienteListinoComponent,
+        ModalSearchIngredientiComponent,
     ],
     entryComponents: [
         ModalSearchRicettaComponent,
@@ -36,6 +39,7 @@ import {ModalEditIngredienteListinoComponent} from "./listino/modal-edit-ingredi
         ModalSearchRicettaListinoComponent,
         ModalSearchIngredienteListinoComponent,
         ModalEditIngredienteListinoComponent,
+        ModalSearchIngredientiComponent,
     ],
     imports: [
         BrowserModule,
@@ -43,7 +47,8 @@ import {ModalEditIngredienteListinoComponent} from "./listino/modal-edit-ingredi
         FormsModule,
         ReactiveFormsModule,
         IonicModule.forRoot(),
-        AppRoutingModule
+        AppRoutingModule,
+        SharedModule
     ],
     exports: [
         ModalSearchRicettaComponent,
@@ -52,6 +57,7 @@ import {ModalEditIngredienteListinoComponent} from "./listino/modal-edit-ingredi
         ModalSearchRicettaListinoComponent,
         ModalSearchIngredienteListinoComponent,
         ModalEditIngredienteListinoComponent,
+        ModalSearchIngredientiComponent,
     ],
     providers: [
         StatusBar,

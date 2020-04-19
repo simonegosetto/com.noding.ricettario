@@ -18,4 +18,7 @@ export interface ListinoRiga {
     categorianome: string;
     kcal: number;
     ricette?: string;
+    provenienza?: string;
+    //
+    infoVisible: boolean;
 }

@@ -21,7 +21,7 @@ import {RicettaFoodcostComponent} from "./ricetta-foodcost.component";
     ],
     declarations: [
         RicettaPage,
-        RicettaFoodcostComponent
+        RicettaFoodcostComponent,
     ]
 })
 export class RicettaPageModule {

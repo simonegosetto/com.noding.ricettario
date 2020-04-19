@@ -33,14 +33,17 @@
   <ion-row *ngIf="ricetta?.cod_p > 0">
     <ion-col>
       <h4 style="text-decoration: underline;font-style: italic;padding-left: 15px">
-        Ingredienti: <ion-icon name="search" style="cursor: pointer" (click)="searchRicetta()"></ion-icon>
+        Ingredienti:
+        <ion-badge color="primary" (click)="searchRicetta()" style="cursor: pointer">Ricette<ion-icon name="search" style="cursor: pointer" ></ion-icon></ion-badge>
+        <ion-badge color="secondary" (click)="searchIngrediente()" style="cursor: pointer">Ingredienti<ion-icon name="search" style="cursor: pointer"></ion-icon></ion-badge>
       </h4>
 
       <ion-reorder-group [disabled]="false" (ionItemReorder)="updateIngredienteOrdinamento($event)">
         <ion-item *ngFor="let item of ricetta.ingredientiList">
           <ion-reorder slot="start"></ion-reorder>
           <ion-col size="6" class="ingredienti">
-            <input type="text" [(ngModel)]="item.nome" placeholder="nome" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)" [disabled]="item.ricettaid > 0">
+            {{item.nome}}
+            <!--<input type="text" [(ngModel)]="item.nome" placeholder="nome" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)" [disabled]="item.ricettaid > 0">-->
           </ion-col>
           <ion-col size="3" class="ingredienti">
             <input type="number" class="ingredienti-quantity" [(ngModel)]="item.quantita" placeholder="quantità" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)">g

@@ -69,3 +69,11 @@ select `r`.`cod_p` AS `cod_p`,`r`.`nome_ric` AS `nome_ric`,`r`.`procedimento` AS
         r.prezzo_vendita,
         r.peso_effettivo
 from `ricette` `r`
+
+
+alter VIEW `view_ingrediente_ricette`
+AS
+select `ri`.`ingredienteid` AS `ingredienteid`,
+        group_concat(distinct `r`.`nome_ric` order by `r`.`nome_ric` ASC separator '<p></p>') AS `ricette`
+from (`ricette_ingredienti` `ri` join `ricette` `r` on((`ri`.`cod_p` = `r`.`cod_p`))) where (`ri`.`ingredienteid` is not null)
+group by `ri`.`ingredienteid`

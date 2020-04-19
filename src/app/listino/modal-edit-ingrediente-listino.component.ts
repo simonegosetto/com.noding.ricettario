@@ -18,6 +18,10 @@ import {FormBuilder, FormGroup, Validators} from "@angular/forms";
                 <ion-card>
                     <ion-input type="hidden" formControlName="id" readonly></ion-input>
                     <ion-item>
+                        <ion-label position="fixed">Nome</ion-label>
+                        <ion-input type="text" formControlName="descrizione" ></ion-input>
+                    </ion-item>
+                    <ion-item>
                         <ion-label position="fixed">Scarto (%)</ion-label>
                         <ion-input type="number" formControlName="scarto" ></ion-input>
                     </ion-item>
@@ -38,6 +42,10 @@ import {FormBuilder, FormGroup, Validators} from "@angular/forms";
                         <select formControlName="categoriaid" style="width: 100%" >
                             <option *ngFor="let categoria of categorieList" [ngValue]="categoria.id">{{categoria.descrizione}}</option>
                         </select>
+                    </ion-item>
+                    <ion-item>
+                        <ion-label position="fixed">Provenienza</ion-label>
+                        <ion-input type="text" formControlName="provenienza" ></ion-input>
                     </ion-item>
                     
                 </ion-card>
@@ -78,6 +86,7 @@ export class ModalEditIngredienteListinoComponent implements AfterViewInit {
             prezzo: [null, Validators.compose([])],
             categoriaid: [null, Validators.compose([])],
             kcal: [null, Validators.compose([])],
+            provenienza: [null, Validators.compose([Validators.maxLength(200)])],
         });
         this.ingredienteForm.patchValue({...this._params.data});
         this.categorieList = [...this._params.data.categorieList];

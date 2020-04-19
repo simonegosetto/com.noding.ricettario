@@ -9,6 +9,7 @@ import {ModalService} from "../core/services/modal.service";
 import {DropboxService} from "../core/services/dropbox.service";
 import {environment} from "../../environments/environment";
 import {Observable, Subject} from "rxjs";
+import {ModalSearchIngredientiComponent} from "./modal-search-ingredienti.component";
 
 @Component({
     selector: 'ric-ricetta',
@@ -52,7 +53,8 @@ export class RicettaPage implements OnInit {
     public ricettaRow: any = {
         nome: undefined,
         quantita: undefined,
-        ricettaid: 0
+        ricettaid: 0,
+        ingredienteid: 0
     };
 
     ionViewLoaded() {
@@ -180,7 +182,8 @@ export class RicettaPage implements OnInit {
     ricettaRigaSave() {
         if (this.gs.isnull(this.ricettaRow.nome) === '') return;
         this.gs.callGateway('3FdtgGhTrxqXmygCCFfZC42j7tE0rFd0h9sihx5l9dAtWy0tSVYtWy3J487uKuF6tzHQ4E0jkvcdftWCBjuP1hUEY2rMzQw5dA@@',
-            `'${this.ricettaRow.nome}',${this.gs.isnull(this.ricettaRow.quantita, 0)},${this.ricettaRow.ricettaid},${this.ricetta.cod_p}`).subscribe(data => {
+            `'${this.ricettaRow.nome}',${this.gs.isnull(this.ricettaRow.quantita, 0)},${this.ricettaRow.ricettaid},${this.gs.isnull(this.ricetta.cod_p,'null')},${this.gs.isnull(this.ricettaRow.ingredienteid,'null')}`)
+            .subscribe(data => {
                 if (data.hasOwnProperty('error')) {
                     this.gs.toast.present(data.error);
                     return;
@@ -222,6 +225,20 @@ export class RicettaPage implements OnInit {
         });
     }
 
+    searchIngrediente() {
+        const modalIngredienti = this._modal.present(ModalSearchIngredientiComponent, {});
+        modalIngredienti.then(result => {
+            if (result.data) {
+                console.log(result.data);
+                const {descrizione, id} = result.data;
+                this.ricettaRow.nome = descrizione;
+                this.ricettaRow.ingredienteid = id;
+                this.ricettaRow.quantita = 1;
+                this.ricettaRigaSave();
+            }
+        });
+    }
+
     updateIngredienteOrdinamento(ev: any) {
         // console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
         // console.log(this.ricetta.ingredientiList);
@@ -244,9 +261,10 @@ export class RicettaPage implements OnInit {
         this.ricettaRow.nome = '';
         this.ricettaRow.quantita = undefined;
         this.ricettaRow.ricettaid = 0;
-        setTimeout(() => {
+        this.ricettaRow.ingredienteid = 0;
+        /*setTimeout(() => {
             this.nomeIngrediente.setFocus();
-        }, 150);
+        }, 150);*/
     }
 
     pubblicaImmagine(event) {

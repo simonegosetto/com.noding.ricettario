@@ -33,21 +33,24 @@
         <ion-row>
           <ion-col size="2">
             {{riga.descrizione}}
-            <br *ngIf="riga.categoriaid">
-            <ion-badge *ngIf="riga.categoriaid" color="success">{{riga.categorianome}}</ion-badge>
-            <br>
-            <small style="font-style: italic;white-space: nowrap;">{{riga.ricette}}</small>
+            <!--<br *ngIf="riga.categoriaid">
+            <ion-badge *ngIf="riga.categoriaid" color="success">{{riga.categorianome}}</ion-badge>-->
           </ion-col>
           <ion-col size="2">{{riga.scarto | number:'1.1-2'}}%</ion-col>
           <ion-col size="2">{{riga.grammatura | number:'1.1-2'}}g</ion-col>
-          <ion-col size="2">{{riga.prezzo | number:'1.1-2'}}€</ion-col>
+          <ion-col size="1">{{riga.prezzo | number:'1.1-2'}}€</ion-col>
           <ion-col size="2">{{riga.kcal | number:'1.1-2'}}kcal</ion-col>
+          <ion-col size="1" style="cursor: pointer">
+            <ion-icon name="information-circle-outline" color="dark" (click)="riga.infoVisible = !riga.infoVisible" ></ion-icon>
+          </ion-col>
           <ion-col size="1" style="cursor: pointer">
             <ion-icon name="create" color="dark" (click)="edit($event, riga)"></ion-icon>
           </ion-col>
           <ion-col size="1" style="cursor: pointer">
             <ion-icon name="trash" color="danger" (click)="deleteRiga($event, riga)"></ion-icon>
           </ion-col>
+          <span *ngIf="riga.infoVisible && riga.provenienza" style="font-style: italic;"><strong>Provenienza:</strong> {{riga.provenienza}}</span>
+          <span *ngIf="riga.infoVisible" style="font-style: italic;" [innerHTML]="riga.ricette"></span>
         </ion-row>
       </ion-card-content>
     </ion-card>

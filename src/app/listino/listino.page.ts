@@ -9,7 +9,7 @@ import {ModalService} from "../core/services/modal.service";
 import {ModalSearchRicettaListinoComponent} from "./modal-search-ricetta-listino.component";
 import {ModalSearchIngredienteListinoComponent} from "./modal-search-ingrediente-listino.component";
 import {ModalEditIngredienteListinoComponent} from "./modal-edit-ingrediente-listino.component";
-import {Ingrediente} from "../shared/interface/ingrediente";
+import {Ingrediente, IngredienteListino} from "../shared/interface/ingrediente";
 
 @Component({
   selector: 'ric-listino',
@@ -150,9 +150,9 @@ export class ListinoPage implements OnInit {
 
   }
 
-  private _updateIngrediente(ingrediente: Ingrediente) {
+  private _updateIngrediente(ingrediente: IngredienteListino) {
     this.gs.callGateway('/nGnbEpkUi0vOg4i6e1iuEGuxg69lsTmVCr8YyLq268tWy0tSVYtWy3L2b8m+30DhYzDhrNYxDVYk6RvH3uhYOxox9hDnFFDyQ@@',
-        `${ingrediente.id},${ingrediente.scarto},${ingrediente.grammatura},${ingrediente.prezzo},${ingrediente.categoriaid},${ingrediente.kcal}`
+        `${ingrediente.id},${ingrediente.scarto},${ingrediente.grammatura},${ingrediente.prezzo},${ingrediente.categoriaid},${ingrediente.kcal},'${ingrediente.descrizione}','${ingrediente.provenienza}'`
     ).subscribe(data => {
           if (data.hasOwnProperty('error')) {
             this.gs.toast.present(data.error);
