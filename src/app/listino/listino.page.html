@@ -5,8 +5,9 @@
     </ion-buttons>
     <ion-title class="ion-text-center">{{listino?.descrizione}}</ion-title>
     <ion-buttons slot="end" >
-      <ion-button (click)="nuovoFromIngrediente()">Ing<ion-icon style="font-size: 25px" name="add-circle-outline" title="Aggiungi Ingrediente"></ion-icon></ion-button>
-      <ion-button (click)="nuovoFromSchedaTecnica()">ST<ion-icon style="font-size: 25px" name="add-circle-outline" title="Aggiungi Scheda Tecnica"></ion-icon></ion-button>
+      <ion-button (click)="print()"><ion-icon name="print" title="Stampa"></ion-icon></ion-button>
+      <ion-button *ngIf="gs.isDesktop()" (click)="nuovoFromIngrediente()">Ing<ion-icon name="add-circle-outline" title="Aggiungi Ingrediente"></ion-icon></ion-button>
+      <ion-button *ngIf="gs.isDesktop()" (click)="nuovoFromSchedaTecnica()">ST<ion-icon name="add-circle-outline" title="Aggiungi Scheda Tecnica"></ion-icon></ion-button>
     </ion-buttons>
   </ion-toolbar>
   <ion-row>

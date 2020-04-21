@@ -7,5 +7,6 @@ export const environment = {
   apiDropbox: 'https://riccardovalore.com/BackEnd/FD_DropboxGateway.php',
   apiReportRicetta: 'https://riccardovalore.com/BackEnd/ReportService/FD_RicettaPrinter.php',
   apiReportSchedaTecnica: 'https://riccardovalore.com/BackEnd/ReportService/FD_SchedaTecnicaPrinter.php',
+  apiReportListino: 'https://riccardovalore.com/BackEnd/ReportService/FD_ReportListino.php',
   TOKEN: '8F39D289C2D21ABA1D95845FF5F26BE1'
 };

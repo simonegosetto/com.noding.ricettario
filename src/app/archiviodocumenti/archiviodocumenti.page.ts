@@ -145,6 +145,11 @@ export class ArchiviodocumentiPage implements OnInit {
         });
     }
 
+    move($event, listino: ArchivioFile) {
+        $event.stopPropagation();
+        console.log(listino);
+    }
+
     updateFolderName(folder: ArchivioFile) {
         this.gs.callGateway('EO8JC8YQlb1qMkXVspBpN0TSg51g6MJE8AgoukLdy0stWy0tSVYtWy2+vCVIYV+sszqVEKfxn6c9KFZM1vtSrQBhvXMBKxU5iw@@',
             `${folder.folderid},'${folder.descrizione}'`).subscribe(data => {

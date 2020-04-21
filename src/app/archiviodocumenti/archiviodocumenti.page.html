@@ -40,10 +40,14 @@
           <ion-col size="1">
             <ion-icon [name]="item.icon" color="dark"></ion-icon>
           </ion-col>
-          <ion-col size="7">{{item.descrizione | noextension}}</ion-col>
-          <ion-col size="2" >
-            <p *ngIf="item.icon === 'folder'">N. File {{item.numero_file}}</p>
-            <p *ngIf="item.icon === 'folder'">N. Cartelle {{item.numero_cartelle}}</p>
+          <ion-col size="8" *ngIf="item.icon !== 'folder'">{{item.descrizione | noextension}}</ion-col>
+          <ion-col size="7" *ngIf="item.icon === 'folder'">{{item.descrizione | noextension}}</ion-col>
+          <ion-col size="2" *ngIf="item.icon === 'folder'">
+            <p >N. File {{item.numero_file}}</p>
+            <p>N. Cartelle {{item.numero_cartelle}}</p>
+          </ion-col>
+          <ion-col size="1" *ngIf="item.icon !== 'folder'">
+            <ion-icon name="move" color="dark" (click)="move($event, item)"></ion-icon>
           </ion-col>
           <ion-col size="1">
             <ion-icon *ngIf="item.icon === 'folder'" name="create" color="dark" (click)="edit($event, item)"></ion-icon>

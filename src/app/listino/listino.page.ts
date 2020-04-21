@@ -4,12 +4,13 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {ToastService} from "../core/services/toast.service";
 import {AlertService} from "../core/services/alert.service";
 import {Categoria} from "../shared/interface/categoria";
-import {Listino, ListinoRiga} from "../shared/interface/listino";
+import {Listino, ListinoRead, ListinoRiga} from "../shared/interface/listino";
 import {ModalService} from "../core/services/modal.service";
 import {ModalSearchRicettaListinoComponent} from "./modal-search-ricetta-listino.component";
 import {ModalSearchIngredienteListinoComponent} from "./modal-search-ingrediente-listino.component";
 import {ModalEditIngredienteListinoComponent} from "./modal-edit-ingrediente-listino.component";
 import {Ingrediente, IngredienteListino} from "../shared/interface/ingrediente";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'ric-listino',
@@ -76,6 +77,10 @@ export class ListinoPage implements OnInit {
         },
         error => this.gs.toast.present(error.message, 5000));
   }
+
+    print() {
+        window.open(environment.apiReportListino + "?params=" + this.listino.id + "&categoria=" + this.ricerca.categoria + "&token=" + localStorage.getItem("token"), "_blank");
+    }
 
   edit($event, riga: ListinoRiga) {
     $event.stopPropagation();
