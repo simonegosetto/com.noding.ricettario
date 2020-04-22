@@ -20,6 +20,7 @@ import {ModalSearchIngredienteListinoComponent} from "./listino/modal-search-ing
 import {ModalEditIngredienteListinoComponent} from "./listino/modal-edit-ingrediente-listino.component";
 import {ModalSearchIngredientiComponent} from "./ricetta/modal-search-ingredienti.component";
 import {SharedModule} from "./shared/shared.module";
+import {ModalArchivioFolderComponent} from "./archiviodocumenti/modal-archivio-folder.component";
 
 @NgModule({
     declarations: [
@@ -31,6 +32,7 @@ import {SharedModule} from "./shared/shared.module";
         ModalSearchIngredienteListinoComponent,
         ModalEditIngredienteListinoComponent,
         ModalSearchIngredientiComponent,
+        ModalArchivioFolderComponent,
     ],
     entryComponents: [
         ModalSearchRicettaComponent,
@@ -40,6 +42,7 @@ import {SharedModule} from "./shared/shared.module";
         ModalSearchIngredienteListinoComponent,
         ModalEditIngredienteListinoComponent,
         ModalSearchIngredientiComponent,
+        ModalArchivioFolderComponent,
     ],
     imports: [
         BrowserModule,
@@ -58,6 +61,7 @@ import {SharedModule} from "./shared/shared.module";
         ModalSearchIngredienteListinoComponent,
         ModalEditIngredienteListinoComponent,
         ModalSearchIngredientiComponent,
+        ModalArchivioFolderComponent,
     ],
     providers: [
         StatusBar,

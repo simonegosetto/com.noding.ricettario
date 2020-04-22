@@ -1,12 +1,12 @@
-import { Injectable } from '@angular/core';
-import { HttpHeaders, HttpErrorResponse, HttpClient } from '@angular/common/http';
-import { throwError } from 'rxjs';
-import { Observable } from 'rxjs/internal/Observable';
+import {Injectable} from '@angular/core';
+import {HttpHeaders, HttpErrorResponse, HttpClient} from '@angular/common/http';
+import {throwError} from 'rxjs';
+import {Observable} from 'rxjs/internal/Observable';
 import {catchError, map, tap} from 'rxjs/operators';
-import { Platform } from '@ionic/angular';
-import { LoadingService } from './loading.service';
-import { ToastService } from './toast.service';
-import { Device } from '@ionic-native/device/ngx';
+import {Platform} from '@ionic/angular';
+import {LoadingService} from './loading.service';
+import {ToastService} from './toast.service';
+import {Device} from '@ionic-native/device/ngx';
 import {environment} from "../../../environments/environment";
 import {IGatewayResponse} from "../interfaces/gateway-response";
 
@@ -20,7 +20,8 @@ export class GlobalService {
                 public loading: LoadingService,
                 public toast: ToastService,
                 public device: Device
-    ) { }
+    ) {
+    }
 
     public online = false;
     public http_json_headers = new HttpHeaders().set('content-type', 'application/x-www-form-urlencoded'); // .set('content-type', 'application/json').set('Access-Control-Allow-Origin', '*');
@@ -35,7 +36,9 @@ export class GlobalService {
     //////////////////////// GLOBAL FUNCTION /////////////////////////
 
     public callGateway(process, params, loader = true, gtw = '', loaderDuration = 2000): Observable<IGatewayResponse> {
-        if (loader) { this.loading.present(loaderDuration); }
+        if (loader) {
+            this.loading.present(loaderDuration);
+        }
         return this._http.post<IGatewayResponse>(
             environment.apiDBox + '?gest=2',
             {
@@ -49,9 +52,11 @@ export class GlobalService {
             }
         ).pipe(
             tap(data => {
-                if (data.error === 'Invalid token 4 !') {
-                    this.logout();
-                    window.location.reload();
+                if (data.error && data.error.toLowerCase().indexOf('token') > -1) {
+                    if (localStorage.getItem('token')) {
+                        this.logout();
+                        window.location.reload();
+                    }
                     return data;
                 }
             }),
@@ -61,7 +66,9 @@ export class GlobalService {
 
 
     public callDropbox(action, loader = true, loaderDuration = 2000): Observable<any> {
-        if (loader) { this.loading.present(loaderDuration); }
+        if (loader) {
+            this.loading.present(loaderDuration);
+        }
         return this._http.post<IGatewayResponse>(
             environment.apiDropbox + '?gest=2',
             {
@@ -109,24 +116,24 @@ export class GlobalService {
     }
 
     public logout(): boolean {
-      this.user = undefined;
-      this.logged = false;
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      return true;
+        this.user = undefined;
+        this.logged = false;
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return true;
     }
 
     //////////////////////// UTILITY /////////////////////////
 
     public normalizeNumberString(string) {
         string = this.isnull(string);
-        return string.toString().replace('"','').replace('"','');
+        return string.toString().replace('"', '').replace('"', '');
     }
 
     public focusInput(input) {
         setTimeout(() => {
             input.setFocus();
-        },150);
+        }, 150);
 
     }
 
@@ -144,25 +151,25 @@ export class GlobalService {
         const networkState = navigator['connection'].type || navigator['connection'].effectiveType;
 
         const Connection = window['Connection'] || {
-            'CELL'     : 'cellular',
-            'CELL_2G'  : '2g',
-            'CELL_3G'  : '3g',
-            'CELL_4G'  : '4g',
-            'ETHERNET' : 'ethernet',
-            'NONE'     : 'none',
-            'UNKNOWN'  : 'unknown',
-            'WIFI'     : 'wif'
+            'CELL': 'cellular',
+            'CELL_2G': '2g',
+            'CELL_3G': '3g',
+            'CELL_4G': '4g',
+            'ETHERNET': 'ethernet',
+            'NONE': 'none',
+            'UNKNOWN': 'unknown',
+            'WIFI': 'wif'
         };
 
         const states = {};
-        states[Connection.UNKNOWN]  = 'Unknown connection';
+        states[Connection.UNKNOWN] = 'Unknown connection';
         states[Connection.ETHERNET] = 'Ethernet connection';
-        states[Connection.WIFI]     = 'WiFi connection';
-        states[Connection.CELL_2G]  = 'Cell 2G connection';
-        states[Connection.CELL_3G]  = 'Cell 3G connection';
-        states[Connection.CELL_4G]  = 'Cell 4G connection';
-        states[Connection.CELL]     = 'Cell generic connection';
-        states[Connection.NONE]     = 'No network connection';
+        states[Connection.WIFI] = 'WiFi connection';
+        states[Connection.CELL_2G] = 'Cell 2G connection';
+        states[Connection.CELL_3G] = 'Cell 3G connection';
+        states[Connection.CELL_4G] = 'Cell 4G connection';
+        states[Connection.CELL] = 'Cell generic connection';
+        states[Connection.NONE] = 'No network connection';
 
         this.online = !(networkState === Connection.NONE);
         // this.presentToast('Connection type: ' + states[networkState], 5000);
@@ -202,7 +209,6 @@ export class GlobalService {
     }
 
     //////////////////////// DATA /////////////////////////
-
 
 
     //////////////////////// ERROR ENDLER /////////////////////////

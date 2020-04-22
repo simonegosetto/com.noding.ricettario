@@ -8,6 +8,7 @@ import {ArchivioFile} from "../shared/interface/archivio-file";
 import {ModalDescrizioneComponent} from "../shared/modal/modal-descrizione.component";
 import {ModalConfig} from "../core/interfaces/modal-config";
 import {DropboxService} from "../core/services/dropbox.service";
+import {ModalArchivioFolderComponent} from "./modal-archivio-folder.component";
 
 @Component({
     selector: 'ric-archiviodocumenti',
@@ -91,7 +92,6 @@ export class ArchiviodocumentiPage implements OnInit {
         });
     }
 
-    // TODO
     deleteFolder($event, fileFolder: ArchivioFile) {
         $event.stopPropagation();
         const alertElimina = this._alert.confirm('Attenzione', `Confermi di eliminare della cartella "${fileFolder.descrizione}" e TUTTO quello che contiene ?`);
@@ -145,9 +145,22 @@ export class ArchiviodocumentiPage implements OnInit {
         });
     }
 
-    move($event, listino: ArchivioFile) {
+    move($event, file: ArchivioFile) {
         $event.stopPropagation();
-        console.log(listino);
+        const modalFolder = this._modal.present(ModalArchivioFolderComponent, {});
+        modalFolder.then(result => {
+            if (result.data) {
+                this.gs.callGateway('wVp8CePj9GWqbn4+9PSPrfcnBgJy5X6770MUTmuu8VEtWy0tSVYtWy2811ekJtlErGybjvOQXCisQNJvW7NZXC65kgNNldAyog@@',
+                    `${file.arc_codi},${result.data.id}`).subscribe(data => {
+                    if (data.hasOwnProperty('error')) {
+                        this.gs.toast.present(data.error);
+                        return;
+                    }
+                    this.estrazioneFileFolder();
+                    this.gs.loading.dismiss();
+                }, error => this.gs.toast.present(error.message));
+            }
+        });
     }
 
     updateFolderName(folder: ArchivioFile) {
@@ -159,8 +172,7 @@ export class ArchiviodocumentiPage implements OnInit {
                 }
                 this.estrazioneFileFolder();
                 this.gs.loading.dismiss();
-            },
-            error => this.gs.toast.present(error.message));
+            }, error => this.gs.toast.present(error.message));
     }
 
     open(folder: ArchivioFile) {

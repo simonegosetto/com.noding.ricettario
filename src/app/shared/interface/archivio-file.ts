@@ -14,3 +14,8 @@ export interface ArchivioFile {
     icon?: string;
     id_storage?: string;
 }
+
+export interface ArchivioFolder {
+    id: number;
+    path: string;
+}
