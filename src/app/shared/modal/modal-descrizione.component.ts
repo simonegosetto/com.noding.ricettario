@@ -21,6 +21,13 @@ import {ModalConfig} from "../../core/interfaces/modal-config";
                 <ion-label position="fixed">Aliquota (%)</ion-label>
                 <ion-input type="number" *ngIf="modalConfig?.data" [(ngModel)]="modalConfig.data.aliquota" max="100" ></ion-input>
             </ion-item>
+            <ion-item *ngIf="modalConfig?.data?.tipo !== undefined">
+                <ion-label position="fixed">Tipo</ion-label>
+                <select *ngIf="modalConfig?.data" name="tipo" class="center" style="width: 100%;padding: 8px 8px 8px 0;margin: 8px 8px 8px 0" [(ngModel)]="modalConfig.data.tipo" >
+                    <option value="1">Alla Carta</option>
+                    <option value="2">Eventi</option>
+                </select>
+            </ion-item>
         </ion-content>
 
         <ion-footer>

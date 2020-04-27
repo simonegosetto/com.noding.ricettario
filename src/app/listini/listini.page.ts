@@ -6,7 +6,6 @@ import {Listino, ListinoRead} from "../shared/interface/listino";
 import {ModalService} from "../core/services/modal.service";
 import {ModalConfig} from "../core/interfaces/modal-config";
 import {ModalDescrizioneComponent} from "../shared/modal/modal-descrizione.component";
-import {environment} from "../../environments/environment";
 
 @Component({
     selector: 'ric-listini',

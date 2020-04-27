@@ -47,6 +47,7 @@
           </ion-col>
           <ion-col size="3" class="ingredienti">
             <input type="number" class="ingredienti-quantity" [(ngModel)]="item.quantita" placeholder="quantità" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)">g
+            <input type="checkbox" style="max-width: 30px" [(ngModel)]="item.escludi_peso" (ngModelChange)="ricettaRigaUpdate(item)">
           </ion-col>
           <ion-col size="2" class="ingredienti">{{item.perc | number:'1.1-2'}}%</ion-col>
           <ion-col size="1"><span style="cursor: pointer" (click)="ricettaRigaRemove(item)">X</span></ion-col>

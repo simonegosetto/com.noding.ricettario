@@ -92,7 +92,7 @@ export class ListinoPage implements OnInit {
     });
   }
 
-  deleteRiga($event, riga: ListinoRiga) {
+  delete($event, riga: ListinoRiga) {
     $event.stopPropagation();
     const alertElimina = this._alert.confirm('Attenzione', `Confermi di eliminare l'ingrediente ${riga.descrizione} ?`);
     alertElimina.then(result => {

@@ -5,10 +5,11 @@ select lr.listinoid,
 	   i.descrizione,
 	   ri.cod_p as ricettaid,
 	   ifnull(ri.quantita,0) as peso,
+	   case when ri.escludi_peso = 1 then 0 else ifnull(ri.quantita,0) end as peso_conteggio,
 	   case when ifnull(lr.scarto,0) = 0 then ifnull(cast(ri.quantita * lr.prezzo / lr.grammatura as decimal(10,2)),0)
 	        else ifnull(cast(ri.quantita * lr.prezzo / (lr.grammatura - (lr.grammatura/100*lr.scarto)) as decimal(10,2)),0)
 	   end as foodcost,
-	   ifnull(cast(ri.quantita * lr.kcal / 100 as decimal(10,2)),0) as kcal,
+	   case when ri.escludi_peso = 1 then 0 else ifnull(cast(ri.quantita * lr.kcal / 100 as decimal(10,2)),0) end as kcal,
 	   ri.ordinamento
 from listini_righe lr
 inner join ricette_ingredienti ri on lr.ingredienteid = ri.ingredienteid
@@ -22,8 +23,9 @@ select vi.listinoid,
        r.nome_ric as descrizione,
        ri.cod_p as ricettaid,
        ri.quantita as peso,
+       case when ri.escludi_peso = 1 then 0 else ifnull(ri.quantita,0) end as peso_conteggio,
        ifnull(cast(ri.quantita * sum(vi.foodcost) / ifnull(nullif(r.peso_effettivo,0),sum(vi.peso)) as decimal(10,2)),0) as foodcost,
-       ifnull(cast(ri.quantita * sum(vi.kcal) / sum(vi.peso) as decimal(10,2)),0) as kcal,
+       case when ri.escludi_peso = 1 then 0 else ifnull(cast(ri.quantita * sum(vi.kcal) / sum(vi.peso) as decimal(10,2)),0) end as kcal,
        ifnull(ri.ordinamento,0) as ordinamento
 from view_ingredienti_foodcost vi
 inner join ricette r on vi.ricettaid = r.cod_p
@@ -39,9 +41,9 @@ group by vi.listinoid,
 
 alter view view_ingredienti_foodcost_full
 as
-select listinoid,ricettaid,peso,foodcost,kcal from view_ingredienti_foodcost
+select listinoid,ricettaid,peso,peso_conteggio,foodcost,kcal from view_ingredienti_foodcost
 union all
-select listinoid,ricettaid,peso,foodcost,kcal from view_ingredienti_ricette_foodcost
+select listinoid,ricettaid,peso,peso_conteggio,foodcost,kcal from view_ingredienti_ricette_foodcost
 
 
 
@@ -49,7 +51,7 @@ alter view view_ricette_foodcost
 as
 select f.listinoid,
        f.ricettaid,
-       sum(f.peso) as peso,
+       sum(f.peso_conteggio) as peso,
        sum(f.foodcost) as foodcost,
        sum(f.kcal) as kcal,
        ifnull(nullif(r.peso_effettivo,0),sum(f.peso)) as peso_effettivo,

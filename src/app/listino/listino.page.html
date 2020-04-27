@@ -49,7 +49,7 @@
             <ion-icon name="create" color="dark" (click)="edit($event, riga)"></ion-icon>
           </ion-col>
           <ion-col size="1" style="cursor: pointer">
-            <ion-icon name="trash" color="danger" (click)="deleteRiga($event, riga)"></ion-icon>
+            <ion-icon name="trash" color="danger" (click)="delete($event, riga)"></ion-icon>
           </ion-col>
           <span *ngIf="riga.infoVisible && riga.categoriaid"><ion-badge color="secondary">{{riga.categorianome}}</ion-badge></span><p></p>
           <span *ngIf="riga.infoVisible && riga.provenienza" style="font-style: italic;"><strong>Provenienza:</strong> {{riga.provenienza}}</span>

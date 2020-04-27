@@ -199,7 +199,7 @@ export class RicettaPage implements OnInit {
     ricettaRigaUpdate(ingrediente: any) {
         if (this.gs.isnull(ingrediente.nome) === '') return;
         this.gs.callGateway('6zQerYGHbHjqJ2mcZ0Cq7s6u4WvD9BUcZNrwCU6lIs1nWPVmS5uQHPSLCfdDxsBrKqIfnpEzfVTKbrHits8xAi1bLS1JVi1bLdVYqY1PE/RxFVIKfNtzGacSHOvQPRefO+sHYpJEM1Vb',
-            `${ingrediente.id},'${ingrediente.nome}',${this.gs.isnull(ingrediente.quantita, 0)},${ingrediente.ricettaid},${this.ricetta.cod_p}`).subscribe(data => {
+            `${ingrediente.id},'${ingrediente.nome}',${this.gs.isnull(ingrediente.quantita, 0)},${ingrediente.ricettaid},${this.ricetta.cod_p},${ingrediente.escludi_peso ? '1' : '0'}`).subscribe(data => {
                 if (data.hasOwnProperty('error')) {
                     this.gs.toast.present(data.error);
                     return;

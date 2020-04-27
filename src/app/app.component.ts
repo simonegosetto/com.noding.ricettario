@@ -45,6 +45,11 @@ export class AppComponent {
       icon: 'list'
     },
     {
+      title: 'Menù',
+      url: '/menus',
+      icon: 'menu'
+    },
+    {
       title: 'Dizionario Ingredienti',
       url: '/foodcost',
       icon: 'book'
