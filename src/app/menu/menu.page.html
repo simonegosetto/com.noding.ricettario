@@ -1,0 +1,30 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button></ion-back-button>
+        </ion-buttons>
+        <ion-title class="ion-text-center">Dettaglio Menù</ion-title>
+        <ion-buttons slot="end">
+            <ion-button (click)="print()">
+                <ion-icon style="font-size: 25px" name="print"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-row class="ion-padding-top">
+        <ion-col class="ion-text-center">
+            <h2>{{menu?.descrizione}}</h2>
+        </ion-col>
+        <ion-col size="4">
+            <select name="tipo" class="center" style="width: 250px;padding: 8px 8px 8px 0;margin: 8px 8px 8px 0" [(ngModel)]="listinoID" >
+                <option *ngFor="let listino of listiniList" [ngValue]="listino.id">{{listino.descrizione}}</option>
+            </select>
+        </ion-col>
+    </ion-row>
+    <br/>
+
+    <ric-menu-alla-carta *ngIf="menu?.tipo === 1" [menuid]="menu?.id" [listinoid]="listinoID"></ric-menu-alla-carta>
+
+</ion-content>

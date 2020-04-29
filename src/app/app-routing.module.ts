@@ -24,6 +24,7 @@ const routes: Routes = [
   { path: 'listino/:id', loadChildren: () => import('./listino/listino.module').then(m => m.ListinoPageModule), canActivate: [AuthGuard] },
 
   { path: 'menus', loadChildren: () => import('./menus/menus.module').then( m => m.MenusPageModule), canActivate: [AuthGuard] },
+  { path: 'menu/:id', loadChildren: () => import('./menu/menu.module').then( m => m.MenuPageModule), canActivate: [AuthGuard] },
 ];
 
 @NgModule({

@@ -21,6 +21,7 @@ import {ModalEditIngredienteListinoComponent} from "./listino/modal-edit-ingredi
 import {ModalSearchIngredientiComponent} from "./ricetta/modal-search-ingredienti.component";
 import {SharedModule} from "./shared/shared.module";
 import {ModalArchivioFolderComponent} from "./archiviodocumenti/modal-archivio-folder.component";
+import {ModalSearchRicettaMenuComponent} from "./menu/modal-search-ricetta-menu.component";
 
 @NgModule({
     declarations: [
@@ -33,6 +34,7 @@ import {ModalArchivioFolderComponent} from "./archiviodocumenti/modal-archivio-f
         ModalEditIngredienteListinoComponent,
         ModalSearchIngredientiComponent,
         ModalArchivioFolderComponent,
+        ModalSearchRicettaMenuComponent,
     ],
     entryComponents: [
         ModalSearchRicettaComponent,
@@ -43,6 +45,7 @@ import {ModalArchivioFolderComponent} from "./archiviodocumenti/modal-archivio-f
         ModalEditIngredienteListinoComponent,
         ModalSearchIngredientiComponent,
         ModalArchivioFolderComponent,
+        ModalSearchRicettaMenuComponent,
     ],
     imports: [
         BrowserModule,
@@ -62,6 +65,7 @@ import {ModalArchivioFolderComponent} from "./archiviodocumenti/modal-archivio-f
         ModalEditIngredienteListinoComponent,
         ModalSearchIngredientiComponent,
         ModalArchivioFolderComponent,
+        ModalSearchRicettaMenuComponent,
     ],
     providers: [
         StatusBar,

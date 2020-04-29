@@ -48,12 +48,8 @@ export class ModalDescrizioneComponent implements AfterViewInit {
     constructor(
         public modal: ModalService,
         private _params: NavParams,
-    ) {
-    }
+    ) { }
 
-    //
-    // Public
-    //
     public modalConfig: ModalConfig;
 
     ngAfterViewInit() {

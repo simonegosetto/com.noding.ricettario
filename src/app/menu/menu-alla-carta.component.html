@@ -1,0 +1,34 @@
+<ion-card>
+    <ion-card-content>
+        <ion-row>
+            <ion-col size="8" >
+                <ion-button (click)="searchRicetta()">
+                    Ricette<ion-icon name="search" style="cursor: pointer"></ion-icon>
+                </ion-button>
+                {{menuRiga?.nome_ric}}
+            </ion-col>
+            <ion-col size="2" class="center">
+                <select [(ngModel)]="menuRiga.menucategoriaid" style="width: 100%">
+                    <option *ngFor="let categoria of categorieList"
+                            [ngValue]="categoria.id">{{categoria.descrizione}}</option>
+                </select>
+            </ion-col>
+            <ion-col size="2" class="ion-text-right"><ion-button (click)="save()">Aggiungi</ion-button></ion-col>
+        </ion-row>
+    </ion-card-content>
+</ion-card>
+
+<ion-list>
+    <ion-card *ngFor="let riga of righeList" style="cursor: pointer" >
+        <ion-card-content *ngIf="riga.tipo === 1" style="background-color: #c0bdbd">
+            <ion-row><ion-col class="ion-text-center"><h2>{{riga.categoria}}</h2></ion-col></ion-row>
+        </ion-card-content>
+        <ion-card-content *ngIf="riga.tipo === 2">
+            <ion-row>
+                <ion-col size="9">{{riga.descrizione}}</ion-col>
+                <ion-col size="2">{{riga.prezzo_lordo_vendita | currency:'EUR':''}}€</ion-col>
+                <ion-col size="1"><ion-icon name="trash" color="danger" (click)="delete($event, riga)" style="font-size: 25px;"></ion-icon></ion-col>
+            </ion-row>
+        </ion-card-content>
+    </ion-card>
+</ion-list>

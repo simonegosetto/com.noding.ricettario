@@ -3,10 +3,8 @@ import {Router} from "@angular/router";
 import {AlertService} from "../core/services/alert.service";
 import {GlobalService} from "../core/services/global.service";
 import {Menu, MenuRead} from "../shared/interface/menu";
-import {IngredienteRead} from "../shared/interface/ingrediente";
 import {ModalDescrizioneComponent} from "../shared/modal/modal-descrizione.component";
 import {ModalConfig} from "../core/interfaces/modal-config";
-import {Listino, ListinoRead} from "../shared/interface/listino";
 import {ModalService} from "../core/services/modal.service";
 
 
@@ -47,8 +45,7 @@ export class MenusPage implements OnInit {
             event.target.complete();
           }
           this.gs.loading.dismiss();
-        },
-        error => this.gs.toast.present(error.message, 5000));
+        }, error => this.gs.toast.present(error.message, 5000));
   }
 
   open(menu: MenuRead) {
