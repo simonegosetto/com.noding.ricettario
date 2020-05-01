@@ -60,7 +60,7 @@ export class MenuPage implements OnInit {
   }
 
   print() {
-    window.open((this.menu.tipo === 1 ? environment.apiReportMenuAllaCarta : '')
+    window.open((this.menu.tipo === 1 ? environment.apiReportMenuAllaCarta : environment.apiReportMenuEvento)
         + "?menu=" + this.menu.id
         + "&listino=" + this.listinoID
         + "&descrizione=" + encodeURIComponent(this.menu.descrizione)

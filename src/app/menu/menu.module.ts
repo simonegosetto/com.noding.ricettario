@@ -9,6 +9,7 @@ import {MenuPageRoutingModule} from './menu-routing.module';
 import {MenuPage} from './menu.page';
 import {MenuAllaCartaComponent} from "./menu-alla-carta.component";
 import {SharedModule} from "../shared/shared.module";
+import {MenuEventoComponent} from "./menu-evento.component";
 
 @NgModule({
     imports: [
@@ -21,7 +22,7 @@ import {SharedModule} from "../shared/shared.module";
     declarations: [
         MenuPage,
         MenuAllaCartaComponent,
-
+        MenuEventoComponent
     ]
 })
 export class MenuPageModule {

@@ -22,3 +22,14 @@ export interface MenuRigaSearch extends MenuRiga {
     categoria: string;
     prezzo_lordo_vendita: number;
 }
+
+export interface MenuTotali {
+    foodcost: number;
+    netto: number;
+    iva: number;
+    lordo: number;
+    foodcost_tot: number;
+    netto_tot: number;
+    iva_tot: number;
+    lordo_tot: number;
+}

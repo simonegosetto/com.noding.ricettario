@@ -9,5 +9,6 @@ export const environment = {
   apiReportSchedaTecnica: 'https://riccardovalore.com/BackEnd/ReportService/FD_SchedaTecnicaPrinter.php',
   apiReportListino: 'https://riccardovalore.com/BackEnd/ReportService/FD_ReportListino.php',
   apiReportMenuAllaCarta: 'https://riccardovalore.com/BackEnd/ReportService/FD_ReportMenuAllaCarta.php',
+  apiReportMenuEvento: 'https://riccardovalore.com/BackEnd/ReportService/FD_ReportMenuEvento.php',
   TOKEN: '8F39D289C2D21ABA1D95845FF5F26BE1'
 };
