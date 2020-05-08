@@ -8,6 +8,7 @@
       <ion-button (click)="print()"><ion-icon name="print" title="Stampa"></ion-icon></ion-button>
       <ion-button *ngIf="gs.isDesktop()" (click)="nuovoFromIngrediente()">Ing<ion-icon name="add-circle-outline" title="Aggiungi Ingrediente"></ion-icon></ion-button>
       <ion-button *ngIf="gs.isDesktop()" (click)="nuovoFromSchedaTecnica()">ST<ion-icon name="add-circle-outline" title="Aggiungi Scheda Tecnica"></ion-icon></ion-button>
+      <ion-button *ngIf="gs.isDesktop()" (click)="nuovoFromMenu()">Menù<ion-icon name="add-circle-outline" title="Aggiungi Ingrediente"></ion-icon></ion-button>
     </ion-buttons>
   </ion-toolbar>
   <ion-row>

@@ -13,15 +13,16 @@
 </ion-card>
 
 <ion-list>
-  <ion-card *ngFor="let riga of righeList" style="cursor: pointer" >
-    <ion-card-content>
-      <ion-row>
-        <ion-col size="9">{{riga.descrizione}}</ion-col>
-        <ion-col size="2">{{riga.prezzo_lordo_vendita | currency:'EUR':''}}€</ion-col>
+  <ion-reorder-group [disabled]="false" (ionItemReorder)="updateRicetteOrdinamento($event)">
+    <ion-item *ngFor="let riga of righeList" style="cursor: pointer" >
+        <ion-reorder slot="start"></ion-reorder>
+        <ion-col size="11">
+          <span (click)="this.onRicettaClick.emit(riga.ricettaid)">{{riga.descrizione}}</span>
+        </ion-col>
+        <!--<ion-col size="2">{{riga.prezzo_lordo_vendita | currency:'EUR':''}}€</ion-col>-->
         <ion-col size="1"><ion-icon name="trash" color="danger" (click)="delete($event, riga)" style="font-size: 25px;"></ion-icon></ion-col>
-      </ion-row>
-    </ion-card-content>
-  </ion-card>
+    </ion-item>
+  </ion-reorder-group>
 </ion-list>
 
 <ion-card>
@@ -39,10 +40,10 @@
 <ion-card>
   <ion-item>
     <ion-col size="4" ></ion-col>
-    <ion-col size="2" class="ion-text-center" >Costo</ion-col>
-    <ion-col size="2" class="ion-text-center" >Prezzo Netto</ion-col>
-    <ion-col size="2" class="ion-text-center" >IVA</ion-col>
-    <ion-col size="2" class="ion-text-center" >Prezzo Lordo</ion-col>
+    <ion-col size="2" class="ion-text-right" >Costo</ion-col>
+    <ion-col size="2" class="ion-text-right" >Prezzo Netto</ion-col>
+    <ion-col size="2" class="ion-text-right" >IVA</ion-col>
+    <ion-col size="2" class="ion-text-right" >Prezzo Lordo</ion-col>
   </ion-item>
   <ion-item>
     <ion-col size="4" >Coperto</ion-col>
