@@ -53,6 +53,7 @@ export class GlobalService {
         ).pipe(
             tap(data => {
                 if (data.error && data.error.toLowerCase().indexOf('token') > -1) {
+                    data.error = 'Sessione scaduta ! Rifare l\'accesso ';
                     if (localStorage.getItem('token')) {
                         this.logout();
                         window.location.reload();

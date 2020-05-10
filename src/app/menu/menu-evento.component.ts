@@ -67,6 +67,37 @@ export class MenuEventoComponent implements AfterViewInit {
         }, error => this.gs.toast.present(error.message));
     }
 
+    insertSeparator($event, riga: MenuRigaSearch) {
+        $event.stopPropagation();
+        this.gs.callGateway('nvNvQc1GDrC4lRSoWH69eswNyldEoanRYJv4G/68vZMtWy0tSVYtWy0Y/+aKGhSOEdnrEoo8wv9Rl57gUsu4PSBzUN36HmUgBQ@@',
+            `${riga.id},${this.menu.id}`).subscribe(data => {
+            if (data.hasOwnProperty('error')) {
+                this.gs.toast.present(data.error);
+                return;
+            }
+            this._estrazione();
+            this.gs.loading.dismiss();
+        },error => this.gs.toast.present(error.message, 5000));
+    }
+
+    deleteSeparator($event, riga: MenuRigaSearch) {
+        $event.stopPropagation();
+        const alertElimina = this._alert.confirm('Attenzione', `Confermi di eliminare il separatore ?`);
+        alertElimina.then(result => {
+            if (result.role === 'OK') {
+                this.gs.callGateway('TSjQ4Ux8su/QtywQgqrzwWVeCYI2bozUYh64WUtMaYQtWy0tSVYtWy1fw6mgUpkDGe+PLDd01VCvb2K7SCePco+lVTA+rbxubg@@', riga.id).subscribe(data => {
+                    if (data.hasOwnProperty('error')) {
+                        this.gs.toast.present(data.error);
+                        return;
+                    }
+                    this._estrazione();
+                    this.gs.loading.dismiss();
+                },error => this.gs.toast.present(error.message, 5000));
+            }
+        });
+
+    }
+
     delete($event, riga: MenuRigaSearch) {
         $event.stopPropagation();
         const alertElimina = this._alert.confirm('Attenzione', `Confermi di eliminare il piatto ${riga.descrizione} ?`);
@@ -79,8 +110,7 @@ export class MenuEventoComponent implements AfterViewInit {
                         }
                         this._estrazione();
                         this.gs.loading.dismiss();
-                    },
-                    error => this.gs.toast.present(error.message, 5000));
+                    },error => this.gs.toast.present(error.message, 5000));
             }
         });
     }

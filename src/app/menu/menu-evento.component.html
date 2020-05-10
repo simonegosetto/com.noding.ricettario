@@ -15,12 +15,13 @@
 <ion-list>
   <ion-reorder-group [disabled]="false" (ionItemReorder)="updateRicetteOrdinamento($event)">
     <ion-item *ngFor="let riga of righeList" style="cursor: pointer" >
-        <ion-reorder slot="start"></ion-reorder>
-        <ion-col size="11">
-          <span (click)="this.onRicettaClick.emit(riga.ricettaid)">{{riga.descrizione}}</span>
-        </ion-col>
-        <!--<ion-col size="2">{{riga.prezzo_lordo_vendita | currency:'EUR':''}}€</ion-col>-->
-        <ion-col size="1"><ion-icon name="trash" color="danger" (click)="delete($event, riga)" style="font-size: 25px;"></ion-icon></ion-col>
+      <ion-reorder slot="start" *ngIf="riga.tipo === 1"></ion-reorder>
+      <ion-col size="10" *ngIf="riga.tipo === 1"><span (click)="this.onRicettaClick.emit(riga.ricettaid)">{{riga.descrizione}}</span></ion-col>
+      <ion-col size="11" *ngIf="riga.tipo === 2" class="ion-text-center">==============================================</ion-col>
+      <!--<ion-col size="2">{{riga.prezzo_lordo_vendita | currency:'EUR':''}}€</ion-col>-->
+      <ion-col size="1" *ngIf="riga.tipo === 1"><ion-icon name="arrow-round-down" (click)="insertSeparator($event, riga)" style="font-size: 25px;"></ion-icon></ion-col>
+      <ion-col size="1" *ngIf="riga.tipo === 1"><ion-icon name="trash" color="danger" (click)="delete($event, riga)" style="font-size: 25px;"></ion-icon></ion-col>
+      <ion-col size="1" *ngIf="riga.tipo === 2" ><ion-icon name="trash" color="danger" (click)="deleteSeparator($event, riga)" style="font-size: 25px;padding-left: 5px "></ion-icon></ion-col>
     </ion-item>
   </ion-reorder-group>
 </ion-list>

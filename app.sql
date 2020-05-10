@@ -33,7 +33,7 @@ select f.listinoid,
        ifnull(r.prezzo_vendita,0) as prezzo_lordo_vendita,
        case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(sum(f.foodcost) / (ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100))) * 100 as decimal(10,2)) end as ratio,
        case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) end as prezzo_netto_vendita,
-       case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) - sum(f.foodcost) end as margine_netto
+       cast(case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) - sum(f.foodcost) end as decimal(10,2)) as margine_netto
 from ricette r
 inner join view_ingredienti_foodcost f on r.cod_p = f.ricettaid
 inner join listini l on f.listinoid = l.id
@@ -43,38 +43,140 @@ group by f.listinoid,
 
 
 
-alter view view_ingredienti_ricette_foodcost
+alter view view_ricette_foodcost_lvl2
 as
-select vi.listinoid,
-       vi.ricettaid as ingredienteid,
-       r.nome_ric as descrizione,
-       ri.cod_p as ricettaid,
-       ri.quantita as peso,
-       case when ri.escludi_peso = 1 then 0 else ifnull(ri.quantita,0) end as peso_conteggio,
-       ifnull(cast(ri.quantita * sum(vi.foodcost) / ifnull(nullif(r.peso_effettivo,0),sum(vi.peso)) as decimal(10,2)),0) as foodcost,
-       case when ri.escludi_peso = 1 then 0 else ifnull(cast(ri.quantita * sum(vi.kcal) / sum(vi.peso) as decimal(10,2)),0) end as kcal,
-       ifnull(ri.ordinamento,0) as ordinamento
-from view_ingredienti_foodcost vi
-inner join ricette r on vi.ricettaid = r.cod_p
-inner join ricette_ingredienti ri on vi.ricettaid = ri.ricettaid
-group by vi.listinoid,
-         vi.ricettaid,
-         r.nome_ric,
-         ri.quantita,
-         ri.cod_p,
-         ifnull(ri.ordinamento,0)
+select ifnull(i.listinoid,l1.listinoid) as listinoid,
+       r.cod_p as ricettaid,
+       sum(ri.quantita) as peso,
+       cast(sum(ifnull(i.foodcost,l1.foodcost * ri.quantita / l1.peso)) as decimal(10,2)) as foodcost,
+       cast(sum(ifnull(i.kcal, l1.kcal * ri.quantita / l1.peso)) as decimal(10,2)) as kcal,
+       cast(ifnull(nullif(r.peso_effettivo,0),sum(ri.quantita)) as decimal(10,2)) as peso_effettivo,
+       ifnull(r.prezzo_vendita,0) as prezzo_lordo_vendita,
+       case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(
+	   sum(ifnull(i.foodcost,l1.foodcost * ri.quantita / l1.peso))
+	   / (ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100))) * 100 as decimal(10,2)) end as ratio,
+       case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) end as prezzo_netto_vendita,
+       cast(case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) -
+	   sum(ifnull(i.foodcost,l1.foodcost * ri.quantita / l1.peso))
+	   end as decimal(10,2)) as margine_netto
+from ricette r
+inner join view_ricette_ingredienti_distinct ri on r.cod_p = ri.cod_p
+left join view_ingredienti_foodcost i on r.cod_p = i.ricettaid and ri.ingredienteid = i.ingredienteid
+left join view_ricette_foodcost_lvl1 l1 on ri.ricettaid = l1.ricettaid
+inner join listini l on ifnull(i.listinoid,l1.listinoid) = l.id
+where r.livello = 2
+group by ifnull(i.listinoid,l1.listinoid),
+         r.cod_p ,
+		 ifnull(r.prezzo_vendita,0) ,
+		 ifnull(l.aliquota,0)
 
 
 
-alter view view_ingredienti_foodcost_full
+alter view view_ricette_foodcost_lvl3
 as
-select listinoid,ricettaid,peso,peso_conteggio,foodcost,kcal from view_ingredienti_foodcost
+select coalesce(i.listinoid,l1.listinoid,l2.listinoid) as listinoid,
+       r.cod_p as ricettaid,
+       sum(ri.quantita) as peso,
+       cast(sum(coalesce(i.foodcost,l1.foodcost * ri.quantita / l1.peso,l2.foodcost * ri.quantita / l2.peso)) as decimal(10,2)) as foodcost,
+       cast(sum(coalesce(i.kcal,l1.kcal * ri.quantita / l1.peso,l2.kcal * ri.quantita / l2.peso)) as decimal(10,2)) as kcal,
+       cast(ifnull(nullif(r.peso_effettivo,0),sum(ri.quantita)) as decimal(10,2)) as peso_effettivo,
+       ifnull(r.prezzo_vendita,0) as prezzo_lordo_vendita,
+       case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(
+	   sum(coalesce(i.foodcost,l1.foodcost * ri.quantita / l1.peso,l2.foodcost * ri.quantita / l2.peso))
+	   / (ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100))) * 100 as decimal(10,2)) end as ratio,
+       case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) end as prezzo_netto_vendita,
+       cast(case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) -
+	   sum(coalesce(i.foodcost,l1.foodcost * ri.quantita / l1.peso,l2.foodcost * ri.quantita / l2.peso))
+	   end as decimal(10,2)) as margine_netto
+from ricette r
+inner join view_ricette_ingredienti_distinct ri on r.cod_p = ri.cod_p
+left join view_ingredienti_foodcost i on r.cod_p = i.ricettaid and ri.ingredienteid = i.ingredienteid
+left join view_ricette_foodcost_lvl1 l1 on ri.ricettaid = l1.ricettaid
+left join view_ricette_foodcost_lvl2 l2 on ri.ricettaid = l2.ricettaid
+inner join listini l on coalesce(i.listinoid,l1.listinoid,l2.listinoid) = l.id
+where r.livello = 3
+group by coalesce(i.listinoid,l1.listinoid,l2.listinoid),
+         r.cod_p ,
+		 ifnull(r.prezzo_vendita,0) ,
+		 ifnull(l.aliquota,0)
 
+
+
+alter view view_ricette_foodcost_lvl4
+as
+select coalesce(i.listinoid,l1.listinoid,l2.listinoid,l3.listinoid) as listinoid,
+       r.cod_p as ricettaid,
+       sum(ri.quantita) as peso,
+       cast(sum(coalesce(i.foodcost,l1.foodcost * ri.quantita / l1.peso,l2.foodcost * ri.quantita / l2.peso,l3.foodcost * ri.quantita / l3.peso)) as decimal(10,2)) as foodcost,
+       cast(sum(coalesce(i.kcal,l1.kcal * ri.quantita / l1.peso,l2.kcal * ri.quantita / l2.peso,l3.kcal * ri.quantita / l3.peso)) as decimal(10,2)) as kcal,
+       cast(ifnull(nullif(r.peso_effettivo,0),sum(ri.quantita)) as decimal(10,2)) as peso_effettivo,
+       ifnull(r.prezzo_vendita,0) as prezzo_lordo_vendita,
+       case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(
+	   sum(coalesce(i.foodcost,l1.foodcost * ri.quantita / l1.peso,l2.foodcost * ri.quantita / l2.peso,l3.foodcost * ri.quantita / l3.peso))
+	   / (ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100))) * 100 as decimal(10,2)) end as ratio,
+       case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) end as prezzo_netto_vendita,
+       cast(case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) -
+	   sum(coalesce(i.foodcost,l1.foodcost * ri.quantita / l1.peso,l2.foodcost * ri.quantita / l2.peso,l3.foodcost * ri.quantita / l3.peso))
+	   end as decimal(10,2)) as margine_netto
+from ricette r
+inner join view_ricette_ingredienti_distinct ri on r.cod_p = ri.cod_p
+left join view_ingredienti_foodcost i on r.cod_p = i.ricettaid and ri.ingredienteid = i.ingredienteid
+left join view_ricette_foodcost_lvl1 l1 on ri.ricettaid = l1.ricettaid
+left join view_ricette_foodcost_lvl2 l2 on ri.ricettaid = l2.ricettaid
+left join view_ricette_foodcost_lvl3 l3 on ri.ricettaid = l3.ricettaid
+inner join listini l on coalesce(i.listinoid,l1.listinoid,l2.listinoid,l3.listinoid) = l.id
+where r.livello = 4
+group by coalesce(i.listinoid,l1.listinoid,l2.listinoid,l3.listinoid),
+         r.cod_p ,
+		 ifnull(r.prezzo_vendita,0) ,
+		 ifnull(l.aliquota,0)
+
+
+
+alter view view_ricette_foodcost_lvl5
+as
+select coalesce(i.listinoid,l1.listinoid,l2.listinoid,l3.listinoid,l4.listinoid) as listinoid,
+       r.cod_p as ricettaid,
+       sum(ri.quantita) as peso,
+       cast(sum(coalesce(i.foodcost,l1.foodcost * ri.quantita / l1.peso,l2.foodcost * ri.quantita / l2.peso,l3.foodcost * ri.quantita / l3.peso,l4.foodcost * ri.quantita / l4.peso)) as decimal(10,2)) as foodcost,
+       cast(sum(coalesce(i.kcal,l1.kcal * ri.quantita / l1.peso,l2.kcal * ri.quantita / l2.peso,l3.kcal * ri.quantita / l3.peso,l4.kcal * ri.quantita / l4.peso)) as decimal(10,2)) as kcal,
+       cast(ifnull(nullif(r.peso_effettivo,0),sum(ri.quantita)) as decimal(10,2)) as peso_effettivo,
+       ifnull(r.prezzo_vendita,0) as prezzo_lordo_vendita,
+       case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(
+	   sum(coalesce(i.foodcost,l1.foodcost * ri.quantita / l1.peso,l2.foodcost * ri.quantita / l2.peso,l3.foodcost * ri.quantita / l3.peso,l4.foodcost * ri.quantita / l4.peso))
+	   / (ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100))) * 100 as decimal(10,2)) end as ratio,
+       case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) end as prezzo_netto_vendita,
+       cast(case when ifnull(r.prezzo_vendita,0) = 0 then 0 else cast(ifnull(r.prezzo_vendita,0)/(1 + (ifnull(l.aliquota,0) / 100)) as decimal(10,2)) -
+	   sum(coalesce(i.foodcost,l1.foodcost * ri.quantita / l1.peso,l2.foodcost * ri.quantita / l2.peso,l3.foodcost * ri.quantita / l3.peso,l4.foodcost * ri.quantita / l4.peso))
+	   end as decimal(10,2)) as margine_netto
+from ricette r
+inner join view_ricette_ingredienti_distinct ri on r.cod_p = ri.cod_p
+left join view_ingredienti_foodcost i on r.cod_p = i.ricettaid and ri.ingredienteid = i.ingredienteid
+left join view_ricette_foodcost_lvl1 l1 on ri.ricettaid = l1.ricettaid
+left join view_ricette_foodcost_lvl2 l2 on ri.ricettaid = l2.ricettaid
+left join view_ricette_foodcost_lvl3 l3 on ri.ricettaid = l3.ricettaid
+left join view_ricette_foodcost_lvl4 l4 on ri.ricettaid = l4.ricettaid
+inner join listini l on coalesce(i.listinoid,l1.listinoid,l2.listinoid,l3.listinoid,l4.listinoid) = l.id
+where r.livello = 5
+group by coalesce(i.listinoid,l1.listinoid,l2.listinoid,l3.listinoid,l4.listinoid),
+         r.cod_p ,
+		 ifnull(r.prezzo_vendita,0) ,
+		 ifnull(l.aliquota,0)
 
 
 
 alter view view_ricette_foodcost
 as
+select * from view_ricette_foodcost_lvl1
+union all
+select * from view_ricette_foodcost_lvl2
+union all
+select * from view_ricette_foodcost_lvl3
+union all
+select * from view_ricette_foodcost_lvl4
+union all
+select * from view_ricette_foodcost_lvl5
+/*
 select f.listinoid,
        f.ricettaid,
        sum(f.peso_conteggio) as peso,
@@ -90,6 +192,7 @@ inner join ricette r on f.ricettaid = r.cod_p
 inner join listini l on f.listinoid = l.id
 group by f.listinoid,
          f.ricettaid
+*/
 
 
 
@@ -108,6 +211,20 @@ select r.cod_p,
        (select count(0) from ricette_ingredienti where cod_p = r.cod_p) as numero_righe,
        (select count(0) from ricette_ingredienti where cod_p = r.cod_p and ifnull(ricettaid,0) = 0) as numero_ingredienti
 from ricette r
+
+
+alter view view_ricette_ingredienti_distinct
+as
+SELECT cod_p,
+	   ingredienteid,
+       ricettaid,
+       max(escludi_peso) as escludi_peso,
+       sum(quantita) as quantita,
+       min(ordinamento) as ordinamento
+FROM ricette_ingredienti
+group by cod_p,
+	   ingredienteid,
+       ricettaid
 
 
 
