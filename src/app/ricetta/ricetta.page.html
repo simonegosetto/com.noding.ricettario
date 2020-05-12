@@ -33,7 +33,7 @@
   <ion-row *ngIf="ricetta?.cod_p > 0">
     <ion-col>
       <h4 style="text-decoration: underline;font-style: italic;padding-left: 15px">
-        Ingredienti:
+        Ingrédients:
         <ion-badge color="primary" (click)="searchRicetta()" style="cursor: pointer">Ricette<ion-icon name="search" style="cursor: pointer" ></ion-icon></ion-badge>
         <ion-badge color="secondary" (click)="searchIngrediente()" style="cursor: pointer">Ingredienti<ion-icon name="search" style="cursor: pointer"></ion-icon></ion-badge>
       </h4>
@@ -79,7 +79,7 @@
   <br/>
   <ion-row>
     <ion-col class="ion-no-padding" style="padding-left: 15px">
-      <h4 style="text-decoration: underline;font-style: italic;padding-left: 5px">Procedimento:</h4>
+      <h4 style="text-decoration: underline;font-style: italic;padding-left: 5px">Procédé:</h4>
       <br/>
       <textarea [(ngModel)]="ricetta.procedimento" style="width: 100%;font-size: 16px;padding: 5px" rows="15" autocomplete="off"></textarea>
     </ion-col>

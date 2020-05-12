@@ -17,8 +17,8 @@
       </ion-col>
       <ion-col size="3" style="padding-left: 0;margin-left: 0">
         <select name="tipo" class="center" style="width: 100%;padding: 8px 8px 8px 0;margin: 8px 8px 8px 0" [(ngModel)]="ricerca.categoria" (ngModelChange)="getListinoRighe(null)" >
-          <option value="0">Tutte</option>
-          <option value="999">Senza Categoria</option>
+          <option value="0">Toutes</option>
+          <option value="999">Sans catégorie</option>
           <option *ngFor="let categoria of categorieList" [ngValue]="categoria.id">{{categoria.descrizione}}</option>
         </select>
       </ion-col>
