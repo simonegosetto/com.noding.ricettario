@@ -1,9 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {GlobalService} from "../core/services/global.service";
-import {ActivatedRoute, Router} from "@angular/router";
-import {Menu} from "../shared/interface/menu";
-import {environment} from "../../environments/environment";
-import {ListinoRead} from "../shared/interface/listino";
+import {GlobalService} from '../core/services/global.service';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Menu} from '../shared/interface/menu';
+import {environment} from '../../environments/environment';
+import {ListinoRead} from '../shared/interface/listino';
 
 @Component({
     selector: 'ric-menu',
@@ -49,7 +49,7 @@ export class MenuPage implements OnInit {
             error => this.gs.toast.present(error.message));
     }
 
-    getMenu() {
+    public getMenu() {
         this.gs.callGateway('K3JkUG7Hy1/chWxotpmDKn1FOCiRcA9/dx2Fu6QMRL8tWy0tSVYtWy1uvOoRTQ4JicWvhMJMzdxojl+4bSC4yeD1RFwsdpoPJg@@', `${this.menu.id}`).subscribe(data => {
                 if (data.hasOwnProperty('error')) {
                     this.gs.toast.present(data.error);
@@ -61,13 +61,13 @@ export class MenuPage implements OnInit {
             error => this.gs.toast.present(error.message));
     }
 
-    print(param: string) {
+    public print(param: string) {
         window.open((this.menu.tipo === 1 ? environment.apiReportMenuAllaCarta : environment.apiReportMenuEvento)
-            + "?menu=" + this.menu.id
-            + "&listino=" + this.listinoID
+            + '?menu=' + this.menu.id
+            + '&listino=' + this.listinoID
             + param
-            + "&descrizione=" + encodeURIComponent(this.menu.descrizione)
-            + "&token=" + localStorage.getItem("token"), "_blank");
+            + '&descrizione=' + encodeURIComponent(this.menu.descrizione)
+            + '&token=' + localStorage.getItem('token'), '_blank');
     }
 
     navToRicetta(cod_p: number) {

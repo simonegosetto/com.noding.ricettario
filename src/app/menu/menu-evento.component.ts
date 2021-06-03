@@ -1,9 +1,9 @@
 import {AfterViewInit, Component, EventEmitter, Input, Output} from '@angular/core';
-import {GlobalService} from "../core/services/global.service";
-import {ModalService} from "../core/services/modal.service";
-import {AlertService} from "../core/services/alert.service";
-import {Menu, MenuRiga, MenuRigaSearch, MenuTotali} from "../shared/interface/menu";
-import {ModalSearchRicettaMenuComponent} from "./modal-search-ricetta-menu.component";
+import {GlobalService} from '../core/services/global.service';
+import {ModalService} from '../core/services/modal.service';
+import {AlertService} from '../core/services/alert.service';
+import {Menu, MenuRiga, MenuRigaSearch, MenuTotali} from '../shared/interface/menu';
+import {ModalSearchRicettaMenuComponent} from './modal-search-ricetta-menu.component';
 
 @Component({
     selector: 'ric-menu-evento',
@@ -19,17 +19,28 @@ export class MenuEventoComponent implements AfterViewInit {
     ) {
     }
 
+    private _listinoid: number;
     @Input() menu: Menu;
-    @Input() listinoid: number;
+    @Input() // listinoid: number;
+    // tslint:disable-next-line:variable-name
+    set listinoid(_value: number) {
+        if (_value) {
+            this._listinoid = _value;
+            this._estrazione();
+        }
+    }
+    get listinoid(): number {
+        return this._listinoid;
+    }
     @Output() onRicettaClick = new EventEmitter();
     public menuRiga: MenuRiga = {} as MenuRiga;
     public righeList: MenuRigaSearch[] = [];
     public menuTotali: MenuTotali = {} as MenuTotali;
 
     ngAfterViewInit() {
-        setTimeout(() => {
+        /*setTimeout(() => {
             this._estrazione();
-        }, 10);
+        }, 10);*/
     }
 
     private _estrazione() {
@@ -77,7 +88,7 @@ export class MenuEventoComponent implements AfterViewInit {
             }
             this._estrazione();
             this.gs.loading.dismiss();
-        },error => this.gs.toast.present(error.message, 5000));
+        }, error => this.gs.toast.present(error.message, 5000));
     }
 
     deleteSeparator($event, riga: MenuRigaSearch) {
@@ -92,7 +103,7 @@ export class MenuEventoComponent implements AfterViewInit {
                     }
                     this._estrazione();
                     this.gs.loading.dismiss();
-                },error => this.gs.toast.present(error.message, 5000));
+                }, error => this.gs.toast.present(error.message, 5000));
             }
         });
 
@@ -110,7 +121,7 @@ export class MenuEventoComponent implements AfterViewInit {
                         }
                         this._estrazione();
                         this.gs.loading.dismiss();
-                    },error => this.gs.toast.present(error.message, 5000));
+                    }, error => this.gs.toast.present(error.message, 5000));
             }
         });
     }

@@ -20,8 +20,19 @@ export class MenuAllaCartaComponent implements OnInit {
     ) {
     }
 
+    private _listinoid: number;
     @Input() menuid: number;
-    @Input() listinoid: number;
+    @Input() // listinoid: number;
+    // tslint:disable-next-line:variable-name
+    set listinoid(_value: number) {
+        if (_value) {
+            this._listinoid = _value;
+            this._estrazione();
+        }
+    }
+    get listinoid(): number {
+        return this._listinoid;
+    }
     @Output() onRicettaClick = new EventEmitter();
     public menuRiga: MenuRiga = {} as MenuRiga;
     public categorieList: Categoria[] = [];
@@ -38,7 +49,6 @@ export class MenuAllaCartaComponent implements OnInit {
                     return;
                 }
                 this.categorieList = data.recordset ? [...data.recordset] : [];
-                this._estrazione();
                 this.gs.loading.dismiss();
             },
             error => this.gs.toast.present(error.message, 5000));
