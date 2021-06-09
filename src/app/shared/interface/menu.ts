@@ -21,6 +21,7 @@ export interface MenuRigaSearch extends MenuRiga {
     descrizione: string;
     categoria: string;
     prezzo_lordo_vendita: number;
+    foodcost: number;
 }
 
 export interface MenuTotali {

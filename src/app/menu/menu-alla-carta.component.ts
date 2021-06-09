@@ -1,10 +1,10 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Categoria} from "../shared/interface/categoria";
-import {GlobalService} from "../core/services/global.service";
-import {MenuRiga, MenuRigaSearch} from "../shared/interface/menu";
-import {ModalService} from "../core/services/modal.service";
-import {ModalSearchRicettaMenuComponent} from "./modal-search-ricetta-menu.component";
-import {AlertService} from "../core/services/alert.service";
+import {Categoria} from '../shared/interface/categoria';
+import {GlobalService} from '../core/services/global.service';
+import {MenuRiga, MenuRigaSearch} from '../shared/interface/menu';
+import {ModalService} from '../core/services/modal.service';
+import {ModalSearchRicettaMenuComponent} from './modal-search-ricetta-menu.component';
+import {AlertService} from '../core/services/alert.service';
 
 @Component({
     selector: 'ric-menu-alla-carta',
@@ -50,8 +50,7 @@ export class MenuAllaCartaComponent implements OnInit {
                 }
                 this.categorieList = data.recordset ? [...data.recordset] : [];
                 this.gs.loading.dismiss();
-            },
-            error => this.gs.toast.present(error.message, 5000));
+            }, error => this.gs.toast.present(error.message, 5000));
     }
 
     searchRicetta() {
@@ -66,9 +65,9 @@ export class MenuAllaCartaComponent implements OnInit {
 
     save() {
         if (
-            this.gs.isnull(this.menuRiga.menucategoriaid, 0) == 0 ||
-            this.gs.isnull(this.menuRiga.ricettaid, 0) == 0 ||
-            this.gs.isnull(this.menuid, 0) == 0
+            this.gs.isnull(this.menuRiga.menucategoriaid, 0) === 0 ||
+            this.gs.isnull(this.menuRiga.ricettaid, 0) === 0 ||
+            this.gs.isnull(this.menuid, 0) === 0
         ) {
             this.gs.toast.present('Campi obbligatori mancanti !');
             return;
@@ -86,8 +85,7 @@ export class MenuAllaCartaComponent implements OnInit {
                 this.menuRiga.id = 0;
                 this.menuRiga.menucategoriaid = 0;
                 this.gs.loading.dismiss();
-            },
-            error => this.gs.toast.present(error.message, 5000));
+            }, error => this.gs.toast.present(error.message, 5000));
     }
 
     delete($event, riga: MenuRigaSearch) {
@@ -112,7 +110,7 @@ export class MenuAllaCartaComponent implements OnInit {
         ev.detail.complete();
         console.log('sposto codice', this.righeList[ev.detail.from].id, 'da', ev.detail.from , 'a', ev.detail.to);
         this.gs.callGateway('wQgcfZjoo4BsKUwn1t0+NbzoCkWck6mkuw/a9KY/nXpVZXHo0QuYVoGlQ7vNS2lxQXzp7HvVq3pM3+2UW0H3Vy1bLS1JVi1bLdUd42OAYsvyHLgHO9HEb2f4tL/vbUcenrRISZDDpJiS',
-            `${this.righeList[ev.detail.from-1].id},${ev.detail.to},${this.menuid}`).subscribe(data => {
+            `${this.righeList[ev.detail.from - 1].id},${ev.detail.to},${this.menuid}`).subscribe(data => {
             if (data.hasOwnProperty('error')) {
                 this.gs.toast.present(data.error);
                 return;
