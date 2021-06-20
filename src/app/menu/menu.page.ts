@@ -42,7 +42,7 @@ export class MenuPage implements OnInit {
                 }
                 this.listiniList = data.recordset ? data.recordset : [];
                 if (this.listiniList.length > 0) {
-                    this.listinoID = this.listiniList[0].id;
+                    this.listinoID = this.listiniList[this.listiniList.length - 1].id;
                 }
                 this.gs.loading.dismiss();
             },
