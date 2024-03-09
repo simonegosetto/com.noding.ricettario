@@ -1,8 +1,8 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {GlobalService} from "../core/services/global.service";
 import {IngredienteFoodcostRead} from "../shared/interface/ingrediente-foodcost";
 import {ListinoRead} from "../shared/interface/listino";
-import {Observable} from "rxjs";
+import {Observable, Subscription} from 'rxjs';
 
 @Component({
     selector: 'ric-ricetta-foodcost',
@@ -19,7 +19,7 @@ import {Observable} from "rxjs";
         }
     `]
 })
-export class RicettaFoodcostComponent implements OnInit {
+export class RicettaFoodcostComponent implements OnInit, OnDestroy {
 
     constructor(
         public gs: GlobalService,
@@ -32,6 +32,7 @@ export class RicettaFoodcostComponent implements OnInit {
     @Output() pesoUpdate = new EventEmitter();
     @Output() listinoChange = new EventEmitter();
 
+    public subscription: Subscription = new Subscription();
     public ingredientiFoodcostList: IngredienteFoodcostRead[] = [];
     public listinoID: number;
     public listiniList: ListinoRead[] = [];
@@ -47,10 +48,14 @@ export class RicettaFoodcostComponent implements OnInit {
     };
 
     ngOnInit() {
-        this.doRefresh.subscribe(_ => {
+        this.subscription.add(this.doRefresh.subscribe(_ => {
             this.getFoodcost();
-        });
+        }));
         this._estrazioneListini();
+    }
+
+    ngOnDestroy(): void {
+        this.subscription?.unsubscribe();
     }
 
     private _estrazioneListini() {

@@ -51,7 +51,7 @@ export class GlobalService {
                 headers: this.http_json_headers
             }
         ).pipe(
-            tap(data => {
+            tap((data: any) => {
                 if (data.error && data.error.toLowerCase().indexOf('token') > -1) {
                     data.error = 'Sessione scaduta ! Rifare l\'accesso ';
                     if (localStorage.getItem('token')) {
@@ -97,9 +97,9 @@ export class GlobalService {
     // potrei allocare direttamente qui il token che mi ritorna il server
     // e rendere solo un booleano
     public login(username, password): Observable<any> {
-        if (!this.online) {
+        /*if (!this.online) {
             this.toast.present('Your Device is OFFLINE !', 5000);
-        }
+        }*/
         return this._http.post(
             environment.apiAuth + '?gest=2',
             {
@@ -206,7 +206,6 @@ export class GlobalService {
 
     public init() {
         this.checkUser();
-
     }
 
     //////////////////////// DATA /////////////////////////

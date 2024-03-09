@@ -3,7 +3,7 @@ import {Ingrediente} from "../shared/interface/ingrediente";
 import {GlobalService} from "../core/services/global.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {ToastService} from "../core/services/toast.service";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 import {Categoria} from "../shared/interface/categoria";
 import {AlertService} from "../core/services/alert.service";
 
@@ -18,14 +18,14 @@ export class IngredientePage implements OnInit {
       public gs: GlobalService,
       private _route: ActivatedRoute,
       private _toast: ToastService,
-      private _fb: FormBuilder,
+      private _fb: UntypedFormBuilder,
       private _alert: AlertService,
       private _router: Router,
   ) { }
 
   public ingrediente: Ingrediente = {} as Ingrediente;
   public categorieList: Categoria[] = [];
-  public ingredienteForm: FormGroup;
+  public ingredienteForm: UntypedFormGroup;
 
   ngOnInit() {
     this.ingredienteForm = this._fb.group({
@@ -74,7 +74,7 @@ export class IngredientePage implements OnInit {
   salvaIngrediente() {
     if (this.ingredienteForm.dirty) {
       this.gs.callGateway('ITzKByQOl9B/+22hc38MCiKBFQZxsPHR8JLpjhC/y7stWy0tSVYtWy1GJjhVbvJZ6K1PoaNf4trjYP4fSLFScG6hQzPp6H23mQ@@',
-      `${this.ingrediente.id},${this.ingredienteForm.controls.edibile.value},${this.ingredienteForm.controls.grammatura.value},${this.ingredienteForm.controls.prezzo.value},${this.ingredienteForm.controls.categoriaid.value}`
+      `${this.ingrediente.id},${this.ingredienteForm.controls['edibile'].value},${this.ingredienteForm.controls['grammatura'].value},${this.ingredienteForm.controls['prezzo'].value},${this.ingredienteForm.controls['categoriaid'].value}`
       ).subscribe(data => {
           if (data.hasOwnProperty('error')) {
             this.gs.toast.present(data.error);
@@ -88,7 +88,7 @@ export class IngredientePage implements OnInit {
   }
 
   delete() {
-    const alertElimina = this._alert.confirm('Attenzione', `Confermi di eliminare l'ingrediente ${this.ingredienteForm.controls.descrizione.value} ?`);
+    const alertElimina = this._alert.confirm('Attenzione', `Confermi di eliminare l'ingrediente ${this.ingredienteForm.controls['descrizione'].value} ?`);
     alertElimina.then(result => {
       if (result.role === 'OK') {
         this.gs.callGateway('p2d+TtQ/dQOo4lJPz++h1MRy/cZFAyDChrRR1bKDq2stWy0tSVYtWy1NLLIeWnBCUKFPaisS3RfePOHe7IdtCl/t+HVm5Is6jg@@', this.ingrediente.id).subscribe(data => {

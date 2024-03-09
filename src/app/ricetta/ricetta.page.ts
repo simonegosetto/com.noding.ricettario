@@ -1,15 +1,13 @@
 import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
-import {GlobalService} from "../core/services/global.service";
-import {ActivatedRoute} from "@angular/router";
-import {ToastService} from "../core/services/toast.service";
-import {LoadingService} from "../core/services/loading.service";
-import {AlertService} from "../core/services/alert.service";
-import {ModalSearchRicettaComponent} from "./modal-search-ricetta.component";
-import {ModalService} from "../core/services/modal.service";
-import {DropboxService} from "../core/services/dropbox.service";
-import {environment} from "../../environments/environment";
-import {Observable, Subject} from "rxjs";
-import {ModalSearchIngredientiComponent} from "./modal-search-ingredienti.component";
+import {GlobalService} from '../core/services/global.service';
+import {ActivatedRoute} from '@angular/router';
+import {AlertService} from '../core/services/alert.service';
+import {ModalSearchRicettaComponent} from './modal-search-ricetta.component';
+import {ModalService} from '../core/services/modal.service';
+import {DropboxService} from '../core/services/dropbox.service';
+import {environment} from '../../environments/environment';
+import {Subject} from 'rxjs';
+import {ModalSearchIngredientiComponent} from './modal-search-ingredienti.component';
 
 @Component({
     selector: 'ric-ricetta',
@@ -18,13 +16,11 @@ import {ModalSearchIngredientiComponent} from "./modal-search-ingredienti.compon
 })
 export class RicettaPage implements OnInit {
 
-    @ViewChild('nomeIngrediente', {static: false}) nomeIngrediente;
+    @ViewChild('nomeIngrediente') nomeIngrediente;
 
     constructor(
         public gs: GlobalService,
         private _route: ActivatedRoute,
-        private _toast: ToastService,
-        private _loading: LoadingService,
         private _alert: AlertService,
         private _modal: ModalService,
         private _ds: DropboxService,

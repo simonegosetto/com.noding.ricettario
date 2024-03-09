@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import {AuthGuard} from "./core/guards/auth.guard";
+import {AuthGuard} from './core/guards/auth.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', loadChildren: () => import('./home/home.module').then(m => m.HomePageModule), canActivate: [AuthGuard]},
   { path: 'login', loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)},
 
-  { path: 'ricette', loadChildren: () => import('./ricette/ricette.module').then( m => m.RicettePageModule), canActivate: [AuthGuard]},
+  { path: 'ricette/:tipo', loadChildren: () => import('./ricette/ricette.module').then( m => m.RicettePageModule), canActivate: [AuthGuard]},
   { path: 'ricetta/:id', loadChildren: () => import('./ricetta/ricetta.module').then( m => m.RicettaPageModule), canActivate: [AuthGuard]},
 
   { path: 'schedeproduzione', loadChildren: () => import('./schedeproduzione/schedeproduzione.module').then(m => m.SchedeproduzionePageModule), canActivate: [AuthGuard] },

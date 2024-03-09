@@ -43,7 +43,7 @@ import {ArchivioFolder} from "../shared/interface/archivio-file";
 })
 export class ModalArchivioFolderComponent implements AfterViewInit {
 
-    @ViewChild('inputSearch', {static: false}) inputSearchToForceFocus;
+    @ViewChild('inputSearch') inputSearchToForceFocus;
 
     constructor(
         public gs: GlobalService,

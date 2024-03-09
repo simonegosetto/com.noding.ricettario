@@ -52,9 +52,9 @@ export class ModalCaricaFileComponent implements AfterViewInit {
         folderid: undefined
     };
 
-    ngAfterViewInit() {
+    ngAfterViewInit(): void {
         if (this._params.data.hasOwnProperty('folderid')) {
-            this.file.folderid = this._params.data.folderid;
+            this.file.folderid = this._params.data['folderid'];
         } else {
             this.esci();
         }

@@ -1,38 +1,45 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title class="ion-text-center">
-      Home
-    </ion-title>
-  </ion-toolbar>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title class="ion-text-center">
+            Home
+        </ion-title>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <br><br>
-  <ion-row>
-    <ion-col sizeMd="3" sizeXs="6">
-      <ion-button size="full" (click)="navTo('ricetta/0')">Nuova Ricetta</ion-button>
-    </ion-col>
-    <ion-col sizeMd="3" sizeXs="6">
-      <ion-button size="full" (click)="navTo('menus')">Nuovo Menù</ion-button>
-    </ion-col>
-    <ion-col sizeMd="3" sizeXs="6">
-      <ion-button size="full" (click)="navTo('schedetecniche')">Nuova scheda</ion-button>
-    </ion-col>
-    <ion-col sizeMd="3" sizeXs="6">
-      <ion-button size="full" (click)="navTo('listini')">Nuovo Listino</ion-button>
-    </ion-col>
-  </ion-row>
+    <br><br>
+    <ion-row>
+        <ion-col sizeMd="3" sizeXs="6">
+            <ion-button size="full" (click)="navTo('ricetta/0')">Nuova Ricetta</ion-button>
+        </ion-col>
+        <ion-col sizeMd="3" sizeXs="6">
+            <ion-button size="full" (click)="navTo('menus')">Nuovo Menù</ion-button>
+        </ion-col>
+        <ion-col sizeMd="3" sizeXs="6">
+            <ion-button size="full" (click)="navTo('ricette/1')">Ricette</ion-button>
+        </ion-col>
+        <ion-col sizeMd="3" sizeXs="6">
+            <ion-button size="full" (click)="navTo('ricette/2')">Schede Tecniche</ion-button>
+        </ion-col>
+        <!--<ion-col sizeMd="3" sizeXs="6">
+          <ion-button size="full" (click)="navTo('schedetecniche')">Nuova scheda</ion-button>
+        </ion-col>
+        <ion-col sizeMd="3" sizeXs="6">
+          <ion-button size="full" (click)="navTo('listini')">Nuovo Listino</ion-button>
+        </ion-col>-->
+    </ion-row>
 
-  <br><br>
-  <ion-item lines="none">
-      <ion-label>Blocco Note</ion-label>
-      <textarea placeholder="Scrivi qui le tue annotazioni..." [(ngModel)]="note.testo" style="padding: 5px;width: 100%" maxlength="3000" rows="15"></textarea>
-  </ion-item>
-  <div class="ion-text-right ion-padding-end">
-    <ion-button (click)="updateNote()">Salva Note</ion-button>
-  </div>
+    <br><br>
+    <ion-item lines="none">
+        <ion-label>Blocco Note</ion-label>
+        <textarea placeholder="Scrivi qui le tue annotazioni..." [(ngModel)]="note.testo"
+                  style="padding: 5px;width: 100%" maxlength="3000" rows="15"></textarea>
+    </ion-item>
+    <div class="ion-text-right ion-padding-end">
+        <ion-button (click)="updateNote()">Salva Note</ion-button>
+    </div>
 
 </ion-content>

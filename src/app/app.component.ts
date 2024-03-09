@@ -1,11 +1,10 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 
-import { Platform } from '@ionic/angular';
-import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
-import {GlobalService} from "./core/services/global.service";
-import {Network} from "@ionic-native/network/ngx";
-import {Router} from "@angular/router";
+import {Platform} from '@ionic/angular';
+import {SplashScreen} from '@ionic-native/splash-screen/ngx';
+import {StatusBar} from '@ionic-native/status-bar/ngx';
+import {GlobalService} from './core/services/global.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'ric-root',
@@ -21,7 +20,7 @@ export class AppComponent {
     },
     {
       title: 'Ricette',
-      url: '/ricette',
+      url: '/ricette/1',
       icon: 'document'
     },
     /*{
@@ -37,7 +36,7 @@ export class AppComponent {
     {
       title: 'Archivio',
       url: '/archiviodocumenti',
-      icon: 'filing'
+      icon: 'archive'
     },
     {
       title: 'Listini Prezzi',
@@ -60,16 +59,16 @@ export class AppComponent {
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private network: Network,
+    // private network: Network,
     public gs: GlobalService,
     private _router: Router,
   ) {
     this.initializeApp();
 
-    const sub = this.platform.backButton.subscribeWithPriority(9999, () => { });
+    /*const sub = this.platform.backButton.subscribeWithPriority(9999, () => { });
     if (sub) {
-      sub.unsubscribe();
-    }
+      sub?.unsubscribe();
+    }*/
   }
 
   initializeApp() {
@@ -78,7 +77,7 @@ export class AppComponent {
       this.splashScreen.hide();
 
       // @@@@@@@@@@@@@@@@@@@@@@@@@@@@ CHECK CONNESSIONE @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-      this.gs.checkConnection();
+      /*this.gs.checkConnection();
       // watch network for a disconnection
       const disconnectSubscription = this.network.onDisconnect().subscribe(() => {
         this.gs.checkConnection();
@@ -88,13 +87,13 @@ export class AppComponent {
       // watch network for a connection
       const connectSubscription = this.network.onConnect().subscribe(() => {
         this.gs.checkConnection();
-      });
+      });*/
       // stop connect watch
       // connectSubscription.unsubscribe();
       // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
       // controllo token
-      if (localStorage.getItem('token') === undefined || localStorage.getItem('token') === null ) {
+      if (!localStorage.getItem('token')) {
         this.gs.logged = false;
         this._router.navigate(['/login']);
       } else {
@@ -105,7 +104,7 @@ export class AppComponent {
     });
   }
 
-  doLogout() {
+  doLogout(): void {
     if (this.gs.logout()) {
       this._router.navigate(['/login']);
     }

@@ -40,7 +40,7 @@ import {GlobalService} from "../core/services/global.service";
 })
 export class ModalSearchRicettaComponent implements OnInit {
 
-  @ViewChild('inputSearch', {static: false}) inputSearchToForceFocus;
+  @ViewChild('inputSearch') inputSearchToForceFocus;
 
   constructor(
       public gs: GlobalService,

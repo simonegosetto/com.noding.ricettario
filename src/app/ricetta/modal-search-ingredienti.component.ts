@@ -41,7 +41,7 @@ import {Ingrediente} from "../shared/interface/ingrediente";
 })
 export class ModalSearchIngredientiComponent implements OnInit {
 
-  @ViewChild('inputSearch', {static: false}) inputSearchToForceFocus;
+  @ViewChild('inputSearch') inputSearchToForceFocus;
 
   constructor(
       public gs: GlobalService,

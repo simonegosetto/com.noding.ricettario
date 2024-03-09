@@ -38,18 +38,6 @@ import {ModalSearchMenuListinoComponent} from "./listino/modal-search-menu-listi
         ModalSearchRicettaMenuComponent,
         ModalSearchMenuListinoComponent,
     ],
-    entryComponents: [
-        ModalSearchRicettaComponent,
-        ModalCaricaFileComponent,
-        ModalDescrizioneComponent,
-        ModalSearchRicettaListinoComponent,
-        ModalSearchIngredienteListinoComponent,
-        ModalEditIngredienteListinoComponent,
-        ModalSearchIngredientiComponent,
-        ModalArchivioFolderComponent,
-        ModalSearchRicettaMenuComponent,
-        ModalSearchMenuListinoComponent,
-    ],
     imports: [
         BrowserModule,
         HttpClientModule,
@@ -76,7 +64,7 @@ import {ModalSearchMenuListinoComponent} from "./listino/modal-search-menu-listi
         SplashScreen,
         Network,
         Device,
-        {provide: RouteReuseStrategy, useClass: IonicRouteStrategy}
+        { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
     ],
     bootstrap: [AppComponent]
 })

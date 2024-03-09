@@ -2,7 +2,7 @@ import {AfterViewInit, Component} from '@angular/core';
 import {ModalService} from "../core/services/modal.service";
 import {NavParams} from "@ionic/angular";
 import {Categoria} from "../shared/interface/categoria";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 
 @Component({
     selector: 'app-modal-search.ricetta',
@@ -70,12 +70,12 @@ export class ModalEditIngredienteListinoComponent implements AfterViewInit {
     constructor(
         public modal: ModalService,
         private _params: NavParams,
-        private _fb: FormBuilder,
+        private _fb: UntypedFormBuilder,
     ) {
     }
 
     public categorieList: Categoria[] = [];
-    public ingredienteForm: FormGroup;
+    public ingredienteForm: UntypedFormGroup;
 
     ngAfterViewInit() {
         this.ingredienteForm = this._fb.group({
@@ -89,7 +89,7 @@ export class ModalEditIngredienteListinoComponent implements AfterViewInit {
             provenienza: [null, Validators.compose([Validators.maxLength(200)])],
         });
         this.ingredienteForm.patchValue({...this._params.data});
-        this.categorieList = [...this._params.data.categorieList];
+        this.categorieList = [...this._params.data['categorieList']];
     }
 
     salva() {
