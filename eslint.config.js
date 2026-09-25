@@ -8,9 +8,8 @@ module.exports = defineConfig([
   {
     // Codice legacy non ancora portato: ogni commit di porting toglie la sua voce.
     ignores: [
-      'src/app/core/**',
-      'src/app/data/**',
-      'src/app/shared/**',
+      'src/app/shared/modal-descrizione/**',
+      'src/app/shared/pipes/**',
       'src/app/features/home/**',
       'src/app/features/login/**',
       'src/app/features/ricette/**',

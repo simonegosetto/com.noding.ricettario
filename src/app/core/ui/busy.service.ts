@@ -1,31 +1,22 @@
-import { Injectable } from '@angular/core';
-import { LoadingController } from '@ionic/angular';
+import { computed, Injectable, signal } from '@angular/core';
+import { defer, finalize, MonoTypeOperatorFunction } from 'rxjs';
 
-@Injectable({
-    providedIn: 'root'
-})
-export class LoadingService {
+/**
+ * Chiamate al backend in corso. Sostituisce l'overlay di loading bloccante della versione
+ * legacy: la shell mostra una ion-progress-bar e le pagine disabilitano i pulsanti di scrittura.
+ */
+@Injectable({ providedIn: 'root' })
+export class BusyService {
+  private readonly pending = signal(0);
 
-    isLoading = false;
+  readonly busy = computed(() => this.pending() > 0);
 
-    constructor(public loadingController: LoadingController) { }
-
-    async present(duration = 2000) {
-        this.isLoading = true;
-        return await this.loadingController.create({
-            duration: duration,
-        }).then(a => {
-            a.present().then(() => {
-                // console.log('presented');
-                if (!this.isLoading) {
-                    a.dismiss().then(() => '' ); // console.log('abort presenting'));
-                }
-            });
-        });
-    }
-
-    async dismiss() {
-        this.isLoading = false;
-        return await this.loadingController.dismiss().then(() => '' ); // console.log('dismissed'));
-    }
+  /** Operatore RxJS: conta la chiamata finché l'Observable è attivo. */
+  track<T>(): MonoTypeOperatorFunction<T> {
+    return (source) =>
+      defer(() => {
+        this.pending.update((count) => count + 1);
+        return source.pipe(finalize(() => this.pending.update((count) => count - 1)));
+      });
+  }
 }

@@ -1,11 +1,19 @@
+/** Riga del pannello food cost di una ricetta per un listino (RICETTA_FOODCOST_RIGHE). */
 export interface IngredienteFoodcost {
-    listinoid: number;
-    ingredienteid: number;
-    descrizione: string;
-    ricettaid: number;
-    peso: number;
-    foodcost: number;
-    kcal: number;
+  descrizione: string;
+  peso: number;
+  kcal: number;
+  foodcost: number;
 }
 
-export type IngredienteFoodcostRead = Readonly<Pick<IngredienteFoodcost, 'descrizione' | 'peso' | 'foodcost' | 'kcal'>>
+/** Totali del food cost di una ricetta per un listino (RICETTA_FOODCOST_TOTALI). */
+export interface FoodcostTotali {
+  peso: number;
+  foodcost: number;
+  kcal: number;
+  peso_effettivo: number | null;
+  prezzo_lordo_vendita: number | null;
+  ratio: number | null;
+  prezzo_netto_vendita: number | null;
+  margine_netto: number | null;
+}

@@ -1,50 +1,27 @@
-import { Injectable } from '@angular/core';
-import {AlertController} from '@ionic/angular';
+import { inject, Injectable } from '@angular/core';
+import { AlertController } from '@ionic/angular';
 
-@Injectable({
-  providedIn: 'root'
-})
+interface ConfirmOptions {
+  confirmText?: string;
+  cancelText?: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class AlertService {
+  private readonly controller = inject(AlertController);
 
-  constructor(public alertController: AlertController) { }
-
-    async alert() {
-        const alert = await this.alertController.create({
-            header: 'Alert',
-            subHeader: 'Subtitle',
-            message: 'This is an alert message.',
-            buttons: ['OK']
-        });
-
-        await alert.present();
-
-        return alert.onDidDismiss();
-    }
-
-    async confirm(title, message) {
-        const alert = await this.alertController.create({
-            header: title,
-            message: message,
-            buttons: [
-                {
-                    text: 'NO',
-                    role: 'KO',
-                    cssClass: 'secondary',
-                    handler: (blah) => { }
-                }, {
-                    text: 'SI',
-                    role: 'OK',
-                    handler: () => { }
-                }
-            ]
-        });
-
-        await alert.present();
-
-        return alert.onDidDismiss();
-    }
-
-    dismiss(data) {
-      this.alertController.dismiss(data);
-    }
+  /** Chiede conferma; risolve `true` solo se l'utente conferma. */
+  async confirm(header: string, message: string, options: ConfirmOptions = {}): Promise<boolean> {
+    const alert = await this.controller.create({
+      header,
+      message,
+      buttons: [
+        { text: options.cancelText ?? 'No', role: 'cancel' },
+        { text: options.confirmText ?? 'Sì', role: 'confirm' },
+      ],
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    return role === 'confirm';
+  }
 }
