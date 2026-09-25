@@ -39,6 +39,48 @@ export const ALIMENTI = Array.from({ length: 120 }, (_, i) => ({
   Ali_lup: 1.2,
 }));
 
+export const CATEGORIE_INGREDIENTI = [
+  { id: 1, descrizione: 'Farine' },
+  { id: 2, descrizione: 'Latticini' },
+];
+
+export const RIGHE_LISTINO = [
+  {
+    id: 11,
+    listinoid: 1,
+    ingredienteid: 5,
+    descrizione: 'Farina 00',
+    scarto: 0,
+    grammatura: 1000,
+    prezzo: 0.9,
+    categoriaid: 1,
+    categorianome: 'Farine',
+    kcal: 340,
+    provenienza: 'Molino Rossi',
+    ricette: 'Lasagne al forno<p></p>Pane casereccio',
+  },
+  {
+    id: 12,
+    listinoid: 1,
+    ingredienteid: 6,
+    descrizione: 'Burro',
+    scarto: 5,
+    grammatura: 250,
+    prezzo: 2.35,
+    categoriaid: null,
+    categorianome: null,
+    kcal: 717,
+    provenienza: null,
+    ricette: null,
+  },
+];
+
+export const INGREDIENTI = [
+  { id: 5, descrizione: 'Farina 00' },
+  { id: 7, descrizione: 'Farina di farro' },
+  { id: 8, descrizione: 'Zucchero semolato' },
+];
+
 export const DEFAULT_RESPONSES: Partial<Record<ProcessName, (params: string | number) => unknown>> =
   {
     NOTE_GET: () => ({ recordset: [{ note: 'Ordinare la farina entro venerdì.' }] }),
@@ -47,4 +89,21 @@ export const DEFAULT_RESPONSES: Partial<Record<ProcessName, (params: string | nu
     SCHEDE_LIST: () => ({ recordset: SCHEDE }),
     RICETTE_LIST: (tipo) => ({ recordset: String(tipo) === '2' ? SCHEDE_TECNICHE : RICETTE }),
     DIZIONARIO_ALIMENTI: () => ({ recordset: ALIMENTI }),
+    CATEGORIE_INGREDIENTI_LIST: () => ({ recordset: CATEGORIE_INGREDIENTI }),
+    LISTINO_RIGHE: () => ({ recordset: RIGHE_LISTINO }),
+    INGREDIENTI_LIST: () => ({ recordset: INGREDIENTI }),
+    INGREDIENTI_SEARCH: (testo) => ({
+      recordset: INGREDIENTI.filter((i) => i.descrizione.toLowerCase().includes(unquote(testo))),
+    }),
+    RICETTE_SEARCH: (testo) => ({
+      recordset: RICETTE.filter((r) => r.nome_ric.toLowerCase().includes(unquote(testo))),
+    }),
+    SCHEDE_TECNICHE_SEARCH: (testo) => ({
+      recordset: SCHEDE_TECNICHE.filter((r) => r.nome_ric.toLowerCase().includes(unquote(testo))),
+    }),
   };
+
+/** Testo di un parametro stringa del gateway ('...') in minuscolo. */
+function unquote(param: string | number): string {
+  return String(param).replace(/^'|'$/g, '').replace(/''/g, "'").toLowerCase();
+}

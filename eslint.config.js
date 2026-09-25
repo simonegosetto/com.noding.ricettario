@@ -9,7 +9,6 @@ module.exports = defineConfig([
     // Codice legacy non ancora portato: ogni commit di porting toglie la sua voce.
     ignores: [
       'src/app/features/ricetta/**',
-      'src/app/features/listino/**',
       'src/app/features/menu/**',
       'src/app/features/schedeproduzione/schedaproduzione.page.*',
       'src/app/features/schedeproduzione/ricetta-scheda-tecnica.component.*',

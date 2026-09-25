@@ -39,6 +39,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/listini/listini.page').then((m) => m.ListiniPage),
   },
   {
+    path: 'listino/:id',
+    title: 'Listino',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/listino/listino.page').then((m) => m.ListinoPage),
+  },
+  {
     path: 'menus',
     title: 'Menù',
     canActivate: [authGuard],

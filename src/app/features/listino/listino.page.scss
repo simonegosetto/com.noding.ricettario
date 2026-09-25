@@ -1,3 +1,103 @@
-ion-icon {
-  font-size: 25px;
+.listino__filtri {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 8px;
+  padding: 0 8px 8px 0;
+
+  ion-searchbar {
+    flex: 1 1 280px;
+  }
+}
+
+.listino__categoria {
+  flex: 1 1 200px;
+  max-width: 100%;
+  margin-inline-start: 12px;
+}
+
+@media (min-width: 768px) {
+  .listino__categoria {
+    flex: 0 0 240px;
+    margin-inline-start: 0;
+  }
+}
+
+// Colonne condivise da intestazione e righe (su schermi larghi).
+$colonne: minmax(0, 1fr) repeat(4, 96px);
+
+.listino__intestazione {
+  display: none;
+  grid-template-columns: $colonne;
+  gap: 12px;
+  padding: 0 148px 8px 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--app-muted-text);
+
+  span:not(:first-child) {
+    text-align: end;
+  }
+}
+
+.riga {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 12px;
+}
+
+.riga__nome {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.riga__valore {
+  text-align: start;
+  font-size: 0.875rem;
+}
+
+.riga__etichetta {
+  color: var(--app-muted-text);
+  margin-inline-end: 4px;
+}
+
+.riga__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+
+  ion-badge {
+    align-self: flex-start;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .listino__intestazione {
+    display: grid;
+  }
+
+  .riga {
+    grid-template-columns: $colonne;
+    align-items: baseline;
+  }
+
+  .riga__nome {
+    grid-column: auto;
+    font-size: 1rem;
+  }
+
+  .riga__valore {
+    text-align: end;
+  }
+
+  .riga__etichetta {
+    display: none;
+  }
 }
