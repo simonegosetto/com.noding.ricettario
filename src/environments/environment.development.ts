@@ -1,11 +1,9 @@
-// Configurazione di produzione (default di `ng build`).
-// In `ng serve` e nella build development viene sostituita da environment.development.ts
-// tramite `fileReplacements` (angular.json).
-// Attenzione: non esiste un ambiente di test, anche lo sviluppo punta al backend di produzione.
+// Configurazione di sviluppo (`ng serve`): stesso backend di produzione, ma in sola lettura.
+// Per provare le scritture su record di test impostare temporaneamente readOnly: false.
 export const environment = {
-  production: true,
+  production: false,
   /** Con readOnly attivo il readOnlyInterceptor blocca le scritture verso il backend (vedi README). */
-  readOnly: false,
+  readOnly: true,
   apiAuth: 'https://ricettario.prodottidivalore.it/BackEnd/FD_Login.php',
   apiDBox: 'https://ricettario.prodottidivalore.it/BackEnd/FD_DataServiceGatewayCrypt.php',
   apiDropbox: 'https://ricettario.prodottidivalore.it/BackEnd/FD_DropboxGateway.php',

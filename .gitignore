@@ -1,31 +1,50 @@
-# Specifies intentionally untracked files to ignore when using Git
-# http://git-scm.com/docs/gitignore
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
+# Build (www/ = cartella pubblicata su Apache)
+/www
+/dist
+/tmp
+/out-tsc
+
+# Node
+/node_modules
+npm-debug.log*
+yarn-error.log
+
+# Angular / Ionic
+/.angular/cache
+/.ionic
+/.sass-cache
+
+# Test
+/coverage
+/playwright-report
+/test-results
+__screenshots__/
+
+# IDE
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
+
+# Varie
 *~
 *.sw[mnpcod]
+*.log
 .tmp
 *.tmp
 *.tmp.*
-*.sublime-project
-*.sublime-workspace
 .DS_Store
 Thumbs.db
-UserInterfaceState.xcuserstate
-$RECYCLE.BIN/
-
-*.log
-log.txt
-npm-debug.log*
-
-/.idea
-/.ionic
-/.sass-cache
-/.sourcemaps
-/.versions
-/.vscode
-/coverage
-/dist
-/node_modules
-/platforms
-/plugins
-/www

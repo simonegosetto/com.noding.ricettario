@@ -1,7 +1,6 @@
 {
   "name": "com.noding.ricettario",
-  "integrations": {
-    "cordova": {}
-  },
-  "type": "angular"
+  "app_id": "",
+  "type": "angular-standalone",
+  "integrations": {}
 }
