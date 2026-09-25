@@ -81,6 +81,86 @@ export const INGREDIENTI = [
   { id: 8, descrizione: 'Zucchero semolato' },
 ];
 
+/** Archivio: radice con due cartelle e due file, "Fatture" con una sottocartella vuota. */
+const CARTELLA_FATTURE = {
+  folderid: 5,
+  arc_codi: 0,
+  descrizione: 'Fatture',
+  icon: 'folder',
+  numero_file: 2,
+  numero_cartelle: 1,
+  id_storage: null,
+};
+
+export const ARCHIVIO: Record<number, { recordset: unknown[]; output: unknown[] }> = {
+  0: {
+    recordset: [
+      CARTELLA_FATTURE,
+      {
+        folderid: 6,
+        arc_codi: 0,
+        descrizione: 'Manuali',
+        icon: 'folder',
+        numero_file: 0,
+        numero_cartelle: 0,
+        id_storage: null,
+      },
+      {
+        folderid: 0,
+        arc_codi: 101,
+        descrizione: 'Listino fornitori.pdf',
+        icon: 'document',
+        numero_file: 0,
+        numero_cartelle: 0,
+        id_storage: 'id:e2e-101',
+      },
+      {
+        folderid: 0,
+        arc_codi: 102,
+        descrizione: 'Foto sala.jpg',
+        icon: 'image',
+        numero_file: 0,
+        numero_cartelle: 0,
+        id_storage: 'id:e2e-102',
+      },
+    ],
+    output: [{ foldername: null, parentid: 0, parentname: null }],
+  },
+  5: {
+    recordset: [
+      {
+        folderid: 7,
+        arc_codi: 0,
+        descrizione: '2024',
+        icon: 'folder',
+        numero_file: 0,
+        numero_cartelle: 0,
+        id_storage: null,
+      },
+      {
+        folderid: 5,
+        arc_codi: 103,
+        descrizione: 'Fattura 12.pdf',
+        icon: 'md-document',
+        numero_file: 0,
+        numero_cartelle: 0,
+        id_storage: 'id:e2e-103',
+      },
+    ],
+    output: [{ foldername: 'Fatture', parentid: 0, parentname: null }],
+  },
+  7: {
+    recordset: [],
+    output: [{ foldername: '2024', parentid: 5, parentname: 'Fatture' }],
+  },
+};
+
+export const CARTELLE_ARCHIVIO = [
+  { id: 5, descrizione: 'Fatture' },
+  { id: 7, descrizione: 'Fatture/2024' },
+  { id: 6, descrizione: 'Manuali' },
+];
+
 export const DEFAULT_RESPONSES: Partial<Record<ProcessName, (params: string | number) => unknown>> =
   {
     NOTE_GET: () => ({ recordset: [{ note: 'Ordinare la farina entro venerdì.' }] }),
@@ -98,6 +178,10 @@ export const DEFAULT_RESPONSES: Partial<Record<ProcessName, (params: string | nu
     RICETTE_SEARCH: (testo) => ({
       recordset: RICETTE.filter((r) => r.nome_ric.toLowerCase().includes(unquote(testo))),
     }),
+    ARCHIVIO_LIST: (params) =>
+      ARCHIVIO[Number(String(params).split(',')[0])] ?? { recordset: [], output: [{}] },
+    ARCHIVIO_CARTELLE_TREE: () => ({ recordset: CARTELLE_ARCHIVIO }),
+    ARCHIVIO_FILE_INSERT: () => ({ output: [{ out_id: 201 }] }),
     SCHEDE_TECNICHE_SEARCH: (testo) => ({
       recordset: SCHEDE_TECNICHE.filter((r) => r.nome_ric.toLowerCase().includes(unquote(testo))),
     }),

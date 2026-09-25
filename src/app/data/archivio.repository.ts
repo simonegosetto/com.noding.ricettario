@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, switchMap, throwError } from 'rxjs';
 
 import { GatewayClient } from '../core/api/gateway.client';
 import { sql, sqlParams } from '../core/api/gateway-params';
@@ -7,8 +7,11 @@ import { PROCESS } from '../core/api/gateway-processes';
 import {
   ArchivioCartella,
   ArchivioContenuto,
+  ArchivioElemento,
   ArchivioNuovoFile,
 } from '../shared/models/archivio-file';
+import { readFileAsBase64, toDataUrl } from './file-reader';
+import { FileStorageRepository, StorageFolder } from './file-storage.repository';
 import { toDescritti } from './ingredienti.repository';
 import { toNumber, toText, toTextOrNull } from './mappers';
 
@@ -20,15 +23,22 @@ export abstract class ArchivioRepository {
   abstract renameFolder(folderId: number, descrizione: string): Observable<void>;
   /** Elimina la cartella e tutto il suo contenuto. */
   abstract deleteFolder(folderId: number): Observable<void>;
-  /** Registra il file e restituisce il suo arc_codi, usato come nome su Dropbox. */
-  abstract insertFile(file: ArchivioNuovoFile): Observable<number>;
+  /**
+   * Carica un file nella cartella: registra i metadati (l'arc_codi restituito diventa il nome
+   * su Dropbox) e poi invia il contenuto. Se l'invio fallisce il record viene rimosso.
+   */
+  abstract uploadFile(folderId: number, file: File): Observable<void>;
   abstract moveFile(arcCodi: number, folderId: number): Observable<void>;
-  abstract deleteFile(arcCodi: number): Observable<void>;
+  /** Elimina il file dal DB e poi da Dropbox. */
+  abstract deleteFile(file: ArchivioElemento): Observable<void>;
+  /** Link temporaneo per scaricare il file. */
+  abstract fileLink(file: ArchivioElemento): Observable<string>;
 }
 
 @Injectable()
 export class GatewayArchivioRepository extends ArchivioRepository {
   private readonly gateway = inject(GatewayClient);
+  private readonly storage = inject(FileStorageRepository);
 
   contenuto(folderId: number): Observable<ArchivioContenuto> {
     const params = sqlParams(
@@ -41,6 +51,7 @@ export class GatewayArchivioRepository extends ArchivioRepository {
       map((response) => {
         const output = response.output?.[0] ?? {};
         return {
+          folderId,
           elementi: (response.recordset ?? []).map((row) => {
             const icon = toText(row['icon']) || 'document';
             return {
@@ -80,7 +91,40 @@ export class GatewayArchivioRepository extends ArchivioRepository {
     return this.gateway.exec(PROCESS.ARCHIVIO_CARTELLA_DELETE, sql.num(folderId));
   }
 
-  insertFile(file: ArchivioNuovoFile): Observable<number> {
+  uploadFile(folderId: number, file: File): Observable<void> {
+    const meta: ArchivioNuovoFile = {
+      nome: file.name,
+      folderid: folderId,
+      size: file.size,
+      type: file.type,
+    };
+    return readFileAsBase64(file).pipe(
+      switchMap((base64) =>
+        this.insertFile(meta).pipe(
+          switchMap((arcCodi) =>
+            this.storage
+              .upload({
+                folder: StorageFolder.Documenti,
+                id: arcCodi,
+                name: file.name,
+                type: file.type,
+                data: toDataUrl(file.type, base64),
+              })
+              .pipe(
+                // Senza il contenuto su Dropbox il record resterebbe orfano: lo si rimuove.
+                catchError((error: unknown) =>
+                  this.gateway
+                    .exec(PROCESS.ARCHIVIO_FILE_DELETE, arcCodi)
+                    .pipe(switchMap(() => throwError(() => error))),
+                ),
+              ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  private insertFile(file: ArchivioNuovoFile): Observable<number> {
     const params = sqlParams(
       sql.str(file.nome),
       sql.str(file.nome),
@@ -89,9 +133,16 @@ export class GatewayArchivioRepository extends ArchivioRepository {
       sql.str(file.type),
       sql.out('out_id'),
     );
-    return this.gateway
-      .output(PROCESS.ARCHIVIO_FILE_INSERT, params)
-      .pipe(map((output) => toNumber(output?.['out_id'])));
+    return this.gateway.output(PROCESS.ARCHIVIO_FILE_INSERT, params).pipe(
+      map((output) => {
+        const arcCodi = toNumber(output?.['out_id']);
+        if (!(arcCodi > 0)) {
+          // Senza id il file finirebbe su Dropbox con un nome che nessun record indica.
+          throw new Error('Il server non ha restituito l’id del file.');
+        }
+        return arcCodi;
+      }),
+    );
   }
 
   moveFile(arcCodi: number, folderId: number): Observable<void> {
@@ -99,7 +150,16 @@ export class GatewayArchivioRepository extends ArchivioRepository {
     return this.gateway.exec(PROCESS.ARCHIVIO_FILE_MOVE, params);
   }
 
-  deleteFile(arcCodi: number): Observable<void> {
-    return this.gateway.exec(PROCESS.ARCHIVIO_FILE_DELETE, arcCodi);
+  deleteFile(file: ArchivioElemento): Observable<void> {
+    const deleted = this.gateway.exec(PROCESS.ARCHIVIO_FILE_DELETE, file.arc_codi);
+    const storagePath = file.id_storage;
+    return storagePath ? deleted.pipe(switchMap(() => this.storage.delete(storagePath))) : deleted;
+  }
+
+  fileLink(file: ArchivioElemento): Observable<string> {
+    if (!file.id_storage) {
+      return throwError(() => new Error('Il file non è disponibile su Dropbox.'));
+    }
+    return this.storage.link(file.id_storage);
   }
 }

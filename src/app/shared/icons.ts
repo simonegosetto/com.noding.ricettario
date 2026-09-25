@@ -116,6 +116,8 @@ const LEGACY_ALIASES: Record<string, string> = {
   'musical-note': 'musical-notes',
 };
 
+const WARNED = new Set<string>();
+
 /**
  * Converte un nome icona arrivato dal DB (archivio documenti) in una icona registrata,
  * nella variante outline usata nel resto dell'app. Nomi sconosciuti → icona documento.
@@ -133,7 +135,8 @@ export function resolveIcon(
   if (REGISTERED.has(candidate)) {
     return candidate;
   }
-  if (base && isDevMode()) {
+  if (base && isDevMode() && !WARNED.has(base)) {
+    WARNED.add(base);
     console.warn(`[icone] "${name}" non è registrata: uso ${fallback}`);
   }
   return fallback;

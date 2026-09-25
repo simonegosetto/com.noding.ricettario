@@ -15,6 +15,8 @@ const PAGES: { name: string; url: string; public?: boolean }[] = [
   { name: 'menus', url: '/menus' },
   { name: 'schedeproduzione', url: '/schedeproduzione' },
   { name: 'foodcost', url: '/foodcost' },
+  { name: 'archivio', url: '/archiviodocumenti' },
+  { name: 'archivio-cartella', url: '/archiviodocumenti?cartella=5' },
 ];
 
 for (const scheme of ['light', 'dark'] as const) {

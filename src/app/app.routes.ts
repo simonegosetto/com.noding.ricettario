@@ -33,6 +33,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'archiviodocumenti',
+    title: 'Archivio documenti',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/archiviodocumenti/archiviodocumenti.page').then(
+        (m) => m.ArchiviodocumentiPage,
+      ),
+  },
+  {
     path: 'listini',
     title: 'Listini prezzi',
     canActivate: [authGuard],

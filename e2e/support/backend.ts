@@ -5,6 +5,7 @@ import { DEFAULT_RESPONSES } from './fixtures';
 
 type Params = string | number;
 type Responder = (params: Params) => unknown;
+type DropboxResponder = (action: DropboxCall) => unknown;
 
 export interface GatewayCall {
   process: ProcessName;
@@ -28,6 +29,7 @@ export class BackendMock {
   readonly calls: GatewayCall[] = [];
   readonly dropboxCalls: DropboxCall[] = [];
   private readonly responders = new Map<ProcessName, Responder>();
+  private readonly dropboxResponders = new Map<number, DropboxResponder>();
   private loginResponse: unknown = {
     user: [{ nome: 'Mario', cognome: 'Rossi' }],
     token: { token: 'e2e-session' },
@@ -40,6 +42,15 @@ export class BackendMock {
     this.responders.set(
       process,
       typeof response === 'function' ? (response as Responder) : () => response,
+    );
+    return this;
+  }
+
+  /** Risposta del proxy Dropbox per una modalità (1 upload, 3 delete, 4 link). */
+  onDropbox(mode: number, response: unknown): this {
+    this.dropboxResponders.set(
+      mode,
+      typeof response === 'function' ? (response as DropboxResponder) : () => response,
     );
     return this;
   }
@@ -84,9 +95,9 @@ export class BackendMock {
   private async dropbox(route: Route): Promise<void> {
     const action = readJson(route.request())['action'] as DropboxCall;
     this.dropboxCalls.push(action);
-    await route.fulfill({
-      json: action.mode === 4 ? { link: 'https://dl.example.test/file.png' } : {},
-    });
+    const responder = this.dropboxResponders.get(action.mode);
+    const fallback = action.mode === 4 ? { link: 'https://dl.example.test/file.png' } : {};
+    await route.fulfill({ json: responder ? responder(action) : fallback });
   }
 }
 
@@ -112,14 +123,27 @@ export async function setupBackend(page: Page): Promise<BackendMock> {
   return backend;
 }
 
-/** Registra gli URL aperti con window.open (stampe) senza aprire finestre. */
+/**
+ * Registra gli URL aperti con window.open senza aprire finestre: sia quelli passati subito
+ * (stampe) sia quelli impostati dopo su una finestra aperta vuota (file dell'archivio).
+ */
 export async function recordWindowOpen(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const opened: string[] = [];
     (window as unknown as { __opened: string[] }).__opened = opened;
     window.open = (url?: string | URL) => {
-      opened.push(String(url ?? ''));
-      return null;
+      if (url) {
+        opened.push(String(url));
+      }
+      const fake = {
+        opener: null as unknown,
+        closed: false,
+        close: () => {
+          fake.closed = true;
+        },
+        location: { replace: (next: string) => opened.push(next) },
+      };
+      return fake as unknown as Window;
     };
   });
 }

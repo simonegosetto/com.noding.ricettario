@@ -46,6 +46,10 @@ const lines = [
   '- Il token viaggia nel body e, per i report, in query string: va spostato in un header',
   '  `Authorization`.',
   '- Le implementazioni da sostituire sono i `Gateway*Repository` in `src/app/data/`.',
+  '- Archivio: il caricamento di un file è in due passi (record con `ARCHIVIO_FILE_INSERT`, poi',
+  '  upload Dropbox con `out_id` come nome) e il client rimuove il record se l\'upload fallisce;',
+  '  un endpoint unico (multipart) lo renderebbe atomico. `ARCHIVIO_CARTELLA_DELETE` elimina i',
+  '  record ma lascia su Dropbox i file delle cartelle eliminate.',
   '',
 ];
 

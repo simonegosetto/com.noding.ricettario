@@ -51,8 +51,14 @@ export class DropboxFileStorageRepository extends FileStorageRepository {
   }
 
   link(path: string): Observable<string> {
-    return this.gateway
-      .dropbox({ mode: 4, path })
-      .pipe(map((response) => toText(response['link'])));
+    return this.gateway.dropbox({ mode: 4, path }).pipe(
+      map((response) => {
+        const link = toText(response['link']);
+        if (!link) {
+          throw new Error('Dropbox non ha restituito il link del file.');
+        }
+        return link;
+      }),
+    );
   }
 }

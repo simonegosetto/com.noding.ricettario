@@ -1,107 +1,143 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
+      <ion-menu-button />
     </ion-buttons>
-    <ion-title class="ion-text-center">
-      {{ ricerca?.folderName || 'Archivio Documenti' }}
-    </ion-title>
+    <ion-title>{{ titolo() }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="nuovoCartella()"
-        ><ion-icon style="font-size: 25px" name="folder" title="Aggiungi Cartella"></ion-icon
-      ></ion-button>
-      <ion-button (click)="nuovoFile()"
-        ><ion-icon
-          style="font-size: 25px"
-          name="add-circle-outline"
-          title="Aggiungi File"
-        ></ion-icon
-      ></ion-button>
+      <ion-button aria-label="Nuova cartella" title="Nuova cartella" (click)="nuovaCartella()">
+        <ion-icon slot="icon-only" name="folder-outline" />
+      </ion-button>
+      <ion-button
+        aria-label="Carica file"
+        title="Carica file"
+        [disabled]="inCaricamento() !== null"
+        (click)="scegliFile()"
+      >
+        <ion-icon slot="icon-only" name="cloud-upload-outline" />
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-row>
-    <ion-col>
-      <ion-searchbar
-        type="text"
-        placeholder="Cerca file o cartelle"
-        [(ngModel)]="ricerca.searchText"
-      ></ion-searchbar>
-    </ion-col>
-  </ion-row>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Cerca in questa cartella"
+      [debounce]="150"
+      [value]="search()"
+      (ionInput)="search.set($event.detail.value ?? '')"
+    />
+  </ion-toolbar>
 </ion-header>
 
+<input
+  #fileInput
+  type="file"
+  multiple
+  hidden
+  aria-label="File da caricare"
+  (change)="carica(fileInput)"
+/>
+
 <ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="estrazioneFileFolder($event)">
-    <ion-refresher-content></ion-refresher-content>
+  <ion-refresher slot="fixed" (ionRefresh)="elementi.load($event)">
+    <ion-refresher-content />
   </ion-refresher>
 
-  <ion-list>
-    <ion-card
-      style="cursor: pointer; background-color: #949494 !important; color: white; max-height: 55px"
-      *ngIf="ricerca.folderid > 0"
-    >
-      <ion-card-content>
-        <ion-row (click)="back()">
-          <ion-col size="1">
-            <ion-icon name="undo" style="color: white"></ion-icon>
-          </ion-col>
-          <ion-col size="11"><strong>Indietro</strong></ion-col>
-        </ion-row>
-      </ion-card-content>
-    </ion-card>
-    <ion-card
-      *ngFor="let item of ricerca.fileFolderList | descrizione: ricerca.searchText"
-      style="cursor: pointer"
-      (click)="open(item)"
-    >
-      <ion-card-content>
-        <ion-row>
-          <ion-col size="1">
-            <ion-icon [name]="item.icon" color="dark"></ion-icon>
-          </ion-col>
-          <ion-col size="8" *ngIf="item.icon !== 'folder'">{{
-            item.descrizione | noextension
-          }}</ion-col>
-          <ion-col size="7" *ngIf="item.icon === 'folder'">{{
-            item.descrizione | noextension
-          }}</ion-col>
-          <ion-col size="2" *ngIf="item.icon === 'folder'">
-            <p>N. File {{ item.numero_file }}</p>
-            <p>N. Cartelle {{ item.numero_cartelle }}</p>
-          </ion-col>
-          <ion-col size="1" *ngIf="item.icon !== 'folder'">
-            <ion-icon name="move" color="dark" (click)="move($event, item)"></ion-icon>
-          </ion-col>
-          <ion-col size="1">
-            <ion-icon
-              *ngIf="item.icon === 'folder'"
-              name="create"
-              color="dark"
-              (click)="edit($event, item)"
-            ></ion-icon>
-            <ion-icon
-              *ngIf="item.icon !== 'folder'"
-              name="cloud-download"
-              color="dark"
-              (click)="download($event, item)"
-            ></ion-icon>
-          </ion-col>
-          <ion-col size="1">
-            <ion-icon
-              *ngIf="item.icon === 'folder'"
-              name="trash"
-              color="danger"
-              (click)="deleteFolder($event, item)"
-            ></ion-icon>
-            <ion-icon
-              *ngIf="item.icon !== 'folder'"
-              name="trash"
-              color="danger"
-              (click)="deleteFile($event, item)"
-            ></ion-icon>
-          </ion-col>
-        </ion-row>
-      </ion-card-content>
-    </ion-card>
-  </ion-list>
+  <div class="app-page ion-padding">
+    @if (inCaricamento(); as nome) {
+      <p class="archivio__caricamento" role="status">
+        <ion-icon name="cloud-upload-outline" aria-hidden="true" />
+        Caricamento di «{{ nome }}»…
+      </p>
+    }
+
+    @if (mostrata().folderId > 0) {
+      <ion-list class="app-list archivio__indietro">
+        <ric-list-row icon="arrow-undo-outline" (open)="risali()">
+          <h2>Indietro</h2>
+          <p>{{ cartellaSuperiore() }}</p>
+        </ric-list-row>
+      </ion-list>
+    }
+
+    @switch (elementi.state()) {
+      @case ('loading') {
+        <ric-list-skeleton />
+      }
+      @case ('error') {
+        <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare l'archivio.">
+          <ion-button fill="outline" (click)="elementi.load()">Riprova</ion-button>
+        </ric-empty-state>
+      }
+      @default {
+        @if (righe().length) {
+          <ion-list class="app-list">
+            @for (riga of righe(); track riga.chiave) {
+              @let elemento = riga.elemento;
+              <!-- Due righe distinte: le azioni proiettate non possono stare dentro un @if. -->
+              @if (elemento.isCartella) {
+                <ric-list-row [icon]="riga.icona" (open)="apri(elemento)">
+                  <h2>{{ elemento.descrizione }}</h2>
+                  <p>{{ riga.dettaglio }}</p>
+                  <ion-button
+                    actions
+                    fill="clear"
+                    aria-label="Rinomina"
+                    (click)="rinomina(elemento)"
+                  >
+                    <ion-icon slot="icon-only" name="create-outline" />
+                  </ion-button>
+                  <ion-button
+                    actions
+                    fill="clear"
+                    color="danger"
+                    aria-label="Elimina"
+                    (click)="eliminaCartella(elemento)"
+                  >
+                    <ion-icon slot="icon-only" name="trash-outline" />
+                  </ion-button>
+                </ric-list-row>
+              } @else {
+                <ric-list-row [icon]="riga.icona" (open)="apri(elemento)">
+                  <h2>{{ elemento.descrizione | noextension }}</h2>
+                  @if (riga.dettaglio) {
+                    <p>{{ riga.dettaglio }}</p>
+                  }
+                  <ion-button actions fill="clear" aria-label="Sposta" (click)="sposta(elemento)">
+                    <ion-icon slot="icon-only" name="move-outline" />
+                  </ion-button>
+                  <ion-button
+                    actions
+                    fill="clear"
+                    color="danger"
+                    aria-label="Elimina"
+                    (click)="eliminaFile(elemento)"
+                  >
+                    <ion-icon slot="icon-only" name="trash-outline" />
+                  </ion-button>
+                </ric-list-row>
+              }
+            }
+          </ion-list>
+          <p class="archivio__nota app-muted">
+            Tocca un file per aprirlo. Massimo {{ maxFileMb }} MB per file.
+          </p>
+        } @else if (search()) {
+          <ric-empty-state icon="search-outline" message="Nessun file o cartella trovati." />
+        } @else {
+          <ric-empty-state icon="folder-open-outline" message="Questa cartella è vuota.">
+            <div class="archivio__azioni">
+              <ion-button fill="outline" (click)="scegliFile()">
+                <ion-icon slot="start" name="cloud-upload-outline" />
+                Carica file
+              </ion-button>
+              <ion-button fill="outline" (click)="nuovaCartella()">
+                <ion-icon slot="start" name="folder-outline" />
+                Nuova cartella
+              </ion-button>
+            </div>
+          </ric-empty-state>
+        }
+      }
+    }
+  </div>
 </ion-content>

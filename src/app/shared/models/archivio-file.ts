@@ -16,6 +16,8 @@ export interface ArchivioElemento {
 
 /** Contenuto di una cartella con i dati della cartella stessa (parametri OUT). */
 export interface ArchivioContenuto {
+  /** Cartella richiesta (0 = radice dell'archivio). */
+  folderId: number;
   elementi: ArchivioElemento[];
   folderName: string | null;
   parentId: number;

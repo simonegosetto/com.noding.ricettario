@@ -12,7 +12,6 @@ module.exports = defineConfig([
       'src/app/features/menu/**',
       'src/app/features/schedeproduzione/schedaproduzione.page.*',
       'src/app/features/schedeproduzione/ricetta-scheda-tecnica.component.*',
-      'src/app/features/archiviodocumenti/**',
     ],
   },
   {

@@ -1,3 +1,25 @@
-ion-icon {
-  font-size: 25px;
+.archivio__indietro {
+  margin-bottom: 12px;
+}
+
+.archivio__caricamento {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(var(--ion-color-secondary-rgb), 0.15);
+}
+
+.archivio__nota {
+  margin: 8px 4px 0;
+  font-size: 0.8125rem;
+}
+
+.archivio__azioni {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
 }
