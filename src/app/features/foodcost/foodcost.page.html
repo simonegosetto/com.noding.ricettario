@@ -1,56 +1,90 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
+      <ion-menu-button />
     </ion-buttons>
-    <ion-title class="ion-text-center">Food Cost</ion-title>
+    <ion-title>Dizionario ingredienti</ion-title>
   </ion-toolbar>
-  <ion-row>
-    <ion-col>
-      <ion-searchbar
-        type="text"
-        placeholder="Cerca un alimento"
-        [(ngModel)]="ricerca.searchText"
-      ></ion-searchbar>
-    </ion-col>
-  </ion-row>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Cerca un alimento"
+      [debounce]="200"
+      [value]="search()"
+      (ionInput)="cerca($event.detail.value ?? '')"
+    />
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-list>
-    <ion-card
-      *ngFor="let item of ricerca.alimentiFullList | foodcost: ricerca.searchText"
-      style="cursor: pointer"
-    >
-      <ion-card-header>
-        <ion-card-title>{{ item.Ali_desc }}</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-row>
-          <ion-col>
-            <p>{{ item.Ali_kcal | number: '1.2-2' }} kcal</p>
-            <p>{{ item.Ali_edi | number: '1.2-2' }} edibile %</p>
-          </ion-col>
-          <ion-col>
-            <p>{{ item.Ali_prot | number: '1.2-2' }} prot</p>
-            <p>{{ item.Ali_anim | number: '1.2-2' }} prot anim</p>
-          </ion-col>
-          <ion-col>
-            <p>{{ item.Ali_veg | number: '1.2-2' }} prot veg</p>
-            <p>{{ item.Ali_glu | number: '1.2-2' }} glucidi</p>
-          </ion-col>
-          <ion-col>
-            <p>{{ item.Ali_amid | number: '1.2-2' }} amidi</p>
-            <p>{{ item.Ali_lup | number: '1.2-2' }} lipidi</p>
-          </ion-col>
-        </ion-row>
-      </ion-card-content>
-    </ion-card>
-  </ion-list>
-  <!--<ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)">
-    <ion-infinite-scroll-content
-            loadingSpinner="bubbles"
-            loadingText="Loading more commissions...">
-    </ion-infinite-scroll-content>
-  </ion-infinite-scroll>-->
+  <ion-refresher slot="fixed" (ionRefresh)="alimenti.load($event)">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page ion-padding">
+    @switch (alimenti.state()) {
+      @case ('loading') {
+        <ric-list-skeleton [rows]="8" />
+      }
+      @case ('error') {
+        <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare il dizionario.">
+          <ion-button fill="outline" (click)="alimenti.load()">Riprova</ion-button>
+        </ric-empty-state>
+      }
+      @default {
+        @if (visibili().length) {
+          <ion-list class="app-list">
+            @for (alimento of visibili(); track $index) {
+              <ion-item lines="full">
+                <ion-label class="ion-text-wrap">
+                  <h2>{{ alimento.descrizione }}</h2>
+                  <dl class="alimento">
+                    <div>
+                      <dt>kcal</dt>
+                      <dd class="app-num">{{ alimento.kcal | number: '1.0-2' }}</dd>
+                    </div>
+                    <div>
+                      <dt>edibile</dt>
+                      <dd class="app-num">{{ alimento.edibile | number: '1.0-2' }}%</dd>
+                    </div>
+                    <div>
+                      <dt>proteine</dt>
+                      <dd class="app-num">{{ alimento.proteine | number: '1.0-2' }}</dd>
+                    </div>
+                    <div>
+                      <dt>prot. animali</dt>
+                      <dd class="app-num">{{ alimento.proteineAnimali | number: '1.0-2' }}</dd>
+                    </div>
+                    <div>
+                      <dt>prot. vegetali</dt>
+                      <dd class="app-num">{{ alimento.proteineVegetali | number: '1.0-2' }}</dd>
+                    </div>
+                    <div>
+                      <dt>glucidi</dt>
+                      <dd class="app-num">{{ alimento.glucidi | number: '1.0-2' }}</dd>
+                    </div>
+                    <div>
+                      <dt>amidi</dt>
+                      <dd class="app-num">{{ alimento.amidi | number: '1.0-2' }}</dd>
+                    </div>
+                    <div>
+                      <dt>lipidi</dt>
+                      <dd class="app-num">{{ alimento.lipidi | number: '1.0-2' }}</dd>
+                    </div>
+                  </dl>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+          <ion-infinite-scroll [disabled]="!altri()" (ionInfinite)="mostraAltri($event)">
+            <ion-infinite-scroll-content />
+          </ion-infinite-scroll>
+        } @else {
+          <ric-empty-state
+            icon="book-outline"
+            [message]="search() ? 'Nessun alimento trovato.' : 'Il dizionario è vuoto.'"
+          />
+        }
+      }
+    }
+  </div>
 </ion-content>

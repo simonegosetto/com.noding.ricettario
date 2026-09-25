@@ -11,6 +11,17 @@ ion-toolbar ion-title {
   font-weight: 600;
 }
 
+/* Le toolbar sotto quella del titolo (ricerca, filtri) sono chiare: il marrone resta al titolo. */
+ion-header ion-toolbar:not(:first-of-type) {
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
+  --border-width: 0;
+
+  ion-searchbar {
+    --background: var(--ion-item-background);
+  }
+}
+
 /*
  * Ionic lascia il colore dei campi al contenitore (grigio dentro ion-card-content).
  * Il prefisso .md/.ios serve a superare la specificità delle regole interne dei componenti.

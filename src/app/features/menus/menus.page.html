@@ -1,57 +1,69 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
+      <ion-menu-button />
     </ion-buttons>
-    <ion-title class="ion-text-center"> Menù </ion-title>
+    <ion-title>Menù</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="nuovo()"
-        ><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon
-      ></ion-button>
+      <ion-button aria-label="Nuovo menù" (click)="nuovo()">
+        <ion-icon slot="icon-only" name="add-circle-outline" />
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-row>
-    <ion-col>
-      <ion-searchbar
-        type="text"
-        placeholder="Cerca un menù"
-        [(ngModel)]="ricerca.searchText"
-      ></ion-searchbar>
-    </ion-col>
-  </ion-row>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Cerca un menù"
+      [debounce]="150"
+      [value]="search()"
+      (ionInput)="search.set($event.detail.value ?? '')"
+    />
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="estrazione($event)">
-    <ion-refresher-content></ion-refresher-content>
+  <ion-refresher slot="fixed" (ionRefresh)="menu.load($event)">
+    <ion-refresher-content />
   </ion-refresher>
 
-  <ion-list>
-    <ion-card
-      *ngFor="let menu of ricerca.menuList | descrizione: ricerca.searchText"
-      style="cursor: pointer"
-      (click)="open(menu)"
-    >
-      <ion-card-content>
-        <ion-row>
-          <ion-col size="1">
-            <ion-icon name="document" color="dark"></ion-icon>
-          </ion-col>
-          <ion-col size="7">
-            <p>{{ menu.descrizione }}</p>
-          </ion-col>
-          <ion-col size="2">
-            <p *ngIf="menu.tipo === 1">Alla Carta</p>
-            <p *ngIf="menu.tipo === 2">Eventi</p>
-          </ion-col>
-          <ion-col size="1" style="cursor: pointer">
-            <ion-icon name="create" color="dark" (click)="edit($event, menu)"></ion-icon>
-          </ion-col>
-          <ion-col size="1">
-            <ion-icon name="trash" color="danger" (click)="delete($event, menu)"></ion-icon>
-          </ion-col>
-        </ion-row>
-      </ion-card-content>
-    </ion-card>
-  </ion-list>
+  <div class="app-page ion-padding">
+    @switch (menu.state()) {
+      @case ('loading') {
+        <ric-list-skeleton />
+      }
+      @case ('error') {
+        <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare i menù.">
+          <ion-button fill="outline" (click)="menu.load()">Riprova</ion-button>
+        </ric-empty-state>
+      }
+      @default {
+        @if (visibili().length) {
+          <ion-list class="app-list">
+            @for (voce of visibili(); track voce.id) {
+              <ric-list-row icon="restaurant-outline" (open)="apri(voce)">
+                <h2>{{ voce.descrizione }}</h2>
+                <p>{{ voce.tipo === tipi.Evento ? 'Evento' : 'Alla carta' }}</p>
+                <ion-button actions fill="clear" aria-label="Modifica" (click)="modifica(voce)">
+                  <ion-icon slot="icon-only" name="create-outline" />
+                </ion-button>
+                <ion-button
+                  actions
+                  fill="clear"
+                  color="danger"
+                  aria-label="Elimina"
+                  (click)="elimina(voce)"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline" />
+                </ion-button>
+              </ric-list-row>
+            }
+          </ion-list>
+        } @else {
+          <ric-empty-state
+            icon="restaurant-outline"
+            [message]="search() ? 'Nessun menù trovato.' : 'Non ci sono ancora menù.'"
+          />
+        }
+      }
+    }
+  </div>
 </ion-content>

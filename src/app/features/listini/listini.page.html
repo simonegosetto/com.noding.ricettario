@@ -1,53 +1,69 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
+      <ion-menu-button />
     </ion-buttons>
-    <ion-title class="ion-text-center"> Listini Prezzi </ion-title>
+    <ion-title>Listini prezzi</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="nuovoListino()"
-        ><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon
-      ></ion-button>
+      <ion-button aria-label="Nuovo listino" (click)="nuovo()">
+        <ion-icon slot="icon-only" name="add-circle-outline" />
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-row>
-    <ion-col>
-      <ion-searchbar
-        type="text"
-        placeholder="Cerca un listino"
-        [(ngModel)]="ricerca.searchText"
-      ></ion-searchbar>
-    </ion-col>
-  </ion-row>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Cerca un listino"
+      [debounce]="150"
+      [value]="search()"
+      (ionInput)="search.set($event.detail.value ?? '')"
+    />
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="estrazioneListini($event)">
-    <ion-refresher-content></ion-refresher-content>
+  <ion-refresher slot="fixed" (ionRefresh)="listini.load($event)">
+    <ion-refresher-content />
   </ion-refresher>
 
-  <ion-list>
-    <ion-card
-      *ngFor="let listino of ricerca.listiniList | descrizione: ricerca.searchText"
-      style="cursor: pointer"
-      (click)="openListino(listino)"
-    >
-      <ion-card-content>
-        <ion-row>
-          <ion-col size="1">
-            <ion-icon name="list" color="dark"></ion-icon>
-          </ion-col>
-          <ion-col size="9">
-            <p>{{ listino.descrizione }}</p>
-          </ion-col>
-          <ion-col size="1">
-            <ion-icon name="create" color="dark" (click)="edit($event, listino)"></ion-icon>
-          </ion-col>
-          <ion-col size="1">
-            <ion-icon name="trash" color="danger" (click)="delete($event, listino)"></ion-icon>
-          </ion-col>
-        </ion-row>
-      </ion-card-content>
-    </ion-card>
-  </ion-list>
+  <div class="app-page ion-padding">
+    @switch (listini.state()) {
+      @case ('loading') {
+        <ric-list-skeleton />
+      }
+      @case ('error') {
+        <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare i listini.">
+          <ion-button fill="outline" (click)="listini.load()">Riprova</ion-button>
+        </ric-empty-state>
+      }
+      @default {
+        @if (visibili().length) {
+          <ion-list class="app-list">
+            @for (listino of visibili(); track listino.id) {
+              <ric-list-row icon="list-outline" (open)="apri(listino)">
+                <h2>{{ listino.descrizione }}</h2>
+                <p>IVA {{ listino.aliquota | number: '1.0-2' }}%</p>
+                <ion-button actions fill="clear" aria-label="Modifica" (click)="modifica(listino)">
+                  <ion-icon slot="icon-only" name="create-outline" />
+                </ion-button>
+                <ion-button
+                  actions
+                  fill="clear"
+                  color="danger"
+                  aria-label="Elimina"
+                  (click)="elimina(listino)"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline" />
+                </ion-button>
+              </ric-list-row>
+            }
+          </ion-list>
+        } @else {
+          <ric-empty-state
+            icon="list-outline"
+            [message]="search() ? 'Nessun listino trovato.' : 'Non ci sono ancora listini.'"
+          />
+        }
+      }
+    }
+  </div>
 </ion-content>

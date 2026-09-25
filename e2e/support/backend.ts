@@ -111,3 +111,22 @@ export async function setupBackend(page: Page): Promise<BackendMock> {
   await backend.install();
   return backend;
 }
+
+/** Registra gli URL aperti con window.open (stampe) senza aprire finestre. */
+export async function recordWindowOpen(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const opened: string[] = [];
+    (window as unknown as { __opened: string[] }).__opened = opened;
+    window.open = (url?: string | URL) => {
+      opened.push(String(url ?? ''));
+      return null;
+    };
+  });
+}
+
+export async function lastOpenedUrl(page: Page): Promise<string> {
+  await page.waitForFunction(
+    () => (window as unknown as { __opened: string[] }).__opened.length > 0,
+  );
+  return page.evaluate(() => (window as unknown as { __opened: string[] }).__opened.at(-1) ?? '');
+}

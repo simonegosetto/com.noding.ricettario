@@ -1,72 +1,88 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
+      <ion-menu-button />
     </ion-buttons>
-    <ion-title class="ion-text-center"> Ricerca ricette </ion-title>
+    <ion-title>Ricette</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="nuovaRicetta()"
-        ><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon
-      ></ion-button>
+      <ion-button aria-label="Nuova ricetta" (click)="nuova()">
+        <ion-icon slot="icon-only" name="add-circle-outline" />
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-row>
-    <ion-col>
-      <ion-searchbar
-        type="text"
-        placeholder="Cerca una ricetta"
-        [(ngModel)]="ricerca.searchText"
-      ></ion-searchbar>
-    </ion-col>
-    <ion-col size="3" style="padding-left: 0; margin-left: 0">
-      <select
-        name="tipo"
-        class="center"
-        style="width: 100%; padding: 8px 8px 8px 0; margin: 8px 8px 8px 0"
-        [(ngModel)]="ricerca.tipo"
-        (ngModelChange)="estrazioneRicette(null)"
-      >
-        <option value="1">Ricette</option>
-        <option value="2">Schede tecniche</option>
-      </select>
-    </ion-col>
-  </ion-row>
+  <ion-toolbar>
+    <ion-segment
+      aria-label="Tipo"
+      [value]="tipoRicetta()"
+      (ionChange)="cambiaTipo($event.detail.value)"
+    >
+      <ion-segment-button [value]="tipi.Ricetta">
+        <ion-label>Ricette</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="tipi.SchedaTecnica">
+        <ion-label>Schede tecniche</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Cerca una ricetta"
+      [debounce]="150"
+      [value]="search()"
+      (ionInput)="search.set($event.detail.value ?? '')"
+    />
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="estrazioneRicette($event)">
-    <ion-refresher-content></ion-refresher-content>
+  <ion-refresher slot="fixed" (ionRefresh)="ricette.load($event)">
+    <ion-refresher-content />
   </ion-refresher>
 
-  <ion-list>
-    <ion-card
-      *ngFor="let ricetta of ricerca.ricetteList | ricette: ricerca.searchText"
-      style="cursor: pointer"
-      (click)="openRicetta(ricetta)"
-    >
-      <ion-card-content>
-        <ion-row>
-          <ion-col size="1">
-            <ion-icon name="document" color="dark"></ion-icon>
-          </ion-col>
-          <ion-col size="9">
-            <p>{{ ricetta.nome_ric }}</p>
-          </ion-col>
-          <ion-col size="1" *ngIf="ricetta.composta">
-            <ion-icon name="print" color="dark" (click)="printRicetta2($event, ricetta)"></ion-icon>
-          </ion-col>
-          <ion-col size="1" *ngIf="!ricetta.composta">
-            <ion-icon name="print" color="dark" (click)="printRicetta($event, ricetta)"></ion-icon>
-          </ion-col>
-          <ion-col size="1">
-            <ion-icon
-              name="trash"
-              color="danger"
-              (click)="deleteRicetta($event, ricetta)"
-            ></ion-icon>
-          </ion-col>
-        </ion-row>
-      </ion-card-content>
-    </ion-card>
-  </ion-list>
+  <div class="app-page ion-padding">
+    @switch (ricette.state()) {
+      @case ('loading') {
+        <ric-list-skeleton />
+      }
+      @case ('error') {
+        <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare le ricette.">
+          <ion-button fill="outline" (click)="ricette.load()">Riprova</ion-button>
+        </ric-empty-state>
+      }
+      @default {
+        @if (visibili().length) {
+          <ion-list class="app-list">
+            @for (ricetta of visibili(); track ricetta.cod_p) {
+              <ric-list-row
+                [icon]="ricetta.composta ? 'layers-outline' : 'document-text-outline'"
+                (open)="apri(ricetta)"
+              >
+                <h2>{{ ricetta.nome_ric }}</h2>
+                @if (ricetta.composta) {
+                  <p>Con sotto-ricette</p>
+                }
+                <ion-button actions fill="clear" aria-label="Stampa" (click)="stampa(ricetta)">
+                  <ion-icon slot="icon-only" name="print-outline" />
+                </ion-button>
+                <ion-button
+                  actions
+                  fill="clear"
+                  color="danger"
+                  aria-label="Elimina"
+                  (click)="elimina(ricetta)"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline" />
+                </ion-button>
+              </ric-list-row>
+            }
+          </ion-list>
+        } @else {
+          <ric-empty-state
+            icon="document-text-outline"
+            [message]="search() ? 'Nessuna ricetta trovata.' : 'Non ci sono ancora ricette.'"
+          />
+        }
+      }
+    }
+  </div>
 </ion-content>

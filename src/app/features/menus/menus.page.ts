@@ -1,157 +1,124 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertService } from '../core/services/alert.service';
-import { GlobalService } from '../core/services/global.service';
-import { Menu, MenuRead } from '../shared/interface/menu';
-import { ModalDescrizioneComponent } from '../shared/modal/modal-descrizione.component';
-import { ModalConfig } from '../core/interfaces/modal-config';
-import { ModalService } from '../core/services/modal.service';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonList } from '@ionic/angular/ion-list';
+import { IonMenuButton } from '@ionic/angular/ion-menu-button';
+import { IonRefresher } from '@ionic/angular/ion-refresher';
+import { IonRefresherContent } from '@ionic/angular/ion-refresher-content';
+import { IonSearchbar } from '@ionic/angular/ion-searchbar';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import type { ViewWillEnter } from '@ionic/angular';
+
+import { AlertService } from '../../core/ui/alert.service';
+import { ModalService } from '../../core/ui/modal.service';
+import { ToastService } from '../../core/ui/toast.service';
+import { MenuRepository } from '../../data/menu.repository';
+import {
+  DescrizioneModalResult,
+  ModalDescrizioneComponent,
+} from '../../shared/modal-descrizione/modal-descrizione.component';
+import { Menu, MenuSalvataggio, TipoMenu } from '../../shared/models/menu';
+import { filterByText } from '../../shared/text-filter';
+import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { ListRowComponent } from '../../shared/ui/list-row.component';
+import { ListSkeletonComponent } from '../../shared/ui/list-skeleton.component';
+import { RemoteList } from '../../shared/ui/remote-list';
 
 @Component({
   selector: 'ric-menus',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    IonButton,
+    IonButtons,
+    IonContent,
+    IonHeader,
+    IonIcon,
+    IonList,
+    IonMenuButton,
+    IonRefresher,
+    IonRefresherContent,
+    IonSearchbar,
+    IonTitle,
+    IonToolbar,
+    EmptyStateComponent,
+    ListRowComponent,
+    ListSkeletonComponent,
+  ],
   templateUrl: './menus.page.html',
-  styleUrls: ['./menus.page.scss'],
 })
-export class MenusPage implements OnInit {
-  constructor(
-    private _router: Router,
-    private _alert: AlertService,
-    public gs: GlobalService,
-    private _modal: ModalService,
-  ) {}
+export class MenusPage implements ViewWillEnter {
+  private readonly repository = inject(MenuRepository);
+  private readonly router = inject(Router);
+  private readonly modals = inject(ModalService);
+  private readonly alerts = inject(AlertService);
+  private readonly toast = inject(ToastService);
 
-  public ricerca = {
-    searchText: '',
-    categoria: 0,
-    pageSize: 10,
-    progressSize: 10,
-    menuList: [] as MenuRead[],
-  };
+  protected readonly tipi = TipoMenu;
+  protected readonly menu = new RemoteList(() => this.repository.list());
+  protected readonly search = signal('');
+  protected readonly visibili = computed(() =>
+    filterByText(this.menu.items(), this.search(), (menu) => menu.descrizione),
+  );
 
-  ngOnInit() {
-    this.estrazione();
+  ionViewWillEnter(): void {
+    this.menu.load();
   }
 
-  estrazione(event = null) {
-    this.gs
-      .callGateway(
-        'okb5t42MzxMMO10EgkksbFQpXCzgQLrxVnqW8dDhrW0tWy0tSVYtWy2QU3GxVikgfK/sdvifCsRO5yJOE90sdeoUckFl95Ocfg@@',
-        ``,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.ricerca.menuList = data.recordset ? [...data.recordset] : [];
-          if (event) {
-            event.target.complete();
-          }
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
+  protected apri(menu: Menu): void {
+    void this.router.navigate(['/menu', menu.id]);
   }
 
-  open(menu: MenuRead) {
-    this._router.navigate([`menu/${menu.id}`]);
-  }
-
-  nuovo() {
-    const modalNew = this._modal.present(ModalDescrizioneComponent, {
-      title: 'Nuovo Menù',
-      cancelText: 'Annulla',
-      confirmText: 'Salva',
-      data: { tipo: 1 },
-    } as ModalConfig);
-    modalNew.then((result) => {
-      if (result.data && result.data.descrizione) {
-        const { descrizione, tipo } = result.data;
-        this._save({ id: 0, descrizione, tipo } as Menu);
-      }
+  protected async nuovo(): Promise<void> {
+    const result = await this.modals.open<DescrizioneModalResult>(ModalDescrizioneComponent, {
+      title: 'Nuovo menù',
+      tipo: TipoMenu.AllaCarta,
     });
-  }
-
-  edit($event, menu: MenuRead) {
-    $event.stopPropagation();
-    const modalNew = this._modal.present(ModalDescrizioneComponent, {
-      title: 'Modifica Menù',
-      cancelText: 'Annulla',
-      confirmText: 'Salva',
-      data: { ...menu },
-    } as ModalConfig);
-    modalNew.then((result) => {
-      if (result.data && result.data.descrizione) {
-        const { id, descrizione, tipo } = result.data;
-        this._save({ id, descrizione, tipo } as Menu);
-      }
-    });
-  }
-
-  private _save(listino: Menu) {
-    if (listino.id > 0) {
-      this.gs
-        .callGateway(
-          'WddXaeNoWWXfUYNDtmREohVHFM/7T/G7ffefI3q3RE8tWy0tSVYtWy3QneYethYCTEyg74Y9QyTQBX0Nt0lqHoTn12NCP6P1og@@',
-          `${listino.id},'${listino.descrizione}',${listino.tipo}`,
-        )
-        .subscribe(
-          (data) => {
-            if (data.hasOwnProperty('error')) {
-              this.gs.toast.present(data.error);
-              return;
-            }
-            this.estrazione();
-            this.gs.loading.dismiss();
-          },
-          (error) => this.gs.toast.present(error.message, 5000),
-        );
-    } else {
-      this.gs
-        .callGateway(
-          'nQ6vGlNTQWOFq9x+Eo5WHKSu26dR8u+cVJ4yRdbgFyEtWy0tSVYtWy17tl03kprmq8PVPclI5j0NKh4awp8QeZinUz6gvwlRSw@@',
-          `${listino.id},'${listino.descrizione}',${listino.tipo},0,0`,
-        )
-        .subscribe(
-          (data) => {
-            if (data.hasOwnProperty('error')) {
-              this.gs.toast.present(data.error);
-              return;
-            }
-            this.estrazione();
-            this.gs.loading.dismiss();
-          },
-          (error) => this.gs.toast.present(error.message, 5000),
-        );
+    if (result) {
+      this.salva({
+        id: 0,
+        descrizione: result.descrizione,
+        tipo: result.tipo ?? TipoMenu.AllaCarta,
+      });
     }
   }
 
-  delete($event, menu: MenuRead) {
-    $event.stopPropagation();
-    const alertElimina = this._alert.confirm(
-      'Attenzione',
-      `Confermi di eliminare il menù ${menu.descrizione} ?`,
-    );
-    alertElimina.then((result) => {
-      if (result.role === 'OK') {
-        this.gs
-          .callGateway(
-            'b20k0izyEWj8NwW0XI+4P2G7glsRp2Np4K9edlm57/ktWy0tSVYtWy2mhb68JrCq7bjwMdEzlVlt7b8aTBmEnARp939rBwssnQ@@',
-            menu.id,
-          )
-          .subscribe(
-            (data) => {
-              if (data.hasOwnProperty('error')) {
-                this.gs.toast.present(data.error);
-                return;
-              }
-              this.estrazione();
-              this.gs.loading.dismiss();
-            },
-            (error) => this.gs.toast.present(error.message, 5000),
-          );
-      }
+  protected async modifica(menu: Menu): Promise<void> {
+    const result = await this.modals.open<DescrizioneModalResult>(ModalDescrizioneComponent, {
+      title: 'Modifica menù',
+      descrizione: menu.descrizione,
+      tipo: menu.tipo,
     });
+    if (result) {
+      this.salva({ id: menu.id, descrizione: result.descrizione, tipo: result.tipo ?? menu.tipo });
+    }
+  }
+
+  protected async elimina(menu: Menu): Promise<void> {
+    const conferma = await this.alerts.confirm(
+      'Elimina menù',
+      `Confermi di eliminare il menù «${menu.descrizione}»?`,
+      { confirmText: 'Elimina', cancelText: 'Annulla' },
+    );
+    if (conferma) {
+      this.repository
+        .delete(menu.id)
+        .pipe(this.toast.notifyErrors())
+        .subscribe(() => this.menu.load());
+    }
+  }
+
+  private salva(menu: MenuSalvataggio): void {
+    this.repository
+      .save(menu)
+      .pipe(this.toast.notifyErrors())
+      .subscribe(() => {
+        this.toast.success('Menù salvato');
+        this.menu.load();
+      });
   }
 }

@@ -9,6 +9,11 @@ import { loginAs, setupBackend } from './support/backend';
 const PAGES: { name: string; url: string; public?: boolean }[] = [
   { name: 'login', url: '/login', public: true },
   { name: 'home', url: '/home' },
+  { name: 'ricette', url: '/ricette' },
+  { name: 'listini', url: '/listini' },
+  { name: 'menus', url: '/menus' },
+  { name: 'schedeproduzione', url: '/schedeproduzione' },
+  { name: 'foodcost', url: '/foodcost' },
 ];
 
 for (const scheme of ['light', 'dark'] as const) {

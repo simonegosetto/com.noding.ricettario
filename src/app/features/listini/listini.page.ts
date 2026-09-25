@@ -1,139 +1,123 @@
-import { Component, OnInit } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertService } from '../core/services/alert.service';
-import { GlobalService } from '../core/services/global.service';
-import { Listino, ListinoRead } from '../shared/interface/listino';
-import { ModalService } from '../core/services/modal.service';
-import { ModalConfig } from '../core/interfaces/modal-config';
-import { ModalDescrizioneComponent } from '../shared/modal/modal-descrizione.component';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonList } from '@ionic/angular/ion-list';
+import { IonMenuButton } from '@ionic/angular/ion-menu-button';
+import { IonRefresher } from '@ionic/angular/ion-refresher';
+import { IonRefresherContent } from '@ionic/angular/ion-refresher-content';
+import { IonSearchbar } from '@ionic/angular/ion-searchbar';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import type { ViewWillEnter } from '@ionic/angular';
+
+import { AlertService } from '../../core/ui/alert.service';
+import { ModalService } from '../../core/ui/modal.service';
+import { ToastService } from '../../core/ui/toast.service';
+import { ListiniRepository } from '../../data/listini.repository';
+import { ListiniStore } from '../../data/listini.store';
+import {
+  DescrizioneModalResult,
+  ModalDescrizioneComponent,
+} from '../../shared/modal-descrizione/modal-descrizione.component';
+import { Listino } from '../../shared/models/listino';
+import { filterByText } from '../../shared/text-filter';
+import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { ListRowComponent } from '../../shared/ui/list-row.component';
+import { ListSkeletonComponent } from '../../shared/ui/list-skeleton.component';
+import { RemoteList } from '../../shared/ui/remote-list';
 
 @Component({
   selector: 'ric-listini',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    DecimalPipe,
+    IonButton,
+    IonButtons,
+    IonContent,
+    IonHeader,
+    IonIcon,
+    IonList,
+    IonMenuButton,
+    IonRefresher,
+    IonRefresherContent,
+    IonSearchbar,
+    IonTitle,
+    IonToolbar,
+    EmptyStateComponent,
+    ListRowComponent,
+    ListSkeletonComponent,
+  ],
   templateUrl: './listini.page.html',
-  styleUrls: ['./listini.page.scss'],
 })
-export class ListiniPage implements OnInit {
-  constructor(
-    private _router: Router,
-    private _alert: AlertService,
-    private _modal: ModalService,
-    public gs: GlobalService,
-  ) {}
+export class ListiniPage implements ViewWillEnter {
+  private readonly repository = inject(ListiniRepository);
+  private readonly store = inject(ListiniStore);
+  private readonly router = inject(Router);
+  private readonly modals = inject(ModalService);
+  private readonly alerts = inject(AlertService);
+  private readonly toast = inject(ToastService);
 
-  public ricerca = {
-    searchText: '',
-    categoria: 0,
-    pageSize: 10,
-    progressSize: 10,
-    listiniList: [] as ListinoRead[],
-  };
+  protected readonly listini = new RemoteList(() => this.store.load(true));
+  protected readonly search = signal('');
+  protected readonly visibili = computed(() =>
+    filterByText(this.listini.items(), this.search(), (listino) => listino.descrizione),
+  );
 
-  ngOnInit() {
-    this.estrazioneListini();
+  ionViewWillEnter(): void {
+    this.listini.load();
   }
 
-  estrazioneListini(event = null) {
-    this.gs
-      .callGateway(
-        'BnnFe0vU9aHbFGDCdwhl3h+5nSiRtsLXHgSRgQ803PAtWy0tSVYtWy3oQdVT2zI26QCrxbZr7SBgQ0QqM/cJWYN2qNm3Fq18Lw@@',
-        ``,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.ricerca.listiniList = data.recordset ? [...data.recordset] : [];
-          if (event) {
-            event.target.complete();
-          }
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
+  protected apri(listino: Listino): void {
+    void this.router.navigate(['/listino', listino.id]);
   }
 
-  openListino(listino: ListinoRead) {
-    sessionStorage.setItem('listinoDescrizione', listino.descrizione);
-    this._router.navigate([`listino/${listino.id}`]);
-  }
-
-  nuovoListino() {
-    const modalNew = this._modal.present(ModalDescrizioneComponent, {
-      title: 'Nuovo Listino',
-      cancelText: 'Annulla',
-      confirmText: 'Salva',
-      data: { aliquota: 0 },
-    } as ModalConfig);
-    modalNew.then((result) => {
-      if (result.data && result.data.descrizione) {
-        const { descrizione, aliquota } = result.data;
-        this._saveListino({ id: 0, descrizione, aliquota } as Listino);
-      }
+  protected async nuovo(): Promise<void> {
+    const result = await this.modals.open<DescrizioneModalResult>(ModalDescrizioneComponent, {
+      title: 'Nuovo listino',
+      aliquota: 0,
     });
+    if (result) {
+      this.salva({ id: 0, descrizione: result.descrizione, aliquota: result.aliquota ?? 0 });
+    }
   }
 
-  private _saveListino(listino: Listino) {
-    this.gs
-      .callGateway(
-        '+qE5v3SYnfwew9ERUdNFtDBPcIEX1WHvlPw2rWnt9Z4tWy0tSVYtWy32eWs2dLQzwdu3PT0V1eHN6VOHoiA8WwUBNx9X9PtdvA@@',
-        `${listino.id},'${listino.descrizione}',${listino.aliquota}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.estrazioneListini();
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
-  }
-
-  edit($event, listino: ListinoRead) {
-    $event.stopPropagation();
-    const modalNew = this._modal.present(ModalDescrizioneComponent, {
-      title: 'Modifica Listino',
-      cancelText: 'Annulla',
-      confirmText: 'Salva',
-      data: { ...listino },
-    } as ModalConfig);
-    modalNew.then((result) => {
-      if (result.data && result.data.descrizione) {
-        const { id, descrizione, aliquota } = result.data;
-        this._saveListino({ id, descrizione, aliquota } as Listino);
-      }
+  protected async modifica(listino: Listino): Promise<void> {
+    const result = await this.modals.open<DescrizioneModalResult>(ModalDescrizioneComponent, {
+      title: 'Modifica listino',
+      descrizione: listino.descrizione,
+      aliquota: listino.aliquota,
     });
+    if (result) {
+      this.salva({ ...listino, descrizione: result.descrizione, aliquota: result.aliquota ?? 0 });
+    }
   }
 
-  delete($event, listino: ListinoRead) {
-    $event.stopPropagation();
-    const alertElimina = this._alert.confirm(
-      'Attenzione',
-      `Confermi di eliminare il listino ${listino.descrizione} ?`,
+  protected async elimina(listino: Listino): Promise<void> {
+    const conferma = await this.alerts.confirm(
+      'Elimina listino',
+      `Confermi di eliminare il listino «${listino.descrizione}»?`,
+      { confirmText: 'Elimina', cancelText: 'Annulla' },
     );
-    alertElimina.then((result) => {
-      if (result.role === 'OK') {
-        this.gs
-          .callGateway(
-            'O8ucerAGcmc2Pe61cYP8sNIGcx1t13A4chm0RwJc+eYtWy0tSVYtWy1qBXDOjMpc/IvwECjY/mIGAU97Ykeme0fjs4mW6qbRXQ@@',
-            listino.id,
-          )
-          .subscribe(
-            (data) => {
-              if (data.hasOwnProperty('error')) {
-                this.gs.toast.present(data.error);
-                return;
-              }
-              this.estrazioneListini();
-              this.gs.loading.dismiss();
-            },
-            (error) => this.gs.toast.present(error.message, 5000),
-          );
-      }
-    });
+    if (conferma) {
+      this.repository
+        .delete(listino.id)
+        .pipe(this.toast.notifyErrors())
+        .subscribe(() => this.listini.load());
+    }
+  }
+
+  private salva(listino: Listino): void {
+    this.repository
+      .save(listino)
+      .pipe(this.toast.notifyErrors())
+      .subscribe(() => {
+        this.toast.success('Listino salvato');
+        this.listini.load();
+      });
   }
 }
