@@ -33,6 +33,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'schedaproduzione/:id',
+    title: 'Scheda di produzione',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/schedeproduzione/schedaproduzione.page').then(
+        (m) => m.SchedaproduzionePage,
+      ),
+  },
+  {
     path: 'archiviodocumenti',
     title: 'Archivio documenti',
     canActivate: [authGuard],

@@ -81,6 +81,68 @@ export const INGREDIENTI = [
   { id: 8, descrizione: 'Zucchero semolato' },
 ];
 
+/** Testate di RICETTA_GET e righe di RICETTA_RIGHE per cod_p. */
+export const RICETTE_DETTAGLIO: Record<number, Record<string, unknown>> = {
+  1: {
+    cod_p: 1,
+    nome_ric: 'Ragù alla bolognese',
+    procedimento: 'Rosolare il soffritto, unire la carne e cuocere a fuoco lento per 3 ore.',
+    prezzo_vendita: 12,
+    peso_effettivo: 1800,
+    id_storage: null,
+  },
+  2: {
+    cod_p: 2,
+    nome_ric: 'Lasagne al forno',
+    procedimento: 'Alternare sfoglia, ragù e besciamella.\nCuocere a 180 °C per 40 minuti.',
+    prezzo_vendita: 14,
+    peso_effettivo: 2500,
+    id_storage: 'id:e2e-img-2',
+  },
+  3: {
+    cod_p: 3,
+    nome_ric: 'Crème brûlée',
+    procedimento: null,
+    prezzo_vendita: 7.5,
+    peso_effettivo: 600,
+    id_storage: null,
+  },
+};
+
+const riga = (
+  id: number,
+  nome: string,
+  quantita: number | null,
+  perc: number | null,
+  ricettaid = 0,
+  escludi = 0,
+) => ({
+  id,
+  nome,
+  quantita,
+  perc,
+  ricettaid,
+  escludi_peso: escludi,
+});
+
+export const RIGHE_RICETTA: Record<number, unknown[]> = {
+  1: [
+    riga(1, 'Carne macinata', 1000, 55.56),
+    riga(2, 'Passata di pomodoro', 700, 38.89),
+    riga(3, 'Soffritto', 100, 5.56),
+  ],
+  2: [
+    riga(4, 'Ragù alla bolognese', 1200, 48, 1),
+    riga(5, 'Besciamella', 800, 32, 10),
+    riga(6, "Sfoglia all'uovo", 500, 20),
+  ],
+  3: [
+    riga(7, 'Panna fresca', 500, 83.33),
+    riga(8, 'Tuorli', 100, 16.67),
+    riga(9, 'Zucchero di canna', 30, null, 0, 1),
+  ],
+};
+
 /** Archivio: radice con due cartelle e due file, "Fatture" con una sottocartella vuota. */
 const CARTELLA_FATTURE = {
   folderid: 5,
@@ -178,6 +240,22 @@ export const DEFAULT_RESPONSES: Partial<Record<ProcessName, (params: string | nu
     RICETTE_SEARCH: (testo) => ({
       recordset: RICETTE.filter((r) => r.nome_ric.toLowerCase().includes(unquote(testo))),
     }),
+    SCHEDA_RIGHE: (scheda) => ({
+      recordset:
+        Number(scheda) === 1
+          ? [
+              { id: 21, ricettaid: 2 },
+              { id: 22, ricettaid: 3 },
+            ]
+          : [],
+    }),
+    RICETTA_GET: (codP) => ({
+      recordset: String(codP)
+        .split(',')
+        .map((id) => RICETTE_DETTAGLIO[Number(id)])
+        .filter(Boolean),
+    }),
+    RICETTA_RIGHE: (codP) => ({ recordset: RIGHE_RICETTA[Number(codP)] ?? [] }),
     ARCHIVIO_LIST: (params) =>
       ARCHIVIO[Number(String(params).split(',')[0])] ?? { recordset: [], output: [{}] },
     ARCHIVIO_CARTELLE_TREE: () => ({ recordset: CARTELLE_ARCHIVIO }),

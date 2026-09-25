@@ -53,13 +53,11 @@ test("carica un file: prima il record nel DB, poi Dropbox con l'id restituito", 
   await expect(titolo(page)).toHaveText('Fatture');
 
   const contenuto = Buffer.from('%PDF-1.4 e2e');
-  await pagina(page)
-    .locator('input[type=file]')
-    .setInputFiles({
-      name: "Menu dell'estate.pdf",
-      mimeType: 'application/pdf',
-      buffer: contenuto,
-    });
+  await pagina(page).locator('input[type=file]').setInputFiles({
+    name: "Menu dell'estate.pdf",
+    mimeType: 'application/pdf',
+    buffer: contenuto,
+  });
 
   await expect(page.locator('ion-toast', { hasText: 'File caricato' })).toBeVisible();
   expect(backend.callsTo('ARCHIVIO_FILE_INSERT')).toEqual([

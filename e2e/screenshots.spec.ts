@@ -14,6 +14,7 @@ const PAGES: { name: string; url: string; public?: boolean }[] = [
   { name: 'listino', url: '/listino/1' },
   { name: 'menus', url: '/menus' },
   { name: 'schedeproduzione', url: '/schedeproduzione' },
+  { name: 'schedaproduzione', url: '/schedaproduzione/1' },
   { name: 'foodcost', url: '/foodcost' },
   { name: 'archivio', url: '/archiviodocumenti' },
   { name: 'archivio-cartella', url: '/archiviodocumenti?cartella=5' },

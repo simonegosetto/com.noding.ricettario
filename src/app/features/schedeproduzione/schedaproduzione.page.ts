@@ -1,156 +1,136 @@
-import { Component, OnInit } from '@angular/core';
-import { ModalSearchRicettaComponent } from '../ricetta/modal-search-ricetta.component';
-import { environment } from '../../environments/environment';
-import { ModalService } from '../core/services/modal.service';
-import { SchedeProduzione, SchedeProduzioneRighe } from '../shared/interface/schede-produzione';
-import { GlobalService } from '../core/services/global.service';
-import { AlertService } from '../core/services/alert.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ListinoRead } from '../shared/interface/listino';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { IonBackButton } from '@ionic/angular/ion-back-button';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonRefresher } from '@ionic/angular/ion-refresher';
+import { IonRefresherContent } from '@ionic/angular/ion-refresher-content';
+import { IonSelect } from '@ionic/angular/ion-select';
+import { IonSelectOption } from '@ionic/angular/ion-select-option';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import type { ViewWillEnter } from '@ionic/angular';
+import { Observable } from 'rxjs';
+
+import { AlertService } from '../../core/ui/alert.service';
+import { ModalService } from '../../core/ui/modal.service';
+import { ToastService } from '../../core/ui/toast.service';
+import { ListiniStore } from '../../data/listini.store';
+import { ReportService } from '../../data/report.service';
+import { SchedeProduzioneRepository } from '../../data/schede-produzione.repository';
+import { RicettaCercata } from '../../shared/models/ricetta';
+import { SchedaProduzioneRiga } from '../../shared/models/schede-produzione';
+import { RicettaCardComponent } from '../../shared/ricetta-card/ricetta-card.component';
+import { SearchModalComponent } from '../../shared/search-modal/search-modal.component';
+import { ricetteSource } from '../../shared/search-modal/search-sources';
+import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { ListSkeletonComponent } from '../../shared/ui/list-skeleton.component';
+import { RemoteList } from '../../shared/ui/remote-list';
 
 @Component({
   selector: 'ric-schedaproduzione',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    IonBackButton,
+    IonButton,
+    IonButtons,
+    IonContent,
+    IonHeader,
+    IonIcon,
+    IonRefresher,
+    IonRefresherContent,
+    IonSelect,
+    IonSelectOption,
+    IonTitle,
+    IonToolbar,
+    EmptyStateComponent,
+    ListSkeletonComponent,
+    RicettaCardComponent,
+  ],
   templateUrl: './schedaproduzione.page.html',
-  styleUrls: ['./schedaproduzione.page.scss'],
+  styleUrl: './schedaproduzione.page.scss',
 })
-export class SchedaproduzionePage implements OnInit {
-  constructor(
-    private _modal: ModalService,
-    public gs: GlobalService,
-    private _alert: AlertService,
-    private _router: Router,
-    private _route: ActivatedRoute,
-  ) {}
+export class SchedaproduzionePage implements ViewWillEnter {
+  private readonly repository = inject(SchedeProduzioneRepository);
+  private readonly store = inject(ListiniStore);
+  private readonly reports = inject(ReportService);
+  private readonly router = inject(Router);
+  private readonly modals = inject(ModalService);
+  private readonly alerts = inject(AlertService);
+  private readonly toast = inject(ToastService);
 
-  public ricetteList: SchedeProduzioneRighe[] = [];
-  public schedaProduzione: SchedeProduzione = {} as SchedeProduzione;
-  public listinoID: number;
-  public listiniList: ListinoRead[] = [];
+  private readonly fonteRicette = ricetteSource();
 
-  ngOnInit() {
-    const param = this._route.snapshot.paramMap.get('id');
-    if (parseInt(param) > 0) {
-      this.schedaProduzione.id = parseInt(param);
-      this.schedaProduzione.descrizione = sessionStorage.getItem('schedaProduzioneDescrizione');
-      this.getSchedaRighe();
-    } else {
-      this._router.navigate(['schedeproduzione']);
+  /** Parametro di rotta `:id`. */
+  readonly id = input.required<string>();
+
+  protected readonly schedaId = computed(() => Number(this.id()));
+  /** Nome della scheda, letto dal backend (la versione legacy lo passava in sessionStorage). */
+  protected readonly descrizione = signal<string | null>(null);
+  protected readonly titolo = computed(() => this.descrizione() ?? 'Scheda di produzione');
+  protected readonly listini = this.store.listini;
+  protected readonly listinoId = this.store.correnteId;
+  protected readonly righe = new RemoteList(() => this.repository.righe(this.schedaId()));
+
+  ionViewWillEnter(): void {
+    if (!(this.schedaId() > 0)) {
+      void this.router.navigate(['/schedeproduzione'], { replaceUrl: true });
+      return;
     }
-    this._estrazioneListini();
+    this.store.load().pipe(this.toast.notifyErrors()).subscribe();
+    this.repository
+      .get(this.schedaId())
+      .pipe(this.toast.notifyErrors())
+      .subscribe((scheda) => this.descrizione.set(scheda?.descrizione ?? null));
+    this.righe.load();
   }
 
-  private _estrazioneListini() {
-    this.gs
-      .callGateway(
-        'BnnFe0vU9aHbFGDCdwhl3h+5nSiRtsLXHgSRgQ803PAtWy0tSVYtWy3oQdVT2zI26QCrxbZr7SBgQ0QqM/cJWYN2qNm3Fq18Lw@@',
-        ``,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.listiniList = data.recordset ? data.recordset : [];
-          if (this.listiniList.length > 0) {
-            this.listinoID = this.listiniList[this.listiniList.length - 1].id;
-          }
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
+  protected cambiaListino(value: unknown): void {
+    this.store.seleziona(Number(value));
+  }
+
+  /** Stampa delle schede tecniche di tutte le ricette, col food cost sul listino scelto. */
+  protected stampa(conFoodcost: boolean): void {
+    const ricette = this.righe.items().map((riga) => riga.ricettaid);
+    if (ricette.length) {
+      this.reports.open(
+        this.reports.schedaTecnica(ricette, this.titolo(), conFoodcost, this.listinoId()),
       );
+    }
   }
 
-  getSchedaRighe() {
-    this.gs
-      .callGateway(
-        'ZGrBRm2wXfzaxA55wgbIWsB1/YmoPntkZMcM/cQjtLAtWy0tSVYtWy1JhzOXXh74oQxLQr2i2SwqPirx4VWWefINmcScc4m97g@@',
-        `${this.schedaProduzione.id}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.ricetteList = data.recordset ? [...data.recordset] : [];
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
-  }
-
-  nuovaRicetta() {
-    const modalCliente = this._modal.present(ModalSearchRicettaComponent, {});
-    modalCliente.then((result) => {
-      if (result.data) {
-        this.gs
-          .callGateway(
-            'IlbwuISwJ/DBW0uy+ORTu0Ahc/u3Y+nIjqrQ1sd/PLADIHhO//BtdcHkAh+NtCRHVjdQUWhZ9BkJCQHT2xxBSy1bLS1JVi1bLfEH0UNkSMB7zAKeURhyfVO2o9Fth+h9BzgvVLtirIfg',
-            `${this.schedaProduzione.id},${result.data.cod_p}`,
-          )
-          .subscribe(
-            (data) => {
-              if (data.hasOwnProperty('error')) {
-                this.gs.toast.present(data.error);
-                return;
-              }
-              this.getSchedaRighe();
-              this.gs.loading.dismiss();
-            },
-            (error) => this.gs.toast.present(error.message, 5000),
-          );
-      }
+  protected async aggiungi(): Promise<void> {
+    const ricetta = await this.modals.open<RicettaCercata>(SearchModalComponent, {
+      title: 'Aggiungi ricetta',
+      placeholder: 'Cerca una ricetta',
+      source: this.fonteRicette,
     });
+    if (ricetta) {
+      this.esegui(
+        this.repository.addRicetta(this.schedaId(), ricetta.cod_p),
+        `«${ricetta.nome_ric}» aggiunta alla scheda`,
+      );
+    }
   }
 
-  delete(riga: SchedeProduzioneRighe) {
-    const alertElimina = this._alert.confirm(
-      'Attenzione',
-      `Confermi di eliminare la ricetta dalla scheda ?`,
+  protected async togli(riga: SchedaProduzioneRiga): Promise<void> {
+    const conferma = await this.alerts.confirm(
+      'Togli ricetta',
+      'Confermi di togliere la ricetta dalla scheda? La ricetta non viene eliminata.',
+      { confirmText: 'Togli', cancelText: 'Annulla' },
     );
-    alertElimina.then((result) => {
-      if (result.role === 'OK') {
-        this.gs
-          .callGateway(
-            'S+jzb0ADwezeBPQYjHQC4GeltNyU5EsXIlR6m2gN66aa8pPcbUz8wxgmfuhRBA+lcRVOKKJLsoLPnpxoNA4g0C1bLS1JVi1bLaIfIFJTkiW5pAZxdtBC8yhE8eN3wnpirAbLS5tohJ7U',
-            riga.id,
-          )
-          .subscribe(
-            (data) => {
-              if (data.hasOwnProperty('error')) {
-                this.gs.toast.present(data.error);
-                return;
-              }
-              this.getSchedaRighe();
-              this.gs.loading.dismiss();
-            },
-            (error) => this.gs.toast.present(error.message, 5000),
-          );
-      }
-    });
+    if (conferma) {
+      this.esegui(this.repository.deleteRiga(riga.id), 'Ricetta tolta dalla scheda');
+    }
   }
 
-  print(foodCost: boolean) {
-    if (this.ricetteList.length > 0) {
-      window.open(
-        environment.apiReportSchedaTecnica +
-          '?gest=3&type=1&process=' +
-          encodeURIComponent(
-            '3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@',
-          ) +
-          '&params=' +
-          this.ricetteList.map((r) => r.ricettaid).join(',') +
-          '&token=' +
-          localStorage.getItem('token') +
-          '&report=schedatecnica.html&foodcost=' +
-          (foodCost ? '1' : '0') +
-          '&listino=' +
-          this.listinoID +
-          '&descrizione=' +
-          encodeURIComponent(this.schedaProduzione.descrizione),
-        '_blank',
-      );
-    }
+  private esegui(operazione: Observable<void>, messaggio: string): void {
+    operazione.pipe(this.toast.notifyErrors()).subscribe(() => {
+      this.toast.success(messaggio);
+      this.righe.load();
+    });
   }
 }

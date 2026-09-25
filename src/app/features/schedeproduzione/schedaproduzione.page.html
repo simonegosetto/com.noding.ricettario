@@ -1,44 +1,88 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-back-button defaultHref="/schedeproduzione" text="" />
     </ion-buttons>
-    <ion-title class="ion-text-center">{{ schedaProduzione?.descrizione }}</ion-title>
+    <ion-title>{{ titolo() }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="print(false)" [disabled]="ricetteList.length === 0"
-        ><ion-icon style="font-size: 25px" name="print"></ion-icon
-      ></ion-button>
-      <ion-button (click)="print(true)" [disabled]="ricetteList.length === 0"
-        ><ion-icon style="font-size: 25px" name="logo-euro"></ion-icon
-      ></ion-button>
-      <ion-button (click)="nuovaRicetta()"
-        ><ion-icon style="font-size: 25px" name="add-circle-outline"></ion-icon
-      ></ion-button>
+      <ion-button
+        aria-label="Stampa"
+        title="Stampa"
+        [disabled]="!righe.items().length"
+        (click)="stampa(false)"
+      >
+        <ion-icon slot="icon-only" name="print-outline" />
+      </ion-button>
+      <ion-button
+        aria-label="Stampa con food cost"
+        title="Stampa con food cost"
+        [disabled]="!righe.items().length"
+        (click)="stampa(true)"
+      >
+        <ion-icon slot="icon-only" name="logo-euro" />
+      </ion-button>
+      <ion-button aria-label="Aggiungi ricetta" title="Aggiungi ricetta" (click)="aggiungi()">
+        <ion-icon slot="icon-only" name="add-circle-outline" />
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-row>
-    <ion-col>
-      <select
-        name="tipo"
-        class="center"
-        style="width: 250px; padding: 8px 8px 8px 0; margin: 8px 8px 8px 0"
-        [(ngModel)]="listinoID"
-      >
-        <option *ngFor="let listino of listiniList" [ngValue]="listino.id">
-          {{ listino.descrizione }}
-        </option>
-      </select>
-    </ion-col>
-  </ion-row>
+  <ion-toolbar>
+    <ion-select
+      class="scheda__listino"
+      label="Listino per il food cost"
+      labelPlacement="start"
+      interface="popover"
+      [value]="listinoId()"
+      (ionChange)="cambiaListino($event.detail.value)"
+    >
+      @for (listino of listini(); track listino.id) {
+        <ion-select-option [value]="listino.id">{{ listino.descrizione }}</ion-select-option>
+      }
+    </ion-select>
+  </ion-toolbar>
 </ion-header>
 
-<ion-content no-padding>
-  <ion-list>
-    <ion-card *ngFor="let ricetta of ricetteList" style="cursor: pointer">
-      <ric-ricetta-scheda-tecnica
-        [cod_p]="ricetta.ricettaid"
-        (onDelete)="delete(ricetta)"
-      ></ric-ricetta-scheda-tecnica>
-    </ion-card>
-  </ion-list>
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="righe.load($event)">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page ion-padding">
+    @switch (righe.state()) {
+      @case ('loading') {
+        <ric-list-skeleton [rows]="3" />
+      }
+      @case ('error') {
+        <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare la scheda.">
+          <ion-button fill="outline" (click)="righe.load()">Riprova</ion-button>
+        </ric-empty-state>
+      }
+      @default {
+        @if (righe.items().length) {
+          <div class="scheda__ricette">
+            @for (riga of righe.items(); track riga.id) {
+              <ric-ricetta-card [codP]="riga.ricettaid" [mostraProcedimento]="true">
+                <ion-button
+                  actions
+                  fill="clear"
+                  color="danger"
+                  aria-label="Togli dalla scheda"
+                  (click)="togli(riga)"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline" />
+                </ion-button>
+              </ric-ricetta-card>
+            }
+          </div>
+        } @else {
+          <ric-empty-state icon="clipboard-outline" message="Nessuna ricetta in questa scheda.">
+            <ion-button fill="outline" (click)="aggiungi()">
+              <ion-icon slot="start" name="add-circle-outline" />
+              Aggiungi ricetta
+            </ion-button>
+          </ric-empty-state>
+        }
+      }
+    }
+  </div>
 </ion-content>

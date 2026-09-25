@@ -10,6 +10,7 @@ import { toNumber } from './mappers';
 
 export abstract class SchedeProduzioneRepository {
   abstract list(): Observable<SchedaProduzione[]>;
+  abstract get(id: number): Observable<SchedaProduzione | undefined>;
   /** Crea (id 0) o rinomina una scheda. */
   abstract save(scheda: SchedaProduzione): Observable<void>;
   abstract delete(id: number): Observable<void>;
@@ -24,6 +25,11 @@ export class GatewaySchedeProduzioneRepository extends SchedeProduzioneRepositor
 
   list(): Observable<SchedaProduzione[]> {
     return this.gateway.rows(PROCESS.SCHEDE_LIST).pipe(map(toDescritti));
+  }
+
+  /** Non c'è un process di dettaglio: la scheda si prende dall'elenco (sono poche). */
+  get(id: number): Observable<SchedaProduzione | undefined> {
+    return this.list().pipe(map((schede) => schede.find((scheda) => scheda.id === id)));
   }
 
   save(scheda: SchedaProduzione): Observable<void> {
