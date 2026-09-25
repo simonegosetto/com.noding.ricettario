@@ -8,8 +8,6 @@ module.exports = defineConfig([
   {
     // Codice legacy non ancora portato: ogni commit di porting toglie la sua voce.
     ignores: [
-      'src/app/features/home/**',
-      'src/app/features/login/**',
       'src/app/features/ricette/**',
       'src/app/features/ricetta/**',
       'src/app/features/listini/**',
@@ -31,6 +29,20 @@ module.exports = defineConfig([
     ],
     processor: angular.processInlineTemplates,
     rules: {
+      // Dal barrel di Ionic esbuild non riesce a separare i componenti per pagina.
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@ionic/angular',
+              message:
+                "Importa dal subpath del componente (es. '@ionic/angular/ion-button'); dal barrel solo 'import type'. Vedi scripts/ionic-subpath-imports.mjs.",
+              allowTypeImports: true,
+            },
+          ],
+        },
+      ],
       '@angular-eslint/directive-selector': [
         'error',
         {

@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import {GlobalService} from "../core/services/global.service";
-import {Router} from "@angular/router";
-import {environment} from "../../environments/environment";
-import {AlertService} from "../core/services/alert.service";
+import { GlobalService } from '../core/services/global.service';
+import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
+import { AlertService } from '../core/services/alert.service';
 
 @Component({
   selector: 'ric-ricette',
@@ -10,19 +10,18 @@ import {AlertService} from "../core/services/alert.service";
   styleUrls: ['./ricette.page.scss'],
 })
 export class RicettePage implements OnInit {
-
   constructor(
-      private _router: Router,
-      private _alert: AlertService,
-      public gs: GlobalService,
-  ) { }
+    private _router: Router,
+    private _alert: AlertService,
+    public gs: GlobalService,
+  ) {}
 
   public ricerca = {
     searchText: '',
-    tipo:  1,
+    tipo: 1,
     pageSize: 10,
     progressSize: 10,
-    ricetteList: []
+    ricetteList: [],
   };
 
   ngOnInit() {
@@ -30,7 +29,13 @@ export class RicettePage implements OnInit {
   }
 
   estrazioneRicette(event = null) {
-    this.gs.callGateway('uZ+/JDG/PtCiDhrc9YiYjA7p3tmqsWYz8VP7y8teKAUtWy0tSVYtWy3Wbn4vVzxB2eEOOUDqUe1WQxdC6MGkch0xB7XUzRjtKA@@',`${this.ricerca.tipo}`).subscribe(data => {
+    this.gs
+      .callGateway(
+        'uZ+/JDG/PtCiDhrc9YiYjA7p3tmqsWYz8VP7y8teKAUtWy0tSVYtWy3Wbn4vVzxB2eEOOUDqUe1WQxdC6MGkch0xB7XUzRjtKA@@',
+        `${this.ricerca.tipo}`,
+      )
+      .subscribe(
+        (data) => {
           if (data.hasOwnProperty('error')) {
             this.gs.toast.present(data.error);
             return;
@@ -41,7 +46,8 @@ export class RicettePage implements OnInit {
           }
           this.gs.loading.dismiss();
         },
-        error => this.gs.toast.present(error.message, 5000));
+        (error) => this.gs.toast.present(error.message, 5000),
+      );
   }
 
   nuovaRicetta() {
@@ -55,27 +61,56 @@ export class RicettePage implements OnInit {
   printRicetta($event, ricetta: any) {
     $event.stopPropagation();
     if (ricetta != null) {
-      window.open(environment.apiDBox + "?gest=3&type=1&process=" + encodeURIComponent("3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@") +
-          "&params="+ricetta.cod_p+"&token="+localStorage.getItem("token")+"&report=ricetta.xml",
-          "_blank");
+      window.open(
+        environment.apiDBox +
+          '?gest=3&type=1&process=' +
+          encodeURIComponent(
+            '3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@',
+          ) +
+          '&params=' +
+          ricetta.cod_p +
+          '&token=' +
+          localStorage.getItem('token') +
+          '&report=ricetta.xml',
+        '_blank',
+      );
     }
   }
 
-  printRicetta2($event, ricetta:any) {
-      $event.stopPropagation();
-      if (ricetta != null) {
-          window.open(environment.apiReportRicetta + "?gest=3&type=1&process=" + encodeURIComponent("3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@") +
-              "&params="+ricetta.cod_p+"&token="+localStorage.getItem("token")+"&report=ricetta.html",
-              "_blank");
-      }
+  printRicetta2($event, ricetta: any) {
+    $event.stopPropagation();
+    if (ricetta != null) {
+      window.open(
+        environment.apiReportRicetta +
+          '?gest=3&type=1&process=' +
+          encodeURIComponent(
+            '3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@',
+          ) +
+          '&params=' +
+          ricetta.cod_p +
+          '&token=' +
+          localStorage.getItem('token') +
+          '&report=ricetta.html',
+        '_blank',
+      );
+    }
   }
 
   deleteRicetta($event, ricetta: any) {
     $event.stopPropagation();
-    const alertElimina = this._alert.confirm('Attenzione', `Confermi di eliminare la ricetta ${ricetta.nome_ric} ?`);
-    alertElimina.then(result => {
+    const alertElimina = this._alert.confirm(
+      'Attenzione',
+      `Confermi di eliminare la ricetta ${ricetta.nome_ric} ?`,
+    );
+    alertElimina.then((result) => {
       if (result.role === 'OK') {
-        this.gs.callGateway('bLOf0dGTa+GDJaEG232HA2DR7U2p+79ptLfo/nJDQXktWy0tSVYtWy33s2LNhx4WwU+524qvbddJQUhdRkrjlIEXDYj5rB8vhQ@@', ricetta.cod_p).subscribe(data => {
+        this.gs
+          .callGateway(
+            'bLOf0dGTa+GDJaEG232HA2DR7U2p+79ptLfo/nJDQXktWy0tSVYtWy33s2LNhx4WwU+524qvbddJQUhdRkrjlIEXDYj5rB8vhQ@@',
+            ricetta.cod_p,
+          )
+          .subscribe(
+            (data) => {
               if (data.hasOwnProperty('error')) {
                 this.gs.toast.present(data.error);
                 return;
@@ -83,10 +118,9 @@ export class RicettePage implements OnInit {
               this.estrazioneRicette();
               this.gs.loading.dismiss();
             },
-            error => this.gs.toast.present(error.message, 5000)
-        );
+            (error) => this.gs.toast.present(error.message, 5000),
+          );
       }
     });
   }
-
 }

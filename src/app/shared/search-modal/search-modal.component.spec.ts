@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { IonModalToken, provideIonicAngular } from '@ionic/angular';
+import { IonModalToken } from '@ionic/angular/ion-modal-token';
+import { provideIonicAngular } from '@ionic/angular/provide';
 import { of } from 'rxjs';
 
 import { SearchModalComponent } from './search-modal.component';

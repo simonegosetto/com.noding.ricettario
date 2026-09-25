@@ -4,9 +4,13 @@
       <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title class="ion-text-center">Dettaglio ricetta</ion-title>
-    <ion-buttons slot="end" >
-      <ion-button (click)="print(false)"><ion-icon style="font-size: 25px" name="print"></ion-icon></ion-button>
-      <ion-button (click)="print(true)"><ion-icon style="font-size: 25px" name="logo-euro"></ion-icon></ion-button>
+    <ion-buttons slot="end">
+      <ion-button (click)="print(false)"
+        ><ion-icon style="font-size: 25px" name="print"></ion-icon
+      ></ion-button>
+      <ion-button (click)="print(true)"
+        ><ion-icon style="font-size: 25px" name="logo-euro"></ion-icon
+      ></ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -14,53 +18,107 @@
 <ion-content>
   <ion-row padding-top>
     <ion-col class="ion-text-center">
-      <input style="text-decoration: underline;font-style: italic;width: 100%;font-size: 22px;text-align: center" type="text" autocomplete="off"
-             [(ngModel)]="ricetta.nome_ric" placeholder="Nome ricetta" (keydown.enter)="saveRicetta()">
+      <input
+        style="
+          text-decoration: underline;
+          font-style: italic;
+          width: 100%;
+          font-size: 22px;
+          text-align: center;
+        "
+        type="text"
+        autocomplete="off"
+        [(ngModel)]="ricetta.nome_ric"
+        placeholder="Nome ricetta"
+        (keydown.enter)="saveRicetta()"
+      />
     </ion-col>
   </ion-row>
-  <br/>
+  <br />
   <ion-row *ngIf="ricetta.cod_p > 0">
     <ion-col class="ion-text-center">
-      <label class="fileUpload button button-positive button-small" >
+      <label class="fileUpload button button-positive button-small">
         <span>Carica/Aggiorna immagine</span>
-        <ion-input id="myFile" type="file" [(ngModel)]="ricetta.file" accept="image/png,image/jpeg" (change)="pubblicaImmagine($event)"></ion-input>
+        <ion-input
+          id="myFile"
+          type="file"
+          [(ngModel)]="ricetta.file"
+          accept="image/png,image/jpeg"
+          (change)="pubblicaImmagine($event)"
+        ></ion-input>
       </label>
-      <img style="max-width: 400px;" *ngIf="ricetta.image" [src]="ricetta?.image" width="50%" >
-      <span style="cursor: pointer" *ngIf="ricetta.image" placeholder="Elimna immagine" (click)="ricettaImageRemove()">X</span>
+      <img style="max-width: 400px" *ngIf="ricetta.image" [src]="ricetta?.image" width="50%" />
+      <span
+        style="cursor: pointer"
+        *ngIf="ricetta.image"
+        placeholder="Elimna immagine"
+        (click)="ricettaImageRemove()"
+        >X</span
+      >
     </ion-col>
   </ion-row>
-  <br/>
+  <br />
   <ion-row *ngIf="ricetta?.cod_p > 0">
     <ion-col>
-      <h4 style="text-decoration: underline;font-style: italic;padding-left: 15px">
+      <h4 style="text-decoration: underline; font-style: italic; padding-left: 15px">
         Ingrédients:
-        <ion-badge color="primary" (click)="searchRicetta()" style="cursor: pointer">Ricette<ion-icon name="search" style="cursor: pointer" ></ion-icon></ion-badge>
-        <ion-badge color="secondary" (click)="searchIngrediente()" style="cursor: pointer">Ingredienti<ion-icon name="search" style="cursor: pointer"></ion-icon></ion-badge>
+        <ion-badge color="primary" (click)="searchRicetta()" style="cursor: pointer"
+          >Ricette<ion-icon name="search" style="cursor: pointer"></ion-icon
+        ></ion-badge>
+        <ion-badge color="secondary" (click)="searchIngrediente()" style="cursor: pointer"
+          >Ingredienti<ion-icon name="search" style="cursor: pointer"></ion-icon
+        ></ion-badge>
       </h4>
 
       <ion-reorder-group [disabled]="false" (ionItemReorder)="updateIngredienteOrdinamento($event)">
         <ion-item *ngFor="let item of ricetta.ingredientiList">
           <ion-reorder slot="start"></ion-reorder>
           <ion-col size="6" class="ingredienti">
-            {{item.nome}}
+            {{ item.nome }}
             <!--<input type="text" [(ngModel)]="item.nome" placeholder="nome" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)" [disabled]="item.ricettaid > 0">-->
           </ion-col>
           <ion-col size="3" class="ingredienti">
-            <input type="number" class="ingredienti-quantity" [(ngModel)]="item.quantita" placeholder="quantità" autocomplete="off" (keydown.enter)="ricettaRigaUpdate(item)">g
-            <input type="checkbox" style="max-width: 30px" [(ngModel)]="item.escludi_peso" (ngModelChange)="ricettaRigaUpdate(item)">
+            <input
+              type="number"
+              class="ingredienti-quantity"
+              [(ngModel)]="item.quantita"
+              placeholder="quantità"
+              autocomplete="off"
+              (keydown.enter)="ricettaRigaUpdate(item)"
+            />g
+            <input
+              type="checkbox"
+              style="max-width: 30px"
+              [(ngModel)]="item.escludi_peso"
+              (ngModelChange)="ricettaRigaUpdate(item)"
+            />
           </ion-col>
-          <ion-col size="2" class="ingredienti">{{item.perc | number:'1.1-2'}}%</ion-col>
-          <ion-col size="1"><span style="cursor: pointer" (click)="ricettaRigaRemove(item)">X</span></ion-col>
+          <ion-col size="2" class="ingredienti">{{ item.perc | number: '1.1-2' }}%</ion-col>
+          <ion-col size="1"
+            ><span style="cursor: pointer" (click)="ricettaRigaRemove(item)">X</span></ion-col
+          >
         </ion-item>
       </ion-reorder-group>
       <ion-item draggable="false">
-        <ion-col size="6" style="font-size: 12px"><input #nomeIngrediente type="text" [(ngModel)]="ricettaRow.nome" placeholder="nome" autocomplete="off" (keydown.enter)="ricettaRigaSave()"></ion-col>
-        <ion-col size="3" style="font-size: 12px"><input type="number" [(ngModel)]="ricettaRow.quantita" placeholder="quantità" autocomplete="off" (keydown.enter)="ricettaRigaSave()"></ion-col>
+        <ion-col size="6" style="font-size: 12px"
+          ><input
+            #nomeIngrediente
+            type="text"
+            [(ngModel)]="ricettaRow.nome"
+            placeholder="nome"
+            autocomplete="off"
+            (keydown.enter)="ricettaRigaSave()"
+        /></ion-col>
+        <ion-col size="3" style="font-size: 12px"
+          ><input
+            type="number"
+            [(ngModel)]="ricettaRow.quantita"
+            placeholder="quantità"
+            autocomplete="off"
+            (keydown.enter)="ricettaRigaSave()"
+        /></ion-col>
       </ion-item>
-
-
     </ion-col>
-
   </ion-row>
   <!-- mobile -->
   <!--<div class="row" ng-show="Ricetta.cod_p > 0 && isDesktop == false">
@@ -76,15 +134,20 @@
   </div>-->
 
   <!-- --------------- -->
-  <br/>
+  <br />
   <ion-row>
     <ion-col class="ion-no-padding" style="padding-left: 15px">
-      <h4 style="text-decoration: underline;font-style: italic;padding-left: 5px">Procédé:</h4>
-      <br/>
-      <textarea [(ngModel)]="ricetta.procedimento" style="width: 100%;font-size: 16px;padding: 5px" rows="15" autocomplete="off"></textarea>
+      <h4 style="text-decoration: underline; font-style: italic; padding-left: 5px">Procédé:</h4>
+      <br />
+      <textarea
+        [(ngModel)]="ricetta.procedimento"
+        style="width: 100%; font-size: 16px; padding: 5px"
+        rows="15"
+        autocomplete="off"
+      ></textarea>
     </ion-col>
   </ion-row>
-  <br/>
+  <br />
   <ion-row>
     <ion-col class="ion-text-center">
       <ion-button (click)="saveRicetta()">Salva Ricetta</ion-button>
@@ -97,17 +160,16 @@
     </ion-col>
   </ion-row>
 
-  <br/>
+  <br />
   <ion-row *ngIf="ricetta?.cod_p > 0">
     <ion-col style="padding-left: 15px">
-      <ric-ricetta-foodcost [cod_p]="ricetta.cod_p"
-                            [doRefresh]="refreshChild.asObservable()"
-                            (prezzoUpdate)="updatePrezzoVenditaRicetta($event)"
-                            (pesoUpdate)="updatePesoEffettivoRicetta($event)"
-                            (listinoChange)="getListino($event)"
+      <ric-ricetta-foodcost
+        [cod_p]="ricetta.cod_p"
+        [doRefresh]="refreshChild.asObservable()"
+        (prezzoUpdate)="updatePrezzoVenditaRicetta($event)"
+        (pesoUpdate)="updatePesoEffettivoRicetta($event)"
+        (listinoChange)="getListino($event)"
       ></ric-ricetta-foodcost>
     </ion-col>
   </ion-row>
-
-
 </ion-content>

@@ -1,3 +1,55 @@
 <ion-app>
-  <ion-router-outlet id="main-content"></ion-router-outlet>
+  @if (busy()) {
+    <ion-progress-bar class="app-busy" type="indeterminate" aria-label="Caricamento in corso" />
+  }
+  @if (!online()) {
+    <div class="app-offline" role="status">
+      <ion-icon name="cloud-offline-outline" aria-hidden="true" />
+      Sei offline: le modifiche non verranno salvate.
+    </div>
+  }
+
+  <ion-split-pane contentId="main-content" when="lg" [disabled]="!loggedIn()">
+    <ion-menu contentId="main-content" type="overlay" [disabled]="!loggedIn()">
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>{{ userName() }}</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <ion-list lines="none" class="app-menu">
+          @for (page of pages; track page.url) {
+            <ion-menu-toggle [autoHide]="false">
+              <ion-item
+                [routerLink]="page.url"
+                routerDirection="root"
+                routerLinkActive="app-menu__item--active"
+                [detail]="false"
+              >
+                <ion-icon slot="start" [name]="page.icon" aria-hidden="true" />
+                <ion-label>{{ page.title }}</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          }
+        </ion-list>
+      </ion-content>
+
+      <ion-footer>
+        <ion-list lines="none" class="app-menu">
+          <ion-menu-toggle [autoHide]="false">
+            <ion-item button [detail]="false" (click)="logout()">
+              <ion-icon slot="start" name="log-out-outline" aria-hidden="true" />
+              <ion-label>Esci</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        </ion-list>
+        @if (readOnly) {
+          <ion-note class="app-readonly">Sola lettura: le scritture sono bloccate</ion-note>
+        }
+      </ion-footer>
+    </ion-menu>
+
+    <ion-router-outlet id="main-content" />
+  </ion-split-pane>
 </ion-app>

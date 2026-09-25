@@ -1,21 +1,19 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonFooter,
-  IonHeader,
-  IonInput,
-  IonItem,
-  IonList,
-  IonModalToken,
-  IonSelect,
-  IonSelectOption,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/angular';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonFooter } from '@ionic/angular/ion-footer';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonInput } from '@ionic/angular/ion-input';
+import { IonItem } from '@ionic/angular/ion-item';
+import { IonList } from '@ionic/angular/ion-list';
+import { IonModalToken } from '@ionic/angular/ion-modal-token';
+import { IonSelect } from '@ionic/angular/ion-select';
+import { IonSelectOption } from '@ionic/angular/ion-select-option';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
 
 import { TipoMenu } from '../models/menu';
 

@@ -1,54 +1,96 @@
-import {Component} from '@angular/core';
-import {Router} from "@angular/router";
-import {GlobalService} from "../core/services/global.service";
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonCard } from '@ionic/angular/ion-card';
+import { IonCardContent } from '@ionic/angular/ion-card-content';
+import { IonCardHeader } from '@ionic/angular/ion-card-header';
+import { IonCardTitle } from '@ionic/angular/ion-card-title';
+import { IonCol } from '@ionic/angular/ion-col';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonGrid } from '@ionic/angular/ion-grid';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonMenuButton } from '@ionic/angular/ion-menu-button';
+import { IonRouterLink } from '@ionic/angular/ion-router-link';
+import { IonRow } from '@ionic/angular/ion-row';
+import { IonTextarea } from '@ionic/angular/ion-textarea';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import type { ViewWillEnter } from '@ionic/angular';
+
+import { BusyService } from '../../core/ui/busy.service';
+import { ToastService } from '../../core/ui/toast.service';
+import { NoteRepository } from '../../data/note.repository';
+
+interface Scorciatoia {
+  label: string;
+  icon: string;
+  url: string;
+  queryParams?: Record<string, number>;
+}
 
 @Component({
-    selector: 'app-home',
-    templateUrl: 'home.page.html',
-    styleUrls: ['home.page.scss'],
+  selector: 'ric-home',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    RouterLink,
+    IonButton,
+    IonButtons,
+    IonCard,
+    IonCardContent,
+    IonCardHeader,
+    IonCardTitle,
+    IonCol,
+    IonContent,
+    IonGrid,
+    IonHeader,
+    IonIcon,
+    IonMenuButton,
+    IonRouterLink,
+    IonRow,
+    IonTextarea,
+    IonTitle,
+    IonToolbar,
+  ],
+  templateUrl: './home.page.html',
+  styleUrl: './home.page.scss',
 })
-export class HomePage {
+export class HomePage implements ViewWillEnter {
+  private readonly notes = inject(NoteRepository);
+  private readonly toast = inject(ToastService);
 
-    constructor(
-        private _router: Router,
-        public  gs: GlobalService
-    ) {
-    }
+  protected readonly busy = inject(BusyService).busy;
+  protected readonly testo = signal('');
+  protected readonly caricato = signal(false);
 
-    public note = {
-        testo: undefined
-    };
+  protected readonly scorciatoie: readonly Scorciatoia[] = [
+    { label: 'Nuova ricetta', icon: 'add-circle-outline', url: '/ricetta/0' },
+    {
+      label: 'Schede tecniche',
+      icon: 'clipboard-outline',
+      url: '/ricette',
+      queryParams: { tipo: 2 },
+    },
+    { label: 'Menù', icon: 'restaurant-outline', url: '/menus' },
+    { label: 'Listini prezzi', icon: 'list-outline', url: '/listini' },
+  ];
 
-    ionViewWillEnter(): void {
-        this.getNote();
-    }
+  /** Le note sono condivise: si ricaricano a ogni ingresso nella pagina. */
+  ionViewWillEnter(): void {
+    this.notes
+      .get()
+      .pipe(this.toast.notifyErrors())
+      .subscribe((testo) => {
+        this.testo.set(testo);
+        this.caricato.set(true);
+      });
+  }
 
-    navTo(route: string) {
-        this._router.navigate([route]);
-    }
-
-    getNote() {
-        this.gs.callGateway('msttQNbHh0Nh4M6SPlL1E2RRjufluJl7u8nOT5uTFQgtWy0tSVYtWy3yLZRiLpj66qNH/MtAXyvG6/WGYN9/NpyiMKwIvniTyw@@', ``).subscribe(data => {
-                if (data.hasOwnProperty('error')) {
-                    this.gs.toast.present(data.error);
-                    return;
-                }
-                this.note.testo = data.recordset[0].note;
-                this.gs.loading.dismiss();
-            },
-            error => this.gs.toast.present(error.message, 5000));
-    }
-
-    updateNote() {
-        this.gs.callGateway('7RRAJLmsoEjqi84dxQbF7Kh1ozVAN6ahXA5OQwcVj+QtWy0tSVYtWy05XrtZ0y+ZrhjMNlwudUA9OK4TsfluJj2y3GWPQbRPCA@@', `'${this.gs.isnull(this.note.testo)}'`).subscribe(data => {
-                if (data.hasOwnProperty('error')) {
-                    this.gs.toast.present(data.error);
-                    return;
-                }
-                this.gs.toast.present('Note aggiornate correttamente !');
-                this.gs.loading.dismiss();
-            },
-            error => this.gs.toast.present(error.message, 5000));
-    }
-
+  protected salva(): void {
+    this.notes
+      .save(this.testo())
+      .pipe(this.toast.notifyErrors())
+      .subscribe(() => this.toast.success('Note aggiornate'));
+  }
 }

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular/toast-controller';
 import { catchError, EMPTY, MonoTypeOperatorFunction } from 'rxjs';
 
 import { errorMessage } from '../api/gateway-error';

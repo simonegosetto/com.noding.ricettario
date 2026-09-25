@@ -1,5 +1,5 @@
 import { inject, Injectable, Type } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/modal-controller';
 
 type ModalOptions = Parameters<ModalController['create']>[0];
 

@@ -1,38 +1,56 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
+      <ion-menu-button />
     </ion-buttons>
-    <ion-title class="ion-text-center">
-      Home
-    </ion-title>
+    <ion-title>Home</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <br><br>
-  <ion-row>
-    <ion-col sizeMd="3" sizeXs="6">
-      <ion-button size="full" (click)="navTo('ricetta/0')">Nuova Ricetta</ion-button>
-    </ion-col>
-    <ion-col sizeMd="3" sizeXs="6">
-      <ion-button size="full" (click)="navTo('menus')">Nuovo Menù</ion-button>
-    </ion-col>
-    <ion-col sizeMd="3" sizeXs="6">
-      <ion-button size="full" (click)="navTo('schedetecniche')">Nuova scheda</ion-button>
-    </ion-col>
-    <ion-col sizeMd="3" sizeXs="6">
-      <ion-button size="full" (click)="navTo('listini')">Nuovo Listino</ion-button>
-    </ion-col>
-  </ion-row>
+<ion-content class="ion-padding">
+  <div class="home">
+    <ion-grid class="ion-no-padding">
+      <ion-row>
+        @for (scorciatoia of scorciatoie; track scorciatoia.label) {
+          <ion-col size="6" sizeMd="3">
+            <ion-button
+              class="home__shortcut"
+              expand="block"
+              fill="outline"
+              [routerLink]="scorciatoia.url"
+              [queryParams]="scorciatoia.queryParams"
+            >
+              <ion-icon slot="start" [name]="scorciatoia.icon" aria-hidden="true" />
+              {{ scorciatoia.label }}
+            </ion-button>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
 
-  <br><br>
-  <ion-item lines="none">
-      <ion-label>Blocco Note</ion-label>
-      <textarea placeholder="Scrivi qui le tue annotazioni..." [(ngModel)]="note.testo" style="padding: 5px;width: 100%" maxlength="3000" rows="15"></textarea>
-  </ion-item>
-  <div class="ion-text-right ion-padding-end">
-    <ion-button (click)="updateNote()">Salva Note</ion-button>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Blocco note</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-textarea
+          aria-label="Blocco note"
+          placeholder="Scrivi qui le tue annotazioni..."
+          fill="outline"
+          [rows]="12"
+          [maxlength]="3000"
+          [counter]="true"
+          [value]="testo()"
+          [disabled]="!caricato()"
+          (ionInput)="testo.set($event.detail.value ?? '')"
+        />
+        <div class="ion-text-end ion-padding-top">
+          <ion-button [disabled]="!caricato() || busy()" (click)="salva()">
+            <ion-icon slot="start" name="save-outline" aria-hidden="true" />
+            Salva note
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
   </div>
-
 </ion-content>

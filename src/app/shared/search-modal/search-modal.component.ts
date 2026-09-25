@@ -9,20 +9,18 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonModalToken,
-  IonProgressBar,
-  IonSearchbar,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/angular';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonItem } from '@ionic/angular/ion-item';
+import { IonLabel } from '@ionic/angular/ion-label';
+import { IonList } from '@ionic/angular/ion-list';
+import { IonModalToken } from '@ionic/angular/ion-modal-token';
+import { IonProgressBar } from '@ionic/angular/ion-progress-bar';
+import { IonSearchbar } from '@ionic/angular/ion-searchbar';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
 import { distinctUntilChanged, finalize, of, switchMap } from 'rxjs';
 
 import { ToastService } from '../../core/ui/toast.service';
