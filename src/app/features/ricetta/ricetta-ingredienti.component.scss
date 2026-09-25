@@ -1,0 +1,135 @@
+// Il layout dipende dallo spazio del componente (col menu laterale aperto il viewport non
+// basta a dirlo): sotto i 560px ogni riga va su due linee.
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+.righe__aggiungi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+// Righe larghe: una linea sola. Strette: nome, % ed elimina sopra; quantità ed esclusione sotto.
+$colonne: minmax(0, 1fr) 110px 56px 44px 40px;
+
+.righe__intestazione {
+  display: none;
+  grid-template-columns: $colonne;
+  gap: 10px;
+  padding: 0 5px 8px 64px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--app-muted-text);
+
+  span:nth-child(3) {
+    text-align: end;
+  }
+}
+
+.riga {
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  --inner-padding-end: 4px;
+}
+
+.riga__contenuto {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'nome nome perc elimina'
+    'quantita escludi escludi escludi';
+  align-items: center;
+  gap: 4px 10px;
+  padding: 4px 0;
+}
+
+.riga__nome {
+  grid-area: nome;
+  min-width: 0;
+  color: var(--ion-text-color);
+}
+
+.riga__link {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--ion-color-primary);
+    text-decoration: underline;
+  }
+}
+
+.riga__tipo {
+  margin-inline-start: 6px;
+  font-size: 0.75rem;
+  color: var(--app-muted-text);
+}
+
+.riga__quantita {
+  grid-area: quantita;
+  --padding-start: 10px;
+  --padding-end: 10px;
+  min-height: 40px;
+}
+
+.riga__perc {
+  grid-area: perc;
+  font-size: 0.875rem;
+}
+
+.riga__escludi {
+  grid-area: escludi;
+  min-width: 0;
+  font-size: 0.875rem;
+
+  &::part(label) {
+    white-space: normal;
+  }
+}
+
+.riga__elimina {
+  grid-area: elimina;
+  margin: 0;
+}
+
+@container (min-width: 520px) {
+  .righe__intestazione {
+    display: grid;
+  }
+
+  .riga__contenuto {
+    grid-template-columns: $colonne;
+    grid-template-areas: 'nome quantita perc escludi elimina';
+  }
+
+  .riga__escludi-testo {
+    display: none;
+  }
+}
+
+.righe__libera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.righe__libera-nome {
+  flex: 1 1 220px;
+}
+
+.righe__libera-quantita {
+  flex: 0 1 140px;
+}
+
+.righe__libera ion-button {
+  margin-top: 8px;
+}

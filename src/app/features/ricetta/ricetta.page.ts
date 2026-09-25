@@ -1,397 +1,227 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
-import { GlobalService } from '../core/services/global.service';
-import { ActivatedRoute } from '@angular/router';
-import { ToastService } from '../core/services/toast.service';
-import { LoadingService } from '../core/services/loading.service';
-import { AlertService } from '../core/services/alert.service';
-import { ModalSearchRicettaComponent } from './modal-search-ricetta.component';
-import { ModalService } from '../core/services/modal.service';
-import { DropboxService } from '../core/services/dropbox.service';
-import { environment } from '../../environments/environment';
-import { Observable, Subject } from 'rxjs';
-import { ModalSearchIngredientiComponent } from './modal-search-ingredienti.component';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { IonBackButton } from '@ionic/angular/ion-back-button';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonInput } from '@ionic/angular/ion-input';
+import { IonTextarea } from '@ionic/angular/ion-textarea';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import { NavController } from '@ionic/angular/nav-controller';
+import type { ViewWillEnter } from '@ionic/angular';
+import { finalize, map, of, tap } from 'rxjs';
 
+import { ConModificheNonSalvate } from '../../core/navigation/unsaved-changes.guard';
+import { AlertService } from '../../core/ui/alert.service';
+import { ToastService } from '../../core/ui/toast.service';
+import { ListiniStore } from '../../data/listini.store';
+import { ReportService } from '../../data/report.service';
+import { RicetteRepository } from '../../data/ricette.repository';
+import { Ricetta, RicettaSalvataggio } from '../../shared/models/ricetta';
+import { RicettaCardComponent } from '../../shared/ricetta-card/ricetta-card.component';
+import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { ListSkeletonComponent } from '../../shared/ui/list-skeleton.component';
+import { RemoteList, RemoteValue } from '../../shared/ui/remote-list';
+import { RicettaFoodcostComponent } from './ricetta-foodcost.component';
+import { RicettaImmagineComponent } from './ricetta-immagine.component';
+import { RicettaIngredientiComponent } from './ricetta-ingredienti.component';
+
+type ModificheVendita = Partial<Pick<RicettaSalvataggio, 'prezzo_vendita' | 'peso_effettivo'>>;
+
+/**
+ * Editor della ricetta (`/ricetta/0` per crearne una). Nome, procedimento, peso effettivo e
+ * prezzo di vendita si salvano insieme (RICETTA_SAVE); righe, foto e food cost hanno i loro
+ * componenti e si abilitano dopo il primo salvataggio.
+ */
 @Component({
   selector: 'ric-ricetta',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    ReactiveFormsModule,
+    IonBackButton,
+    IonButton,
+    IonButtons,
+    IonContent,
+    IonHeader,
+    IonIcon,
+    IonInput,
+    IonTextarea,
+    IonTitle,
+    IonToolbar,
+    EmptyStateComponent,
+    ListSkeletonComponent,
+    RicettaCardComponent,
+    RicettaFoodcostComponent,
+    RicettaImmagineComponent,
+    RicettaIngredientiComponent,
+  ],
   templateUrl: './ricetta.page.html',
-  styleUrls: ['./ricetta.page.scss'],
+  styleUrl: './ricetta.page.scss',
+  host: { '(window:beforeunload)': 'avvisaUscita($event)' },
 })
-export class RicettaPage implements OnInit {
-  @ViewChild('nomeIngrediente', { static: false }) nomeIngrediente;
+export class RicettaPage implements ViewWillEnter, ConModificheNonSalvate {
+  private readonly repository = inject(RicetteRepository);
+  private readonly store = inject(ListiniStore);
+  private readonly reports = inject(ReportService);
+  private readonly navCtrl = inject(NavController);
+  private readonly alerts = inject(AlertService);
+  private readonly toast = inject(ToastService);
 
-  constructor(
-    public gs: GlobalService,
-    private _route: ActivatedRoute,
-    private _toast: ToastService,
-    private _loading: LoadingService,
-    private _alert: AlertService,
-    private _modal: ModalService,
-    private _ds: DropboxService,
-    public changeDetection: ChangeDetectorRef,
-  ) {}
+  /** Parametro di rotta `:id` (0 = nuova ricetta). */
+  readonly id = input.required<string>();
 
-  ngOnInit() {
-    const param = this._route.snapshot.paramMap.get('id');
-    if (parseInt(param) > 0) {
-      this.ricetta.cod_p = param;
-      this.getRicetta();
-    } else {
-      this.ricetta.cod_p = '0';
+  protected readonly codP = computed(() => {
+    const id = Number(this.id());
+    return Number.isInteger(id) && id > 0 ? id : 0;
+  });
+  protected readonly nuova = computed(() => this.codP() === 0);
+
+  protected readonly form = inject(NonNullableFormBuilder).group({
+    nome_ric: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(200)]],
+    procedimento: [''],
+  });
+  protected readonly modificata = toSignal(this.form.events.pipe(map(() => this.form.dirty)), {
+    initialValue: false,
+  });
+
+  protected readonly testata = new RemoteValue<Ricetta | undefined>(
+    () =>
+      this.nuova()
+        ? of(undefined)
+        : this.repository.get(this.codP()).pipe(tap((ricetta) => this.allineaForm(ricetta))),
+    undefined,
+  );
+  protected readonly sottoricette = new RemoteList(() =>
+    this.nuova() ? of([]) : this.repository.sottoricette(this.codP()),
+  );
+  /** Una sotto-ricetta usata in due righe si mostra una volta sola. */
+  protected readonly sottoricetteUniche = computed(() => [...new Set(this.sottoricette.items())]);
+  /** Con sotto-ricette la stampa è il report HTML, che può includere il food cost. */
+  protected readonly composta = computed(() => this.sottoricette.items().length > 0);
+  protected readonly titolo = computed(() =>
+    this.nuova() ? 'Nuova ricetta' : this.testata.value()?.nome_ric || 'Ricetta',
+  );
+  protected readonly listiniPronti = signal(false);
+  /** Incrementata dopo ogni modifica che cambia il food cost: il pannello si ricarica. */
+  protected readonly versione = signal(0);
+  protected readonly salvataggio = signal(false);
+
+  ionViewWillEnter(): void {
+    this.testata.load();
+    if (!this.nuova()) {
+      this.sottoricette.load();
+      this.store
+        .load()
+        .pipe(
+          this.toast.notifyErrors(),
+          finalize(() => this.listiniPronti.set(true)),
+        )
+        .subscribe();
     }
   }
 
-  public refreshChild: Subject<any> = new Subject();
-  public ricetta: any = {
-    listinoID: 0,
-    file: undefined,
-    base64textString: undefined,
-    ingredientiList: [],
-    ricetteComposteList: [],
-  };
-  public ricettaRow: any = {
-    nome: undefined,
-    quantita: undefined,
-    ricettaid: 0,
-    ingredienteid: 0,
-  };
-
-  ionViewLoaded() {
-    setTimeout(() => {
-      this.nomeIngrediente.setFocus();
-    }, 150);
-  }
-
-  getRicetta(forImage = false) {
-    this.gs
-      .callGateway(
-        '3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@',
-        `${this.ricetta.cod_p}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.ricetta = { ...this.ricetta, ...data.recordset[0] };
-          if (this.ricetta.id_storage) {
-            this._getRicettaImage();
-          } else {
-            this.ricetta.image = undefined;
-          }
-          if (!forImage) {
-            this._estrazioneRighe();
-          }
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
-  }
-
-  private _getRicettaImage() {
-    this._ds.get({ mode: 4, path: this.ricetta.id_storage }).subscribe(
-      (image) => {
-        this.ricetta.image = image.link;
-        this.changeDetection.detectChanges();
-      },
-      (error) => this.gs.toast.present(error.message),
-    );
-  }
-
-  private _estrazioneRighe() {
-    this.gs
-      .callGateway(
-        'SK1mkQH9EPMbEjkXjVKh208J+h4RyoSZdYvjFW/IwVEtWy0tSVYtWy13aAC10tFq5lY4fyaPFRki0Z709DrH0ocLUEzAss/mUw@@',
-        `${this.ricetta.cod_p}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.ricetta.ingredientiList = data.recordset ? [...data.recordset] : [];
-          this.gs.loading.dismiss();
-          this._estrazioneRicetteCollegate();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
-  }
-
-  private _estrazioneRicetteCollegate() {
-    this.gs
-      .callGateway(
-        'VwCLXZp2b7f0ntDBmDtjQiMqA71icSP05BfmU0Opi4ydvEX+uB0U2OIODrusGLmNjWldKOX7EhnVg0nsIWMR4S1bLS1JVi1bLQBR2FofNJE57bLSH6oD630781d1Qx+bHhnMTeAjnNz7',
-        `${this.ricetta.cod_p}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.ricetta.ricetteComposteList = data.recordset ? [...data.recordset] : [];
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
-  }
-
-  updatePrezzoVenditaRicetta(prezzoVendita) {
-    this.saveRicetta(prezzoVendita, 'prezzo');
-  }
-
-  updatePesoEffettivoRicetta(pesoEffettivo) {
-    this.saveRicetta(pesoEffettivo, 'peso');
-  }
-
-  saveRicetta(parametro: number = undefined, tipo: 'prezzo' | 'peso' = undefined) {
-    let params = '';
-    if (!parametro && !tipo) {
-      params = `${this.ricetta.cod_p},'${this.ricetta.nome_ric}','${this.ricetta.procedimento}',${this.gs.isnull(this.ricetta.prezzo_vendita, 0)},${this.gs.isnull(this.ricetta.peso_effettivo, 0)},@out_id`;
-    } else if (tipo === 'peso') {
-      params = `${this.ricetta.cod_p},'${this.ricetta.nome_ric}','${this.ricetta.procedimento}',${this.gs.isnull(this.ricetta.prezzo_vendita, 0)},${this.gs.isnull(parametro, 0)},@out_id`;
-    } else if (tipo === 'prezzo') {
-      params = `${this.ricetta.cod_p},'${this.ricetta.nome_ric}','${this.ricetta.procedimento}',${this.gs.isnull(parametro, 0)},${this.gs.isnull(this.ricetta.peso_effettivo, 0)},@out_id`;
+  /** Salva la testata; dal pannello food cost arrivano peso effettivo o prezzo di vendita. */
+  protected salva(modifiche: ModificheVendita = {}): void {
+    if (!this.nuova() && !this.form.dirty && !Object.keys(modifiche).length) {
+      return;
     }
-    this.gs
-      .callGateway(
-        'yQyvP6kwRmZ4Y01UsKulxCxG7MGV0B1QcUxCK6U5SEItWy0tSVYtWy2d8paOBfaJ5qGKfIV63SdsTxDcVhwM2zTsER5z6D9tRA@@',
-        params,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.ricetta.cod_p = data.output[0].out_id;
-          this.refreshChild.next();
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
-  }
-
-  getListino(listinoID: number) {
-    this.ricetta.listinoID = listinoID;
-  }
-
-  ricettaRigaRemove(ricetta: any) {
-    const alertElimina = this._alert.confirm(
-      'Attenzione',
-      `Sicuro di voler eliminare l'ingrediente ?`,
-    );
-    alertElimina.then((result) => {
-      if (result.role === 'OK') {
-        this.gs
-          .callGateway(
-            'vfJfFKZbzrsaJb7bIJecJqRgXqZvAc6fabCR8kZsd54tWy0tSVYtWy08zCYMCPxN5BXakZn0lgF2O3YSA7SIA4b8KsDaOqkiew@@',
-            `${ricetta.id},${this.ricetta.cod_p}`,
-          )
-          .subscribe(
-            (data) => {
-              if (data.hasOwnProperty('error')) {
-                this.gs.toast.present(data.error);
-                return;
-              }
-              this._estrazioneRighe();
-              this.refreshChild.next();
-              this.gs.loading.dismiss();
-              this._clearAndFocus();
-            },
-            (error) => this.gs.toast.present(error.message),
-          );
-      }
-    });
-  }
-
-  ricettaImageRemove() {
-    const alertElimina = this._alert.confirm(
-      'Attenzione',
-      `Sicuro di voler eliminare l'immagine ?`,
-    );
-    alertElimina.then((result) => {
-      if (result.role === 'OK') {
-        this._ds.delete({ mode: 3, path: this.ricetta.id_storage }).subscribe(
-          (data) => {
-            this.getRicetta(true);
-          },
-          (error) => this.gs.toast.present(error.message),
-        );
-      }
-    });
-  }
-
-  ricettaRigaSave() {
-    if (this.gs.isnull(this.ricettaRow.nome) === '') return;
-    this.gs
-      .callGateway(
-        '3FdtgGhTrxqXmygCCFfZC42j7tE0rFd0h9sihx5l9dAtWy0tSVYtWy3J487uKuF6tzHQ4E0jkvcdftWCBjuP1hUEY2rMzQw5dA@@',
-        `'${this.ricettaRow.nome}',${this.gs.isnull(this.ricettaRow.quantita, 0)},${this.ricettaRow.ricettaid},${this.gs.isnull(this.ricetta.cod_p, 'null')},${this.gs.isnull(this.ricettaRow.ingredienteid, 'null')}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this._estrazioneRighe();
-          this.refreshChild.next();
-          this.gs.loading.dismiss();
-          this._clearAndFocus();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
-  }
-
-  ricettaRigaUpdate(ingrediente: any) {
-    if (this.gs.isnull(ingrediente.nome) === '') return;
-    this.gs
-      .callGateway(
-        '6zQerYGHbHjqJ2mcZ0Cq7s6u4WvD9BUcZNrwCU6lIs1nWPVmS5uQHPSLCfdDxsBrKqIfnpEzfVTKbrHits8xAi1bLS1JVi1bLdVYqY1PE/RxFVIKfNtzGacSHOvQPRefO+sHYpJEM1Vb',
-        `${ingrediente.id},'${ingrediente.nome}',${this.gs.isnull(ingrediente.quantita, 0)},${ingrediente.ricettaid},${this.ricetta.cod_p},${ingrediente.escludi_peso ? '1' : '0'}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this._estrazioneRighe();
-          this.refreshChild.next();
-          this.gs.loading.dismiss();
-          this._clearAndFocus();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
-  }
-
-  searchRicetta() {
-    const modalCliente = this._modal.present(ModalSearchRicettaComponent, {});
-    modalCliente.then((result) => {
-      if (result.data) {
-        const { nome_ric, cod_p } = result.data;
-        this.ricettaRow.nome = nome_ric;
-        this.ricettaRow.ricettaid = cod_p;
-        this.ricettaRow.quantita = 1;
-        this.ricettaRigaSave();
-      }
-    });
-  }
-
-  searchIngrediente() {
-    const modalIngredienti = this._modal.present(ModalSearchIngredientiComponent, {});
-    modalIngredienti.then((result) => {
-      if (result.data) {
-        console.log(result.data);
-        const { descrizione, id } = result.data;
-        this.ricettaRow.nome = descrizione;
-        this.ricettaRow.ingredienteid = id;
-        this.ricettaRow.quantita = 1;
-        this.ricettaRigaSave();
-      }
-    });
-  }
-
-  updateIngredienteOrdinamento(ev: any) {
-    // console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
-    // console.log(this.ricetta.ingredientiList);
-    ev.detail.complete();
-
-    this.gs
-      .callGateway(
-        '3mCyL/kBibh2lxoVmwfXrDPeU5rjJJ7fj0BElNWNGMktWy0tSVYtWy2QzxShP4q87m0hlQWrr6NcMc9AyewbbxiMqrPsK6c0Lg@@',
-        `${this.ricetta.ingredientiList[ev.detail.from].id},${ev.detail.to + 1},${this.ricetta.cod_p}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.refreshChild.next();
-          this.gs.loading.dismiss();
-          this._clearAndFocus();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
-  }
-
-  private _clearAndFocus() {
-    this.ricettaRow.nome = '';
-    this.ricettaRow.quantita = undefined;
-    this.ricettaRow.ricettaid = 0;
-    this.ricettaRow.ingredienteid = 0;
-    /*setTimeout(() => {
-            this.nomeIngrediente.setFocus();
-        }, 150);*/
-  }
-
-  pubblicaImmagine(event) {
-    this.ricetta.file = event.target.files[0];
-    /*if (this.ricetta.file.size > 1000000) {
-            this.gs.toast.present('L\'immagine non può superare 1 MB di peso !');
-            return;
-        }*/
-    if (this.ricetta.file) {
-      const reader = new FileReader();
-      reader.onload = this._handleReaderLoaded.bind(this);
-      reader.readAsBinaryString(this.ricetta.file);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.toast.error('Il nome della ricetta è obbligatorio.');
+      return;
     }
-  }
-
-  _handleReaderLoaded(readerEvt) {
-    const binaryString = readerEvt.target.result;
-    this.ricetta.base64textString = btoa(binaryString);
-    const dropboxObject = {
-      mode: 1,
-      path: 'ricette/',
-      id: this.ricetta.cod_p,
-      name: this.ricetta.file.name,
-      type: this.ricetta.file.type,
-      data: `data:image/${this.ricetta.file.type.indexOf('png') > -1 ? 'png' : 'jpeg'};base64,${this.ricetta.base64textString}`,
+    const corrente = this.testata.value();
+    const { nome_ric, procedimento } = this.form.getRawValue();
+    // Prezzo e peso non modificati restano quelli salvati (la versione legacy li sovrascriveva
+    // con i valori letti all'apertura della pagina).
+    const ricetta: RicettaSalvataggio = {
+      cod_p: this.codP(),
+      nome_ric: nome_ric.trim(),
+      procedimento: procedimento.trim() ? procedimento : null,
+      prezzo_vendita:
+        'prezzo_vendita' in modifiche
+          ? (modifiche.prezzo_vendita ?? null)
+          : (corrente?.prezzo_vendita ?? null),
+      peso_effettivo:
+        'peso_effettivo' in modifiche
+          ? (modifiche.peso_effettivo ?? null)
+          : (corrente?.peso_effettivo ?? null),
     };
-    this._ds.upload(dropboxObject).subscribe(
-      (data) => {
-        this.getRicetta(true);
-      },
-      (error) => this.gs.toast.present(error.message),
+    this.salvataggio.set(true);
+    this.repository
+      .save(ricetta)
+      .pipe(
+        finalize(() => this.salvataggio.set(false)),
+        this.toast.notifyErrors(),
+      )
+      .subscribe((codP) => {
+        if (this.nuova()) {
+          this.dopoCreazione(codP);
+          return;
+        }
+        this.form.markAsPristine();
+        this.testata.value.set({ ...ricetta, id_storage: corrente?.id_storage ?? null });
+        this.versione.update((versione) => versione + 1);
+        this.toast.success('Ricetta salvata');
+      });
+  }
+
+  protected dopoModificaRighe(): void {
+    this.versione.update((versione) => versione + 1);
+    this.sottoricette.load();
+  }
+
+  protected stampa(conFoodcost: boolean): void {
+    this.reports.open(
+      this.reports.ricettaDettaglio(
+        this.codP(),
+        this.composta(),
+        conFoodcost,
+        this.store.correnteId(),
+      ),
     );
   }
 
-  print(foodCost: boolean) {
-    if (this.ricetta.ricetteComposteList.length > 0) {
-      window.open(
-        environment.apiReportRicetta +
-          '?gest=3&type=1&process=' +
-          encodeURIComponent(
-            '3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@',
-          ) +
-          '&params=' +
-          this.ricetta.cod_p +
-          '&token=' +
-          localStorage.getItem('token') +
-          '&report=ricetta.html&foodcost=' +
-          (foodCost ? '1' : '0') +
-          '&listino=' +
-          this.ricetta.listinoID,
-        '_blank',
-      );
-    } else {
-      window.open(
-        environment.apiDBox +
-          '?gest=3&type=1&process=' +
-          encodeURIComponent(
-            '3K2t3jzxjc+0a0dmj+eRVnotvAfJAoDjYQ/o8SAF2/wtWy0tSVYtWy15LcFBExarLwaeb6649Zrl8Rdbv9FDSmJwaBBc8C3e8g@@',
-          ) +
-          '&params=' +
-          this.ricetta.cod_p +
-          '&token=' +
-          localStorage.getItem('token') +
-          '&report=ricetta.xml',
-        '_blank',
-      );
+  puoUscire(): boolean | Promise<boolean> {
+    if (!this.form.dirty) {
+      return true;
+    }
+    return this.alerts.confirm(
+      'Modifiche non salvate',
+      'Il nome o il procedimento sono stati modificati e non salvati. Uscire comunque?',
+      { confirmText: 'Esci senza salvare', cancelText: 'Resta' },
+    );
+  }
+
+  /** Chiusura o ricarica della scheda del browser con modifiche in sospeso. */
+  protected avvisaUscita(event: BeforeUnloadEvent): void {
+    if (this.form.dirty) {
+      event.preventDefault();
+    }
+  }
+
+  private dopoCreazione(codP: number): void {
+    if (!(codP > 0)) {
+      this.toast.error('Il server non ha restituito l’id della nuova ricetta.');
+      return;
+    }
+    this.form.markAsPristine();
+    this.toast.success('Ricetta creata: ora puoi aggiungere ingredienti, foto e food cost');
+    // Stessa pagina con l'id vero: /ricetta/0 non resta nella cronologia.
+    void this.navCtrl.navigateForward(['/ricetta', codP], { replaceUrl: true, animated: false });
+  }
+
+  /** Al (ri)caricamento aggiorna il form, ma senza buttare modifiche non ancora salvate. */
+  private allineaForm(ricetta: Ricetta | undefined): void {
+    if (!this.form.dirty) {
+      this.form.reset({
+        nome_ric: ricetta?.nome_ric ?? '',
+        procedimento: ricetta?.procedimento ?? '',
+      });
     }
   }
 }

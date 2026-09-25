@@ -1,0 +1,120 @@
+<div class="righe__aggiungi">
+  <ion-button fill="outline" (click)="aggiungiIngrediente()">
+    <ion-icon slot="start" name="basket-outline" />
+    Ingrediente
+  </ion-button>
+  <ion-button fill="outline" (click)="aggiungiRicetta()">
+    <ion-icon slot="start" name="layers-outline" />
+    Sotto-ricetta
+  </ion-button>
+</div>
+
+@switch (righe.state()) {
+  @case ('loading') {
+    <ric-list-skeleton [rows]="4" />
+  }
+  @case ('error') {
+    <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare gli ingredienti.">
+      <ion-button fill="outline" (click)="righe.load()">Riprova</ion-button>
+    </ric-empty-state>
+  }
+  @default {
+    @if (righe.items().length) {
+      <div class="righe__intestazione" aria-hidden="true">
+        <span>Ingrediente</span>
+        <span>Quantità</span>
+        <span>%</span>
+        <span title="Escludi dal peso della ricetta">Escl.</span>
+      </div>
+      <ion-list class="app-list">
+        <ion-reorder-group [disabled]="spostamento()" (ionReorderEnd)="riordina($event)">
+          @for (riga of righe.items(); track riga.id) {
+            <ion-item class="riga" lines="full">
+              <ion-reorder slot="start" />
+              <div class="riga__contenuto">
+                <span class="riga__nome">
+                  @if (riga.ricettaid > 0) {
+                    <a class="riga__link" [routerLink]="['/ricetta', riga.ricettaid]">
+                      {{ riga.nome }}
+                    </a>
+                    <span class="riga__tipo">sotto-ricetta</span>
+                  } @else {
+                    {{ riga.nome }}
+                  }
+                </span>
+                <ion-input
+                  #quantita
+                  class="riga__quantita"
+                  fill="outline"
+                  type="number"
+                  inputmode="decimal"
+                  [min]="0"
+                  [attr.aria-label]="'Quantità di ' + riga.nome + ' in grammi'"
+                  [value]="riga.quantita"
+                  (ionChange)="cambiaQuantita(riga, $event)"
+                >
+                  <span slot="end" aria-hidden="true">g</span>
+                </ion-input>
+                <span class="riga__perc app-num" title="Percentuale sul peso della ricetta">
+                  @if (riga.perc !== null) {
+                    {{ riga.perc | number: '1.0-1' }}%
+                  } @else {
+                    —
+                  }
+                </span>
+                <ion-checkbox
+                  class="riga__escludi"
+                  labelPlacement="end"
+                  justify="start"
+                  aria-label="Escludi dal peso"
+                  [checked]="riga.escludi_peso"
+                  (ionChange)="cambiaEscludiPeso(riga, $event.detail.checked)"
+                >
+                  <span class="riga__escludi-testo">Escludi dal peso</span>
+                </ion-checkbox>
+                <ion-button
+                  class="riga__elimina"
+                  fill="clear"
+                  color="danger"
+                  aria-label="Elimina"
+                  (click)="elimina(riga)"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline" />
+                </ion-button>
+              </div>
+            </ion-item>
+          }
+        </ion-reorder-group>
+      </ion-list>
+    } @else {
+      <ric-empty-state
+        icon="basket-outline"
+        message="Aggiungi ingredienti, sotto-ricette o righe libere."
+      />
+    }
+  }
+}
+
+<form class="righe__libera" [formGroup]="nuovaRiga" (ngSubmit)="aggiungiLibera()">
+  <ion-input
+    class="righe__libera-nome"
+    label="Riga libera"
+    labelPlacement="stacked"
+    fill="outline"
+    placeholder="Es. acqua, sale q.b."
+    formControlName="nome"
+    [maxlength]="200"
+    errorText="Scrivi il nome della riga"
+  />
+  <ion-input
+    class="righe__libera-quantita"
+    label="Quantità (g)"
+    labelPlacement="stacked"
+    fill="outline"
+    type="number"
+    inputmode="decimal"
+    formControlName="quantita"
+    [min]="0"
+  />
+  <ion-button type="submit" [disabled]="nuovaRiga.invalid">Aggiungi</ion-button>
+</form>

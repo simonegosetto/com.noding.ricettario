@@ -18,6 +18,11 @@ export interface DropboxCall {
   [key: string]: unknown;
 }
 
+const FOTO_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">' +
+  '<rect width="800" height="500" fill="#d49850"/>' +
+  '<circle cx="400" cy="250" r="150" fill="#796250"/></svg>';
+
 const PROCESS_BY_ID = new Map(Object.values(PROCESS).map((process) => [process.id, process.name]));
 
 /**
@@ -76,6 +81,10 @@ export class BackendMock {
     );
     await this.page.route(/\/BackEnd\/FD_DropboxGateway\.php\?gest=2$/, (route) =>
       this.dropbox(route),
+    );
+    // Contenuto dei link temporanei Dropbox (foto delle ricette).
+    await this.page.route(/^https:\/\/dl\.example\.test\//, (route) =>
+      route.fulfill({ contentType: 'image/svg+xml', body: FOTO_SVG }),
     );
   }
 

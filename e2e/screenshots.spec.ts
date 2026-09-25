@@ -10,6 +10,8 @@ const PAGES: { name: string; url: string; public?: boolean }[] = [
   { name: 'login', url: '/login', public: true },
   { name: 'home', url: '/home' },
   { name: 'ricette', url: '/ricette' },
+  { name: 'ricetta', url: '/ricetta/2' },
+  { name: 'ricetta-nuova', url: '/ricetta/0' },
   { name: 'listini', url: '/listini' },
   { name: 'listino', url: '/listino/1' },
   { name: 'menus', url: '/menus' },

@@ -1,0 +1,53 @@
+:host {
+  display: block;
+}
+
+.foto {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ion-item-background);
+  border: 1px solid var(--app-surface-border);
+
+  img {
+    display: block;
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+  }
+
+  ion-icon {
+    font-size: 40px;
+    color: var(--app-muted-text);
+    opacity: 0.6;
+  }
+
+  p {
+    margin: 0;
+    color: var(--app-muted-text);
+  }
+}
+
+.foto__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.75);
+  color: var(--ion-text-color);
+}
+
+.foto__azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}

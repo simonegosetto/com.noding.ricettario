@@ -1,25 +1,90 @@
-li {
-  text-align: left;
-  list-style: disc;
-  margin: 10px 0px;
+// Le colonne dipendono dallo spazio disponibile (col menu laterale aperto il viewport non basta).
+.app-page {
+  container-type: inline-size;
 }
 
-.ingredienti {
-  font-size: 18px !important;
+.ricetta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
 }
 
-.ingredienti-quantity {
-  width: 85px;
+// Due colonne: a sinistra si lavora sulla ricetta, a destra foto e food cost sempre a vista.
+@container (min-width: 1000px) {
+  .ricetta:not(.ricetta--nuova) {
+    grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr);
+    // L'eventuale altezza in più del food cost va nell'ultima riga, non fra le sezioni.
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas:
+      'nome foto'
+      'ingredienti foto'
+      'ingredienti foodcost'
+      'procedimento foodcost'
+      'sottoricette foodcost';
+  }
+
+  .area-nome {
+    grid-area: nome;
+  }
+
+  .area-ingredienti {
+    grid-area: ingredienti;
+  }
+
+  .area-procedimento {
+    grid-area: procedimento;
+  }
+
+  .area-sottoricette {
+    grid-area: sottoricette;
+  }
+
+  .area-foto {
+    grid-area: foto;
+  }
+
+  .area-foodcost {
+    grid-area: foodcost;
+    position: sticky;
+    top: 16px;
+  }
 }
 
-@media (max-width: 767px) {
-  .ingredienti {
-    font-size: 12px !important;
+.ricetta--nuova {
+  max-width: 760px;
+}
+
+.ricetta__sezione {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--app-surface-border);
+  background: var(--ion-item-background);
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 1.125rem;
   }
-  .ingredienti-quantity {
-    width: 40px;
-  }
-  ion-reorder {
-    margin-right: 16px !important;
-  }
+}
+
+.ricetta__nome {
+  font-size: 1.25rem;
+}
+
+.ricetta__salva {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.ricetta__nota {
+  margin: 12px 0 0;
+}
+
+.ricetta__sottoricette {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
 }

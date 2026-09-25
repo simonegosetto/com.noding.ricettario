@@ -1,131 +1,97 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { GlobalService } from '../core/services/global.service';
-import { IngredienteFoodcostRead } from '../shared/interface/ingrediente-foodcost';
-import { ListinoRead } from '../shared/interface/listino';
-import { Observable } from 'rxjs';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonInput } from '@ionic/angular/ion-input';
+import { IonSelect } from '@ionic/angular/ion-select';
+import { IonSelectOption } from '@ionic/angular/ion-select-option';
+import type { InputCustomEvent } from '@ionic/angular';
 
+import { ToastService } from '../../core/ui/toast.service';
+import { ListiniStore } from '../../data/listini.store';
+import { RicetteRepository } from '../../data/ricette.repository';
+import { ListSkeletonComponent } from '../../shared/ui/list-skeleton.component';
+import { RemoteList, RemoteValue } from '../../shared/ui/remote-list';
+
+/**
+ * Food cost della ricetta sul listino scelto (condiviso con le altre pagine): costo per
+ * ingrediente, totali, peso effettivo e prezzo di vendita modificabili, indici calcolati dal DB.
+ */
 @Component({
   selector: 'ric-ricetta-foodcost',
-  templateUrl: './ricetta-foodcost.component.html',
-  styles: [
-    `
-      .totali > ion-col {
-        font-weight: bold;
-      }
-
-      @media (max-width: 767px) {
-        ion-col {
-          font-size: smaller;
-        }
-      }
-    `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CurrencyPipe,
+    DecimalPipe,
+    IonButton,
+    IonInput,
+    IonSelect,
+    IonSelectOption,
+    ListSkeletonComponent,
   ],
+  templateUrl: './ricetta-foodcost.component.html',
+  styleUrl: './ricetta-foodcost.component.scss',
 })
-export class RicettaFoodcostComponent implements OnInit {
-  constructor(public gs: GlobalService) {}
+export class RicettaFoodcostComponent {
+  private readonly repository = inject(RicetteRepository);
+  private readonly store = inject(ListiniStore);
+  private readonly toast = inject(ToastService);
 
-  @Input() cod_p: number;
-  @Input() doRefresh: Observable<any>;
-  @Output() prezzoUpdate = new EventEmitter();
-  @Output() pesoUpdate = new EventEmitter();
-  @Output() listinoChange = new EventEmitter();
+  readonly codP = input.required<number>();
+  /** Cambia quando righe o testata sono state salvate: il food cost va ricalcolato. */
+  readonly versione = input(0);
+  readonly peso = output<number | null>();
+  readonly prezzo = output<number | null>();
 
-  public ingredientiFoodcostList: IngredienteFoodcostRead[] = [];
-  public listinoID: number;
-  public listiniList: ListinoRead[] = [];
-  public totali = {
-    peso: 0,
-    foodcost: 0,
-    kcal: 0,
-    pesoEffettivo: 0,
-    prezzoVenditaLordo: 0,
-    ratio: 0,
-    prezzoVenditaNetto: 0,
-    margineNetto: 0,
-  };
+  protected readonly listini = this.store.listini;
+  protected readonly listinoId = this.store.correnteId;
+  protected readonly righe = new RemoteList(() =>
+    this.repository.foodcost(this.codP(), this.listinoId() ?? 0),
+  );
+  protected readonly totali = new RemoteValue(
+    () => this.repository.foodcostTotali(this.codP(), this.listinoId() ?? 0),
+    undefined,
+  );
 
-  ngOnInit() {
-    this.doRefresh.subscribe((_) => {
-      this.getFoodcost();
-    });
-    this._estrazioneListini();
+  constructor() {
+    // Una sola richiesta alla volta per righe e totali: cambi rapidi di listino non si accavallano.
+    toObservable(computed(() => [this.codP(), this.listinoId(), this.versione()]))
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        this.righe.load();
+        this.totali.load();
+      });
   }
 
-  private _estrazioneListini() {
-    this.gs
-      .callGateway(
-        'BnnFe0vU9aHbFGDCdwhl3h+5nSiRtsLXHgSRgQ803PAtWy0tSVYtWy3oQdVT2zI26QCrxbZr7SBgQ0QqM/cJWYN2qNm3Fq18Lw@@',
-        ``,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.listiniList = data.recordset ? data.recordset : [];
-          if (this.listiniList.length > 0) {
-            this.listinoID = this.listiniList[this.listiniList.length - 1].id;
-            this.listinoChange.emit(this.listinoID);
-            this.getFoodcost();
-          }
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
+  protected cambiaListino(value: unknown): void {
+    this.store.seleziona(Number(value));
   }
 
-  getFoodcost() {
-    this.gs
-      .callGateway(
-        'LFC27QWysxqH1e4JTynZrvTHeDkIVVqZltWRciikjx8tWy0tSVYtWy3Km2VOTGisd/Rk3YKgL0fvR/aNOscBfJZfx6MapREbCg@@',
-        `${this.cod_p},${this.listinoID}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.ingredientiFoodcostList = data.recordset ? data.recordset : [];
-          this.getTotali();
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
+  protected cambiaPeso(event: InputCustomEvent): void {
+    const peso = this.leggi(event, this.totali.value()?.peso_effettivo ?? null);
+    if (peso !== undefined) {
+      this.peso.emit(peso);
+    }
   }
 
-  getTotali() {
-    this.gs
-      .callGateway(
-        'qowr/0gbIcivI7tzuXF3CcuV980mPwzGQU+See/fYNMtWy0tSVYtWy3CP0PrzJ6X9m1jn4Z+ig0OxeCGFi2Pu2EwfFZDO7S8pw@@',
-        `${this.cod_p},${this.listinoID}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.totali.peso = data.recordset[0].peso;
-          this.totali.foodcost = data.recordset[0].foodcost;
-          this.totali.kcal = data.recordset[0].kcal;
-          this.totali.pesoEffettivo = data.recordset[0].peso_effettivo;
-          this.totali.prezzoVenditaLordo = data.recordset[0].prezzo_lordo_vendita;
-          this.totali.ratio = data.recordset[0].ratio;
-          this.totali.prezzoVenditaNetto = data.recordset[0].prezzo_netto_vendita;
-          this.totali.margineNetto = data.recordset[0].margine_netto;
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
+  protected cambiaPrezzo(event: InputCustomEvent): void {
+    const prezzo = this.leggi(event, this.totali.value()?.prezzo_lordo_vendita ?? null);
+    if (prezzo !== undefined) {
+      this.prezzo.emit(prezzo);
+    }
   }
 
-  aggiornaPrezzo() {
-    this.prezzoUpdate.emit(this.totali.prezzoVenditaLordo);
-  }
-
-  aggiornaPeso() {
-    this.pesoUpdate.emit(this.totali.pesoEffettivo);
+  /** Numero ≥ 0 dal campo (`null` se vuoto); se non è valido ripristina il valore precedente. */
+  private leggi(event: InputCustomEvent, precedente: number | null): number | null | undefined {
+    const testo = String(event.detail.value ?? '')
+      .trim()
+      .replace(',', '.');
+    const valore = testo === '' ? null : Number(testo);
+    if (valore !== null && (!Number.isFinite(valore) || valore < 0)) {
+      this.toast.error('Inserisci un valore numerico, zero o maggiore.');
+      event.target.value = precedente ?? '';
+      return undefined;
+    }
+    return valore === precedente ? undefined : valore;
   }
 }

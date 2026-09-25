@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { unsavedChangesGuard } from './core/navigation/unsaved-changes.guard';
 
 /** Stessi URL della versione legacy (i link salvati continuano a funzionare). */
 export const routes: Routes = [
@@ -22,6 +23,14 @@ export const routes: Routes = [
     title: 'Ricette',
     canActivate: [authGuard],
     loadComponent: () => import('./features/ricette/ricette.page').then((m) => m.RicettePage),
+  },
+  {
+    // 0 = nuova ricetta.
+    path: 'ricetta/:id',
+    title: 'Ricetta',
+    canActivate: [authGuard],
+    canDeactivate: [unsavedChangesGuard],
+    loadComponent: () => import('./features/ricetta/ricetta.page').then((m) => m.RicettaPage),
   },
   {
     path: 'schedeproduzione',

@@ -9,8 +9,6 @@
   "include": ["src/**/*.ts"],
   "exclude": [
     "src/**/*.spec.ts",
-    "src/test-setup.ts",
-    /* Codice legacy non ancora portato: ogni commit di porting toglie la sua voce. */
-    "src/app/features/ricetta/**"
+    "src/test-setup.ts"
   ]
 }

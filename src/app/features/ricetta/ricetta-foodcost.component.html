@@ -1,58 +1,104 @@
-<h4 style="text-decoration: underline; font-style: italic; padding-left: 5px">Foodcost</h4>
-<select
-  name="tipo"
-  class="center"
-  style="width: 250px; padding: 8px 8px 8px 0; margin: 8px 8px 8px 0"
-  [(ngModel)]="listinoID"
-  (ngModelChange)="getFoodcost(); listinoChange.emit(this.listinoID)"
->
-  <option *ngFor="let listino of listiniList" [ngValue]="listino.id">
-    {{ listino.descrizione }}
-  </option>
-</select>
-<ion-item *ngFor="let item of ingredientiFoodcostList">
-  <ion-col size="6">{{ item.descrizione }}</ion-col>
-  <ion-col size="2" class="ion-text-right">{{ item.peso | number: '1.1-2' }}g</ion-col>
-  <ion-col size="2" class="ion-text-right">{{ item.kcal | number: '1.1-2' }}kcal</ion-col>
-  <ion-col size="2" class="ion-text-right">{{ item.foodcost | currency: 'EUR' : '' }}€</ion-col>
-</ion-item>
-<ion-item class="totali">
-  <ion-col size="6">Foodcost</ion-col>
-  <ion-col size="2" class="ion-text-right">{{ totali.peso | number: '1.1-2' }}g</ion-col>
-  <ion-col size="2" class="ion-text-right">{{ totali.kcal | number: '1.1-2' }}kcal</ion-col>
-  <ion-col size="2" class="ion-text-right">{{ totali.foodcost | number: '1.1-2' }}€</ion-col>
-</ion-item>
-<ion-item class="totali">
-  <ion-col size="6">Poids réel (g)</ion-col>
-  <ion-col size="6" class="ion-text-right"
-    ><ion-input
-      type="number"
-      [(ngModel)]="totali.pesoEffettivo"
-      (keydown.enter)="aggiornaPeso()"
-    ></ion-input
-  ></ion-col>
-</ion-item>
-<ion-item class="totali">
-  <ion-col size="6">Prix de vente TTC (€)</ion-col>
-  <ion-col size="6" class="ion-text-right"
-    ><ion-input
-      type="number"
-      [(ngModel)]="totali.prezzoVenditaLordo"
-      (keydown.enter)="aggiornaPrezzo()"
-    ></ion-input
-  ></ion-col>
-</ion-item>
-<ion-item class="totali">
-  <ion-col size="6">Ratio</ion-col>
-  <ion-col size="6" class="ion-text-right">{{ totali.ratio | number: '1.1-2' }}%</ion-col>
-</ion-item>
-<ion-item class="totali">
-  <ion-col size="6">Prix de vente H.T</ion-col>
-  <ion-col size="6" class="ion-text-right"
-    >{{ totali.prezzoVenditaNetto | number: '1.1-2' }}€</ion-col
+<div class="foodcost__intestazione">
+  <h2 id="foodcost-titolo">Food cost</h2>
+  <ion-select
+    class="foodcost__listino"
+    aria-label="Listino"
+    interface="popover"
+    [value]="listinoId()"
+    (ionChange)="cambiaListino($event.detail.value)"
   >
-</ion-item>
-<ion-item class="totali">
-  <ion-col size="6">Marge brut</ion-col>
-  <ion-col size="6" class="ion-text-right">{{ totali.margineNetto | number: '1.1-2' }}€</ion-col>
-</ion-item>
+    @for (listino of listini(); track listino.id) {
+      <ion-select-option [value]="listino.id">{{ listino.descrizione }}</ion-select-option>
+    }
+  </ion-select>
+</div>
+
+@switch (righe.state()) {
+  @case ('loading') {
+    <ric-list-skeleton [rows]="3" />
+  }
+  @case ('error') {
+    <p class="app-muted">Impossibile calcolare il food cost.</p>
+    <ion-button fill="outline" size="small" (click)="righe.load(); totali.load()">
+      Riprova
+    </ion-button>
+  }
+  @default {
+    <table class="foodcost__tabella" aria-labelledby="foodcost-titolo">
+      <thead>
+        <tr>
+          <th scope="col">Ingrediente</th>
+          <th scope="col">Peso</th>
+          <th scope="col">kcal</th>
+          <th scope="col">Costo</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (riga of righe.items(); track $index) {
+          <tr>
+            <td>{{ riga.descrizione }}</td>
+            <td class="app-num">{{ riga.peso | number: '1.0-2' }} g</td>
+            <td class="app-num">{{ riga.kcal | number: '1.0-0' }}</td>
+            <td class="app-num">{{ riga.foodcost | currency }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="app-muted">Nessun ingrediente con prezzo in questo listino.</td>
+          </tr>
+        }
+      </tbody>
+      @if (totali.value(); as t) {
+        <tfoot>
+          <tr>
+            <th scope="row">Totale</th>
+            <td class="app-num">{{ t.peso | number: '1.0-2' }} g</td>
+            <td class="app-num">{{ t.kcal | number: '1.0-0' }}</td>
+            <td class="app-num">{{ t.foodcost | currency }}</td>
+          </tr>
+        </tfoot>
+      }
+    </table>
+  }
+}
+
+@if (totali.value(); as t) {
+  <div class="foodcost__vendita">
+    <ion-input
+      label="Peso effettivo (g)"
+      labelPlacement="stacked"
+      fill="outline"
+      type="number"
+      inputmode="decimal"
+      helperText="Peso finale, es. dopo la cottura"
+      [min]="0"
+      [value]="t.peso_effettivo"
+      (ionChange)="cambiaPeso($event)"
+    />
+    <ion-input
+      label="Prezzo di vendita IVA incl. (€)"
+      labelPlacement="stacked"
+      fill="outline"
+      type="number"
+      inputmode="decimal"
+      [min]="0"
+      [value]="t.prezzo_lordo_vendita"
+      (ionChange)="cambiaPrezzo($event)"
+    />
+  </div>
+  <dl class="foodcost__indici">
+    <div>
+      <dt>Incidenza food cost</dt>
+      <dd class="app-num">{{ (t.ratio | number: '1.0-2') ?? '—' }}%</dd>
+    </div>
+    <div>
+      <dt>Prezzo IVA esclusa</dt>
+      <dd class="app-num">{{ (t.prezzo_netto_vendita | currency) ?? '—' }}</dd>
+    </div>
+    <div>
+      <dt>Margine lordo</dt>
+      <dd class="app-num" [class.foodcost__negativo]="(t.margine_netto ?? 0) < 0">
+        {{ (t.margine_netto | currency) ?? '—' }}
+      </dd>
+    </div>
+  </dl>
+}

@@ -153,6 +153,14 @@ export const RICETTE_DETTAGLIO: Record<number, Record<string, unknown>> = {
     peso_effettivo: 600,
     id_storage: null,
   },
+  10: {
+    cod_p: 10,
+    nome_ric: 'Besciamella',
+    procedimento: 'Sciogliere il burro, unire la farina e poi il latte caldo.',
+    prezzo_vendita: null,
+    peso_effettivo: null,
+    id_storage: null,
+  },
 };
 
 const riga = (
@@ -187,6 +195,28 @@ export const RIGHE_RICETTA: Record<number, unknown[]> = {
     riga(8, 'Tuorli', 100, 16.67),
     riga(9, 'Zucchero di canna', 30, null, 0, 1),
   ],
+  10: [
+    riga(11, 'Latte intero', 1000, 83.33),
+    riga(12, 'Burro', 100, 8.33),
+    riga(13, 'Farina 00', 100, 8.33),
+  ],
+};
+
+export const FOODCOST_RICETTA = [
+  { descrizione: 'Carne macinata', peso: 1000, kcal: 2500, foodcost: 9.5 },
+  { descrizione: 'Passata di pomodoro', peso: 700, kcal: 210, foodcost: 1.4 },
+  { descrizione: 'Soffritto', peso: 100, kcal: 40, foodcost: 0.35 },
+];
+
+export const FOODCOST_TOTALI = {
+  peso: 1800,
+  foodcost: 11.25,
+  kcal: 2750,
+  peso_effettivo: 1500,
+  prezzo_lordo_vendita: 12,
+  ratio: 34.38,
+  prezzo_netto_vendita: 10.91,
+  margine_netto: -0.34,
 };
 
 /** Archivio: radice con due cartelle e due file, "Fatture" con una sottocartella vuota. */
@@ -307,6 +337,18 @@ export const DEFAULT_RESPONSES: Partial<Record<ProcessName, (params: string | nu
         .filter(Boolean),
     }),
     RICETTA_RIGHE: (codP) => ({ recordset: RIGHE_RICETTA[Number(codP)] ?? [] }),
+    RICETTA_SOTTORICETTE: (codP) => ({
+      recordset: (RIGHE_RICETTA[Number(codP)] ?? [])
+        .map((r) => (r as { ricettaid: number }).ricettaid)
+        .filter((id) => id > 0)
+        .map((ricettaid) => ({ ricettaid })),
+    }),
+    RICETTA_FOODCOST_RIGHE: () => ({ recordset: FOODCOST_RICETTA }),
+    RICETTA_FOODCOST_TOTALI: () => ({ recordset: [FOODCOST_TOTALI] }),
+    // Nuova ricetta (cod_p 0) → 99, altrimenti lo stesso cod_p.
+    RICETTA_SAVE: (params) => ({
+      output: [{ out_id: Number(String(params).split(',')[0]) || 99 }],
+    }),
     ARCHIVIO_LIST: (params) =>
       ARCHIVIO[Number(String(params).split(',')[0])] ?? { recordset: [], output: [{}] },
     ARCHIVIO_CARTELLE_TREE: () => ({ recordset: CARTELLE_ARCHIVIO }),

@@ -1,0 +1,97 @@
+:host {
+  display: block;
+}
+
+.foodcost__intestazione {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-bottom: 8px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+}
+
+.foodcost__listino {
+  max-width: 100%;
+}
+
+.foodcost__tabella {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  color: var(--ion-text-color);
+
+  th {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: start;
+    color: var(--app-muted-text);
+    padding: 0 0 6px;
+  }
+
+  th:not(:first-child) {
+    text-align: end;
+  }
+
+  td {
+    padding: 6px 0;
+    border-top: 1px solid var(--app-surface-border);
+    vertical-align: top;
+  }
+
+  td:not(:first-child) {
+    white-space: nowrap;
+    padding-inline-start: 10px;
+  }
+
+  tfoot th,
+  tfoot td {
+    padding-top: 8px;
+    border-top: 2px solid var(--app-surface-border);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: none;
+    color: var(--ion-text-color);
+  }
+}
+
+.foodcost__vendita {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.foodcost__indici {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0 0;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--app-surface-border);
+  }
+
+  dt {
+    color: var(--app-muted-text);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+    color: var(--ion-text-color);
+  }
+}
+
+// Prezzo di vendita che non copre il food cost (più specifico di `.foodcost__indici dd`).
+.foodcost__indici .foodcost__negativo {
+  color: var(--ion-color-danger);
+}
