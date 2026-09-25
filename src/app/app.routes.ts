@@ -69,6 +69,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/menus/menus.page').then((m) => m.MenusPage),
   },
   {
+    path: 'menu/:id',
+    title: 'Menù',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/menu/menu.page').then((m) => m.MenuPage),
+  },
+  {
     path: 'foodcost',
     title: 'Dizionario ingredienti',
     canActivate: [authGuard],

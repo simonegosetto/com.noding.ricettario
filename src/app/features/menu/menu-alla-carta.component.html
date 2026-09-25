@@ -1,51 +1,77 @@
-<ion-card>
-  <ion-card-content>
-    <ion-row>
-      <ion-col size="8">
-        <ion-button (click)="searchRicetta()">
-          Ricette<ion-icon name="search" style="cursor: pointer"></ion-icon>
-        </ion-button>
-        {{ menuRiga?.nome_ric }}
-      </ion-col>
-      <ion-col size="2" class="center">
-        <select [(ngModel)]="menuRiga.menucategoriaid" style="width: 100%">
-          <option *ngFor="let categoria of categorieList" [ngValue]="categoria.id">
-            {{ categoria.descrizione }}
-          </option>
-        </select>
-      </ion-col>
-      <ion-col size="2" class="ion-text-right"
-        ><ion-button (click)="save()">Aggiungi</ion-button></ion-col
-      >
-    </ion-row>
-  </ion-card-content>
-</ion-card>
+<div class="menu__aggiungi">
+  <ion-select
+    class="menu__categoria"
+    aria-label="Categoria del piatto da aggiungere"
+    fill="outline"
+    interface="popover"
+    placeholder="Categoria del piatto"
+    [value]="categoria()"
+    (ionChange)="cambiaCategoria($event.detail.value)"
+  >
+    @for (voce of categorie(); track voce.id) {
+      <ion-select-option [value]="voce.id">{{ voce.descrizione }}</ion-select-option>
+    }
+  </ion-select>
+  <ion-button [disabled]="!categoria()" (click)="aggiungi()">
+    <ion-icon slot="start" name="add-circle-outline" />
+    Aggiungi piatto
+  </ion-button>
+</div>
 
-<ion-list>
-  <ion-card *ngFor="let riga of righeList" style="cursor: pointer">
-    <ion-card-content *ngIf="riga.tipo === 1" style="background-color: #c0bdbd">
-      <ion-row
-        ><ion-col class="ion-text-center"
-          ><h2>{{ riga.categoria }}</h2></ion-col
-        ></ion-row
-      >
-    </ion-card-content>
-    <ion-card-content *ngIf="riga.tipo === 2">
-      <ion-row>
-        <ion-col size="7">
-          <span (click)="this.onRicettaClick.emit(riga.ricettaid)">{{ riga.descrizione }}</span>
-        </ion-col>
-        <ion-col size="2">{{ riga.foodcost | currency: 'EUR' : '' }}€</ion-col>
-        <ion-col size="2">{{ riga.prezzo_lordo_vendita | currency: 'EUR' : '' }}€</ion-col>
-        <ion-col size="1"
-          ><ion-icon
-            name="trash"
-            color="danger"
-            (click)="delete($event, riga)"
-            style="font-size: 25px"
-          ></ion-icon
-        ></ion-col>
-      </ion-row>
-    </ion-card-content>
-  </ion-card>
-</ion-list>
+@switch (righe.state()) {
+  @case ('loading') {
+    <ric-list-skeleton />
+  }
+  @case ('error') {
+    <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare i piatti.">
+      <ion-button fill="outline" (click)="righe.load()">Riprova</ion-button>
+    </ric-empty-state>
+  }
+  @default {
+    @if (sezioni().length) {
+      <div class="menu__intestazione" aria-hidden="true">
+        <span>Piatto</span>
+        <span>Food cost</span>
+        <span>Prezzo</span>
+      </div>
+      <ion-list class="app-list">
+        @for (sezione of sezioni(); track $index) {
+          <ion-item-group>
+            <ion-item-divider class="menu__categoria-titolo">
+              <ion-label>{{ sezione.categoria }}</ion-label>
+            </ion-item-divider>
+            @for (piatto of sezione.piatti; track piatto.id) {
+              <ric-list-row (open)="apri(piatto)">
+                <div class="piatto">
+                  <h2 class="piatto__nome">{{ piatto.descrizione }}</h2>
+                  <span class="piatto__valore app-num">
+                    <span class="piatto__etichetta">Food cost</span>
+                    {{ (piatto.foodcost | currency) ?? '—' }}
+                  </span>
+                  <span class="piatto__valore app-num">
+                    <span class="piatto__etichetta">Prezzo</span>
+                    {{ (piatto.prezzo_lordo_vendita | currency) ?? '—' }}
+                  </span>
+                </div>
+                <ion-button
+                  actions
+                  fill="clear"
+                  color="danger"
+                  aria-label="Elimina"
+                  (click)="elimina(piatto)"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline" />
+                </ion-button>
+              </ric-list-row>
+            }
+          </ion-item-group>
+        }
+      </ion-list>
+    } @else {
+      <ric-empty-state
+        icon="restaurant-outline"
+        message="Nessun piatto: scegli una categoria e aggiungi il primo."
+      />
+    }
+  }
+}

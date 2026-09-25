@@ -1,97 +1,117 @@
-import { Component, OnInit } from '@angular/core';
-import { GlobalService } from '../core/services/global.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Menu } from '../shared/interface/menu';
-import { environment } from '../../environments/environment';
-import { ListinoRead } from '../shared/interface/listino';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { ActionSheetController } from '@ionic/angular/action-sheet-controller';
+import { IonBackButton } from '@ionic/angular/ion-back-button';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonSelect } from '@ionic/angular/ion-select';
+import { IonSelectOption } from '@ionic/angular/ion-select-option';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import type { ViewWillEnter } from '@ionic/angular';
+import { finalize } from 'rxjs';
+
+import { ToastService } from '../../core/ui/toast.service';
+import { ListiniStore } from '../../data/listini.store';
+import { MenuRepository } from '../../data/menu.repository';
+import { ReportService, VarianteStampaMenu } from '../../data/report.service';
+import { TipoMenu } from '../../shared/models/menu';
+import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { ListSkeletonComponent } from '../../shared/ui/list-skeleton.component';
+import { RemoteValue } from '../../shared/ui/remote-list';
+import { MenuAllaCartaComponent } from './menu-alla-carta.component';
+import { MenuEventoComponent } from './menu-evento.component';
 
 @Component({
   selector: 'ric-menu',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    IonBackButton,
+    IonButton,
+    IonButtons,
+    IonContent,
+    IonHeader,
+    IonIcon,
+    IonSelect,
+    IonSelectOption,
+    IonTitle,
+    IonToolbar,
+    EmptyStateComponent,
+    ListSkeletonComponent,
+    MenuAllaCartaComponent,
+    MenuEventoComponent,
+  ],
   templateUrl: './menu.page.html',
-  styleUrls: ['./menu.page.scss'],
+  styleUrl: './menu.page.scss',
 })
-export class MenuPage implements OnInit {
-  constructor(
-    public gs: GlobalService,
-    private _route: ActivatedRoute,
-    private _router: Router,
-  ) {}
+export class MenuPage implements ViewWillEnter {
+  private readonly repository = inject(MenuRepository);
+  private readonly store = inject(ListiniStore);
+  private readonly reports = inject(ReportService);
+  private readonly router = inject(Router);
+  private readonly actionSheets = inject(ActionSheetController);
+  private readonly toast = inject(ToastService);
 
-  public menu: Menu = {} as Menu;
-  public listiniList: ListinoRead[] = [];
-  public listinoID: number;
+  /** Parametro di rotta `:id`. */
+  readonly id = input.required<string>();
 
-  ngOnInit() {
-    const param = this._route.snapshot.paramMap.get('id');
-    if (parseInt(param) > 0) {
-      this.menu.id = parseInt(param);
-      this._estrazioneListini();
-      this.getMenu();
-    } else {
-      this.menu.id = 0;
+  protected readonly tipi = TipoMenu;
+  protected readonly menuId = computed(() => Number(this.id()));
+  protected readonly menu = new RemoteValue(() => this.repository.get(this.menuId()), undefined);
+  protected readonly titolo = computed(() => this.menu.value()?.descrizione ?? 'Menù');
+  protected readonly listini = this.store.listini;
+  protected readonly listinoId = this.store.correnteId;
+  /** Righe e totali aspettano i listini: senza, il food cost verrebbe calcolato due volte. */
+  protected readonly listiniPronti = signal(false);
+
+  ionViewWillEnter(): void {
+    if (!(this.menuId() > 0)) {
+      void this.router.navigate(['/menus'], { replaceUrl: true });
+      return;
     }
-  }
-
-  private _estrazioneListini() {
-    this.gs
-      .callGateway(
-        'BnnFe0vU9aHbFGDCdwhl3h+5nSiRtsLXHgSRgQ803PAtWy0tSVYtWy3oQdVT2zI26QCrxbZr7SBgQ0QqM/cJWYN2qNm3Fq18Lw@@',
-        ``,
+    this.store
+      .load()
+      .pipe(
+        this.toast.notifyErrors(),
+        finalize(() => this.listiniPronti.set(true)),
       )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.listiniList = data.recordset ? data.recordset : [];
-          if (this.listiniList.length > 0) {
-            this.listinoID = this.listiniList[this.listiniList.length - 1].id;
-          }
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
+      .subscribe();
+    this.menu.load();
   }
 
-  public getMenu() {
-    this.gs
-      .callGateway(
-        'K3JkUG7Hy1/chWxotpmDKn1FOCiRcA9/dx2Fu6QMRL8tWy0tSVYtWy1uvOoRTQ4JicWvhMJMzdxojl+4bSC4yeD1RFwsdpoPJg@@',
-        `${this.menu.id}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.menu = { ...data.recordset[0] };
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
+  protected cambiaListino(value: unknown): void {
+    this.store.seleziona(Number(value));
   }
 
-  public print(param: string) {
-    window.open(
-      (this.menu.tipo === 1
-        ? environment.apiReportMenuAllaCarta
-        : environment.apiReportMenuEvento) +
-        '?menu=' +
-        this.menu.id +
-        '&listino=' +
-        this.listinoID +
-        param +
-        '&descrizione=' +
-        encodeURIComponent(this.menu.descrizione) +
-        '&token=' +
-        localStorage.getItem('token'),
-      '_blank',
-    );
+  protected async stampa(): Promise<void> {
+    const menu = this.menu.value();
+    if (!menu) {
+      return;
+    }
+    if (menu.tipo === TipoMenu.AllaCarta) {
+      this.apriStampa('standard');
+      return;
+    }
+    // La finestra va aperta nel click: per questo si usa l'handler e non onDidDismiss.
+    const sheet = await this.actionSheets.create({
+      header: 'Stampa del menù',
+      buttons: [
+        { text: 'Menù', handler: () => this.apriStampa('standard') },
+        { text: 'Menù con food cost', handler: () => this.apriStampa('foodcost') },
+        { text: 'Distinta base (BOM)', handler: () => this.apriStampa('bom') },
+        { text: 'Annulla', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
   }
 
-  navToRicetta(cod_p: number) {
-    this._router.navigate([`ricetta/${cod_p}`]);
+  private apriStampa(variante: VarianteStampaMenu): void {
+    const menu = this.menu.value();
+    if (menu) {
+      this.reports.open(this.reports.menu(menu, this.listinoId(), variante));
+    }
   }
 }

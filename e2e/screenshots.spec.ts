@@ -13,6 +13,8 @@ const PAGES: { name: string; url: string; public?: boolean }[] = [
   { name: 'listini', url: '/listini' },
   { name: 'listino', url: '/listino/1' },
   { name: 'menus', url: '/menus' },
+  { name: 'menu-alla-carta', url: '/menu/1' },
+  { name: 'menu-evento', url: '/menu/2' },
   { name: 'schedeproduzione', url: '/schedeproduzione' },
   { name: 'schedaproduzione', url: '/schedaproduzione/1' },
   { name: 'foodcost', url: '/foodcost' },

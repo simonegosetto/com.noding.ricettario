@@ -1,0 +1,186 @@
+// Stili condivisi dai menù alla carta ed evento.
+:host {
+  display: block;
+}
+
+.menu__aggiungi {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.menu__categoria {
+  flex: 1 1 220px;
+  max-width: 360px;
+}
+
+.menu__nota {
+  margin: 8px 4px 0;
+  font-size: 0.8125rem;
+}
+
+.menu__categoria-titolo {
+  --background: var(--ion-color-step-50, var(--ion-background-color));
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+}
+
+// Colonne condivise da intestazione e righe del menù alla carta (su schermi larghi).
+$colonne: minmax(0, 1fr) repeat(2, 110px);
+
+.menu__intestazione {
+  display: none;
+  grid-template-columns: $colonne;
+  gap: 12px;
+  padding: 0 60px 8px 60px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--app-muted-text);
+
+  span:not(:first-child) {
+    text-align: end;
+  }
+}
+
+.piatto {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 12px;
+}
+
+.piatto__nome {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.piatto__valore {
+  text-align: start;
+  font-size: 0.875rem;
+}
+
+.piatto__etichetta {
+  color: var(--app-muted-text);
+  margin-inline-end: 4px;
+}
+
+.piatto__link {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--ion-color-primary);
+    text-decoration: underline;
+  }
+}
+
+@media (min-width: 768px) {
+  .menu__intestazione {
+    display: grid;
+  }
+
+  .piatto {
+    grid-template-columns: $colonne;
+    align-items: baseline;
+  }
+
+  .piatto__nome {
+    grid-column: auto;
+    font-size: 1rem;
+  }
+
+  .piatto__valore {
+    text-align: end;
+  }
+
+  .piatto__etichetta {
+    display: none;
+  }
+}
+
+// Menù evento.
+.evento {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 992px) {
+  .evento {
+    grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr);
+  }
+
+  .evento__riepilogo {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+.evento__separatore {
+  --min-height: 36px;
+}
+
+.evento__linea {
+  flex: 1;
+  height: 0;
+  margin-inline-start: 36px;
+  border-top: 2px dashed var(--app-surface-border);
+}
+
+.evento__riepilogo {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--app-surface-border);
+  background: var(--ion-item-background);
+}
+
+.evento__coperti {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.evento__tabella {
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    color: var(--ion-text-color);
+  }
+
+  th,
+  td {
+    padding: 8px 4px;
+    white-space: nowrap;
+  }
+
+  thead th {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: end;
+    color: var(--app-muted-text);
+  }
+
+  tbody th {
+    text-align: start;
+    font-weight: 600;
+  }
+
+  tbody tr {
+    border-top: 1px solid var(--app-surface-border);
+  }
+
+  .evento__lordo {
+    font-weight: 600;
+  }
+}

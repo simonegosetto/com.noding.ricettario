@@ -81,6 +81,52 @@ export const INGREDIENTI = [
   { id: 8, descrizione: 'Zucchero semolato' },
 ];
 
+export const CATEGORIE_MENU = [
+  { id: 1, descrizione: 'Antipasti' },
+  { id: 2, descrizione: 'Primi' },
+  { id: 3, descrizione: 'Dolci' },
+];
+
+/** Menù alla carta: intestazioni di categoria (tipo 1) intercalate ai piatti (tipo 2). */
+export const RIGHE_ALLA_CARTA = [
+  { tipo: 1, id: 2, categoria: 'Primi' },
+  {
+    tipo: 2,
+    id: 31,
+    ricettaid: 2,
+    descrizione: 'Lasagne al forno',
+    foodcost: 3.2,
+    prezzo_lordo_vendita: 14,
+  },
+  { tipo: 1, id: 3, categoria: 'Dolci' },
+  {
+    tipo: 2,
+    id: 32,
+    ricettaid: 3,
+    descrizione: 'Crème brûlée',
+    foodcost: 1.15,
+    prezzo_lordo_vendita: null,
+  },
+];
+
+/** Menù evento: piatti (tipo 1) e separatori (tipo 2). */
+export const RIGHE_EVENTO = [
+  { tipo: 1, id: 41, ricettaid: 1, descrizione: 'Ragù alla bolognese' },
+  { tipo: 1, id: 42, ricettaid: 2, descrizione: 'Lasagne al forno' },
+  { tipo: 2, id: 43 },
+  { tipo: 1, id: 44, ricettaid: 3, descrizione: 'Crème brûlée' },
+];
+
+export const TOTALI_EVENTO = {
+  foodcost: 8.5,
+  netto: 36.36,
+  iva: 10,
+  lordo: 40,
+  foodcost_tot: 680,
+  netto_tot: 2909.09,
+  lordo_tot: 3200,
+};
+
 /** Testate di RICETTA_GET e righe di RICETTA_RIGHE per cod_p. */
 export const RICETTE_DETTAGLIO: Record<number, Record<string, unknown>> = {
   1: {
@@ -240,6 +286,11 @@ export const DEFAULT_RESPONSES: Partial<Record<ProcessName, (params: string | nu
     RICETTE_SEARCH: (testo) => ({
       recordset: RICETTE.filter((r) => r.nome_ric.toLowerCase().includes(unquote(testo))),
     }),
+    MENU_GET: (id) => ({ recordset: MENU.filter((menu) => menu.id === Number(id)) }),
+    MENU_CATEGORIE_LIST: () => ({ recordset: CATEGORIE_MENU }),
+    MENU_ALLA_CARTA_RIGHE: () => ({ recordset: RIGHE_ALLA_CARTA }),
+    MENU_EVENTO_RIGHE: () => ({ recordset: RIGHE_EVENTO }),
+    MENU_TOTALI: () => ({ recordset: [TOTALI_EVENTO] }),
     SCHEDA_RIGHE: (scheda) => ({
       recordset:
         Number(scheda) === 1

@@ -1,239 +1,224 @@
-import { AfterViewInit, Component, EventEmitter, Input, Output } from '@angular/core';
-import { GlobalService } from '../core/services/global.service';
-import { ModalService } from '../core/services/modal.service';
-import { AlertService } from '../core/services/alert.service';
-import { Menu, MenuRiga, MenuRigaSearch, MenuTotali } from '../shared/interface/menu';
-import { ModalSearchRicettaMenuComponent } from './modal-search-ricetta-menu.component';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonInput } from '@ionic/angular/ion-input';
+import { IonItem } from '@ionic/angular/ion-item';
+import { IonLabel } from '@ionic/angular/ion-label';
+import { IonList } from '@ionic/angular/ion-list';
+import { IonReorder } from '@ionic/angular/ion-reorder';
+import { IonReorderGroup } from '@ionic/angular/ion-reorder-group';
+import { IonRouterLinkWithHref } from '@ionic/angular/ion-router-link';
+import type { InputCustomEvent, ReorderEndCustomEvent } from '@ionic/angular';
+import { finalize, Observable } from 'rxjs';
 
+import { AlertService } from '../../core/ui/alert.service';
+import { ModalService } from '../../core/ui/modal.service';
+import { ToastService } from '../../core/ui/toast.service';
+import { MenuRepository } from '../../data/menu.repository';
+import { Menu, RigaMenuEvento } from '../../shared/models/menu';
+import { RicettaCercata } from '../../shared/models/ricetta';
+import { SearchModalComponent } from '../../shared/search-modal/search-modal.component';
+import { schedeTecnicheSource } from '../../shared/search-modal/search-sources';
+import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { ListSkeletonComponent } from '../../shared/ui/list-skeleton.component';
+import { RemoteList, RemoteValue } from '../../shared/ui/remote-list';
+
+type Piatto = Extract<RigaMenuEvento, { kind: 'piatto' }>;
+type Separatore = Extract<RigaMenuEvento, { kind: 'separatore' }>;
+
+/**
+ * Menù evento: piatti in ordine (trascinabili) con separatori, coperti, percentuale della
+ * scheda tecnica e totali per coperto e per menù sul listino scelto.
+ */
 @Component({
   selector: 'ric-menu-evento',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CurrencyPipe,
+    DecimalPipe,
+    RouterLink,
+    IonButton,
+    IonIcon,
+    IonInput,
+    IonItem,
+    IonLabel,
+    IonList,
+    IonReorder,
+    IonReorderGroup,
+    IonRouterLinkWithHref,
+    EmptyStateComponent,
+    ListSkeletonComponent,
+  ],
   templateUrl: './menu-evento.component.html',
-  styles: [],
+  styleUrl: './menu-sezioni.scss',
 })
-export class MenuEventoComponent implements AfterViewInit {
-  constructor(
-    public gs: GlobalService,
-    private _modal: ModalService,
-    private _alert: AlertService,
-  ) {}
+export class MenuEventoComponent {
+  private readonly repository = inject(MenuRepository);
+  private readonly modals = inject(ModalService);
+  private readonly alerts = inject(AlertService);
+  private readonly toast = inject(ToastService);
 
-  private _listinoid: number;
-  @Input() menu: Menu;
-  @Input() // listinoid: number;
-  // tslint:disable-next-line:variable-name
-  set listinoid(_value: number) {
-    if (_value) {
-      this._listinoid = _value;
-      this._estrazione();
+  private readonly fonteSchede = schedeTecnicheSource();
+
+  readonly menu = input.required<Menu>();
+  readonly listinoId = input.required<number>();
+
+  private readonly menuId = computed(() => this.menu().id);
+  protected readonly righe = new RemoteList(() =>
+    this.repository.righeEvento(this.menuId(), this.listinoId()),
+  );
+  protected readonly totali = new RemoteValue(
+    () => this.repository.totali(this.menuId(), this.listinoId()),
+    undefined,
+  );
+  /** Valori mostrati nei campi: ripartono da quelli del menù quando il menù viene ricaricato. */
+  protected readonly pax = linkedSignal(() => this.menu().pax);
+  protected readonly percRicetta = linkedSignal(() => this.menu().perc_ricetta);
+  /** Spostamento in corso: il riordino resta bloccato finché il server non ha risposto. */
+  protected readonly spostamento = signal(false);
+
+  constructor() {
+    toObservable(computed(() => [this.menuId(), this.listinoId()]))
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        this.righe.load();
+        this.totali.load();
+      });
+  }
+
+  protected async aggiungi(): Promise<void> {
+    const scheda = await this.modals.open<RicettaCercata>(SearchModalComponent, {
+      title: 'Aggiungi piatto',
+      placeholder: 'Cerca una scheda tecnica',
+      source: this.fonteSchede,
+    });
+    if (scheda) {
+      // Nei menù evento la categoria è sempre 0.
+      this.esegui(
+        this.repository.addPiatto(this.menuId(), scheda.cod_p, 0),
+        `«${scheda.nome_ric}» aggiunto al menù`,
+        true,
+      );
     }
   }
-  get listinoid(): number {
-    return this._listinoid;
-  }
-  @Output() onRicettaClick = new EventEmitter();
-  public menuRiga: MenuRiga = {} as MenuRiga;
-  public righeList: MenuRigaSearch[] = [];
-  public menuTotali: MenuTotali = {} as MenuTotali;
 
-  ngAfterViewInit() {
-    /*setTimeout(() => {
-            this._estrazione();
-        }, 10);*/
+  protected aggiungiSeparatore(piatto: Piatto): void {
+    this.esegui(this.repository.addSeparatore(this.menuId(), piatto.id));
   }
 
-  private _estrazione() {
-    this.gs
-      .callGateway(
-        'gmWVJZP+UGV9KGcRG53D30i0ozWILb/EMajQiDrIEastWy0tSVYtWy3BMu7OQxzscLI2Tq9rx7i26t6Ra97143uOpKI178zF1w@@',
-        `${this.menu.id},${this.listinoid}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.righeList = data.recordset ? [...data.recordset] : [];
-          this.totaliGet();
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
-  }
-
-  searchRicetta() {
-    const modalSearchRicetta = this._modal.present(ModalSearchRicettaMenuComponent, {});
-    modalSearchRicetta.then((result) => {
-      if (result.data) {
-        this.menuRiga.ricettaid = result.data.cod_p;
-        this.menuRiga.nome_ric = result.data.nome_ric;
-      }
-    });
-  }
-
-  updateRicetteOrdinamento(ev: any) {
-    ev.detail.complete();
-    console.log(
-      'sposto codice',
-      this.righeList[ev.detail.from].id,
-      'da',
-      ev.detail.from + 1,
-      'a',
-      ev.detail.to + 1,
+  protected async elimina(piatto: Piatto): Promise<void> {
+    const conferma = await this.alerts.confirm(
+      'Elimina piatto',
+      `Confermi di eliminare «${piatto.descrizione}» dal menù?`,
+      { confirmText: 'Elimina', cancelText: 'Annulla' },
     );
-    this.gs
-      .callGateway(
-        'wQgcfZjoo4BsKUwn1t0+NbzoCkWck6mkuw/a9KY/nXpVZXHo0QuYVoGlQ7vNS2lxQXzp7HvVq3pM3+2UW0H3Vy1bLS1JVi1bLdUd42OAYsvyHLgHO9HEb2f4tL/vbUcenrRISZDDpJiS',
-        `${this.righeList[ev.detail.from].id},${ev.detail.to + 1},${this.menu.id}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
+    if (conferma) {
+      this.esegui(this.repository.deleteRiga(piatto.id), undefined, true);
+    }
   }
 
-  insertSeparator($event, riga: MenuRigaSearch) {
-    $event.stopPropagation();
-    this.gs
-      .callGateway(
-        'nvNvQc1GDrC4lRSoWH69eswNyldEoanRYJv4G/68vZMtWy0tSVYtWy0Y/+aKGhSOEdnrEoo8wv9Rl57gUsu4PSBzUN36HmUgBQ@@',
-        `${riga.id},${this.menu.id}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this._estrazione();
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
-  }
-
-  deleteSeparator($event, riga: MenuRigaSearch) {
-    $event.stopPropagation();
-    const alertElimina = this._alert.confirm('Attenzione', `Confermi di eliminare il separatore ?`);
-    alertElimina.then((result) => {
-      if (result.role === 'OK') {
-        this.gs
-          .callGateway(
-            'TSjQ4Ux8su/QtywQgqrzwWVeCYI2bozUYh64WUtMaYQtWy0tSVYtWy1fw6mgUpkDGe+PLDd01VCvb2K7SCePco+lVTA+rbxubg@@',
-            riga.id,
-          )
-          .subscribe(
-            (data) => {
-              if (data.hasOwnProperty('error')) {
-                this.gs.toast.present(data.error);
-                return;
-              }
-              this._estrazione();
-              this.gs.loading.dismiss();
-            },
-            (error) => this.gs.toast.present(error.message, 5000),
-          );
-      }
-    });
-  }
-
-  delete($event, riga: MenuRigaSearch) {
-    $event.stopPropagation();
-    const alertElimina = this._alert.confirm(
-      'Attenzione',
-      `Confermi di eliminare il piatto ${riga.descrizione} ?`,
+  protected async eliminaSeparatore(separatore: Separatore): Promise<void> {
+    const conferma = await this.alerts.confirm(
+      'Elimina separatore',
+      'Confermi di eliminare il separatore?',
+      { confirmText: 'Elimina', cancelText: 'Annulla' },
     );
-    alertElimina.then((result) => {
-      if (result.role === 'OK') {
-        this.gs
-          .callGateway(
-            'ucPKP4vgLwFswQYd3kYSXH49AtOVNz6n57HE4QChZOAtWy0tSVYtWy1cBMOHmEBYZ5ahYrEc8UnPWdkZo4MLYEwx/AiyDiHvsw@@',
-            riga.id,
-          )
-          .subscribe(
-            (data) => {
-              if (data.hasOwnProperty('error')) {
-                this.gs.toast.present(data.error);
-                return;
-              }
-              this._estrazione();
-              this.gs.loading.dismiss();
-            },
-            (error) => this.gs.toast.present(error.message, 5000),
-          );
-      }
-    });
+    if (conferma) {
+      this.esegui(this.repository.deleteSeparatore(separatore.id));
+    }
   }
 
-  save() {
-    if (this.gs.isnull(this.menuRiga.ricettaid, 0) == 0 || this.gs.isnull(this.menu.id, 0) == 0) {
-      this.gs.toast.present('Campi obbligatori mancanti !');
+  /**
+   * Fine del trascinamento: l'elenco viene riordinato subito (complete con l'array lascia
+   * il DOM ad Angular) e il server riceve la nuova posizione, da 1. Se rifiuta, si ricarica.
+   */
+  protected riordina(event: ReorderEndCustomEvent): void {
+    const { from, to, complete } = event.detail;
+    const spostata = this.righe.items()[from];
+    // complete() riordina con splice l'array ricevuto: gli si passa una copia.
+    const riordinate = complete([...this.righe.items()]) as RigaMenuEvento[];
+    if (from === to || !spostata) {
       return;
     }
-
-    this.gs
-      .callGateway(
-        '4EKFMSLcQErqesydVFFs5MsgUMVAnsk6dEJL6HKiuJ4tWy0tSVYtWy3rWCf0m7d18zKWD0qTdpZ5nrElD4jbP/gbWu8yWlij+A@@',
-        `${this.menu.id},${this.menuRiga.ricettaid},0`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this._estrazione();
-          this.menuRiga.ricettaid = 0;
-          this.menuRiga.nome_ric = '';
-          this.menuRiga.id = 0;
-          this.menuRiga.menucategoriaid = 0;
-          this.gs.loading.dismiss();
+    this.righe.items.set(riordinate);
+    this.spostamento.set(true);
+    this.repository
+      .moveRiga(this.menuId(), spostata.id, to + 1)
+      .pipe(finalize(() => this.spostamento.set(false)))
+      .subscribe({
+        error: (error: unknown) => {
+          this.toast.error(error);
+          this.righe.load();
         },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
+      });
   }
 
-  aggiornaMenu() {
-    this.gs
-      .callGateway(
-        'fqSIBghvRnSQ3MgfxEa5hzSJrTnuUrl/KmoPJqpLVuotWy0tSVYtWy0bKOK/0/Gx2zq8WP1fh0DpzYkmaXcymyb9qV+FiPj+HQ@@',
-        `${this.menu.id},${this.menu.pax},${this.menu.perc_ricetta}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.totaliGet();
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
+  protected cambiaPax(event: InputCustomEvent): void {
+    const pax = leggiNumero(event.detail.value);
+    if (pax === undefined || (pax !== null && (!Number.isInteger(pax) || pax < 0))) {
+      this.toast.error('Inserisci un numero di coperti intero, zero o maggiore.');
+      ripristina(event, this.pax());
+      return;
+    }
+    this.pax.set(pax);
+    this.salvaCoperti();
   }
 
-  totaliGet() {
-    this.gs
-      .callGateway(
-        'AhzhmjtF+z/CNSybI+oPMsvY8bgo02n2+Kccc5ifI44tWy0tSVYtWy2A3OleBbhIztblymLHcptfGLTotAqZ5MFdbdj4eyjhaA@@',
-        `${this.menu.id},${this.listinoid}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.menuTotali = { ...data.recordset[0] };
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
+  protected cambiaPercRicetta(event: InputCustomEvent): void {
+    const perc = leggiNumero(event.detail.value);
+    if (perc === undefined || (perc !== null && (perc < 0 || perc > 100))) {
+      this.toast.error('La percentuale deve essere compresa fra 0 e 100.');
+      ripristina(event, this.percRicetta());
+      return;
+    }
+    this.percRicetta.set(perc);
+    this.salvaCoperti();
   }
+
+  private salvaCoperti(): void {
+    this.repository
+      .updateCoperti(this.menuId(), this.pax(), this.percRicetta())
+      .pipe(this.toast.notifyErrors())
+      .subscribe(() => this.totali.load());
+  }
+
+  private esegui(operazione: Observable<void>, messaggio?: string, conTotali = false): void {
+    operazione.pipe(this.toast.notifyErrors()).subscribe(() => {
+      if (messaggio) {
+        this.toast.success(messaggio);
+      }
+      this.righe.load();
+      if (conTotali) {
+        this.totali.load();
+      }
+    });
+  }
+}
+
+/** Numero dal campo: `null` se vuoto, `undefined` se non è un numero. */
+function leggiNumero(value: string | number | null | undefined): number | null | undefined {
+  const testo = String(value ?? '')
+    .trim()
+    .replace(',', '.');
+  if (!testo) {
+    return null;
+  }
+  const numero = Number(testo);
+  return Number.isFinite(numero) ? numero : undefined;
+}
+
+/** Rimette nel campo l'ultimo valore valido (il signal non è cambiato, Angular non lo farebbe). */
+function ripristina(event: InputCustomEvent, value: number | null): void {
+  event.target.value = value ?? '';
 }

@@ -1,111 +1,138 @@
-<ion-card>
-  <ion-card-content>
-    <ion-row>
-      <ion-col size="10">
-        <ion-button (click)="searchRicetta()">
-          Ricette<ion-icon name="search" style="cursor: pointer"></ion-icon>
-        </ion-button>
-        {{ menuRiga?.nome_ric }}
-      </ion-col>
-      <ion-col size="2" class="ion-text-right"
-        ><ion-button (click)="save()">Aggiungi</ion-button></ion-col
-      >
-    </ion-row>
-  </ion-card-content>
-</ion-card>
+<div class="evento">
+  <section class="evento__piatti" aria-label="Piatti">
+    <div class="menu__aggiungi">
+      <ion-button (click)="aggiungi()">
+        <ion-icon slot="start" name="add-circle-outline" />
+        Aggiungi piatto
+      </ion-button>
+    </div>
 
-<ion-list>
-  <ion-reorder-group [disabled]="false" (ionItemReorder)="updateRicetteOrdinamento($event)">
-    <ion-item *ngFor="let riga of righeList" style="cursor: pointer">
-      <ion-reorder slot="start" *ngIf="riga.tipo === 1"></ion-reorder>
-      <ion-col size="10" *ngIf="riga.tipo === 1"
-        ><span (click)="this.onRicettaClick.emit(riga.ricettaid)">{{
-          riga.descrizione
-        }}</span></ion-col
-      >
-      <ion-col size="11" *ngIf="riga.tipo === 2" class="ion-text-center"
-        >==============================================</ion-col
-      >
-      <!--<ion-col size="2">{{riga.prezzo_lordo_vendita | currency:'EUR':''}}€</ion-col>-->
-      <ion-col size="1" *ngIf="riga.tipo === 1"
-        ><ion-icon
-          name="arrow-round-down"
-          (click)="insertSeparator($event, riga)"
-          style="font-size: 25px"
-        ></ion-icon
-      ></ion-col>
-      <ion-col size="1" *ngIf="riga.tipo === 1"
-        ><ion-icon
-          name="trash"
-          color="danger"
-          (click)="delete($event, riga)"
-          style="font-size: 25px"
-        ></ion-icon
-      ></ion-col>
-      <ion-col size="1" *ngIf="riga.tipo === 2"
-        ><ion-icon
-          name="trash"
-          color="danger"
-          (click)="deleteSeparator($event, riga)"
-          style="font-size: 25px; padding-left: 5px"
-        ></ion-icon
-      ></ion-col>
-    </ion-item>
-  </ion-reorder-group>
-</ion-list>
+    @switch (righe.state()) {
+      @case ('loading') {
+        <ric-list-skeleton />
+      }
+      @case ('error') {
+        <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare i piatti.">
+          <ion-button fill="outline" (click)="righe.load()">Riprova</ion-button>
+        </ric-empty-state>
+      }
+      @default {
+        @if (righe.items().length) {
+          <ion-list class="app-list">
+            <ion-reorder-group [disabled]="spostamento()" (ionReorderEnd)="riordina($event)">
+              @for (riga of righe.items(); track riga.kind + riga.id) {
+                @if (riga.kind === 'piatto') {
+                  <ion-item class="evento__piatto" lines="full">
+                    <ion-reorder slot="start" />
+                    <ion-label class="ion-text-wrap">
+                      <a class="piatto__link" [routerLink]="['/ricetta', riga.ricettaid]">
+                        {{ riga.descrizione }}
+                      </a>
+                    </ion-label>
+                    <ion-button
+                      slot="end"
+                      fill="clear"
+                      aria-label="Separatore sotto"
+                      title="Inserisci un separatore sotto"
+                      (click)="aggiungiSeparatore(riga)"
+                    >
+                      <ion-icon slot="icon-only" name="arrow-down-outline" />
+                    </ion-button>
+                    <ion-button
+                      slot="end"
+                      fill="clear"
+                      color="danger"
+                      aria-label="Elimina"
+                      (click)="elimina(riga)"
+                    >
+                      <ion-icon slot="icon-only" name="trash-outline" />
+                    </ion-button>
+                  </ion-item>
+                } @else {
+                  <ion-item class="evento__separatore" lines="full">
+                    <span class="evento__linea" role="separator" aria-label="Separatore"></span>
+                    <ion-button
+                      slot="end"
+                      fill="clear"
+                      color="danger"
+                      aria-label="Elimina separatore"
+                      (click)="eliminaSeparatore(riga)"
+                    >
+                      <ion-icon slot="icon-only" name="trash-outline" />
+                    </ion-button>
+                  </ion-item>
+                }
+              }
+            </ion-reorder-group>
+          </ion-list>
+          <p class="menu__nota app-muted">Trascina ≡ per cambiare l'ordine dei piatti.</p>
+        } @else {
+          <ric-empty-state icon="restaurant-outline" message="Nessun piatto in questo menù." />
+        }
+      }
+    }
+  </section>
 
-<ion-card>
-  <ion-item>
-    <ion-col size="6">Pax</ion-col>
-    <ion-col size="6" class="ion-text-right"
-      ><ion-input type="number" [(ngModel)]="menu.pax" (keydown.enter)="aggiornaMenu()"></ion-input
-    ></ion-col>
-  </ion-item>
-  <ion-item>
-    <ion-col size="6">% Scheda Tecnica</ion-col>
-    <ion-col size="6" class="ion-text-right"
-      ><ion-input
+  <section class="evento__riepilogo" aria-label="Coperti e totali">
+    <div class="evento__coperti">
+      <ion-input
+        label="Coperti (pax)"
+        labelPlacement="stacked"
+        fill="outline"
         type="number"
-        [(ngModel)]="menu.perc_ricetta"
-        (keydown.enter)="aggiornaMenu()"
-        max="100"
-      ></ion-input
-    ></ion-col>
-  </ion-item>
-</ion-card>
+        inputmode="numeric"
+        [min]="0"
+        [value]="pax()"
+        (ionChange)="cambiaPax($event)"
+      />
+      <ion-input
+        label="% scheda tecnica"
+        labelPlacement="stacked"
+        fill="outline"
+        type="number"
+        inputmode="decimal"
+        [min]="0"
+        [max]="100"
+        [value]="percRicetta()"
+        (ionChange)="cambiaPercRicetta($event)"
+      />
+    </div>
 
-<ion-card>
-  <ion-item>
-    <ion-col size="4"></ion-col>
-    <ion-col size="2" class="ion-text-right">Costo</ion-col>
-    <ion-col size="2" class="ion-text-right">Prezzo Netto</ion-col>
-    <ion-col size="2" class="ion-text-right">IVA</ion-col>
-    <ion-col size="2" class="ion-text-right">Prezzo Lordo</ion-col>
-  </ion-item>
-  <ion-item>
-    <ion-col size="4">Coperto</ion-col>
-    <ion-col size="2" class="ion-text-right"
-      >{{ menuTotali.foodcost | currency: 'EUR' : '' }}€</ion-col
-    >
-    <ion-col size="2" class="ion-text-right"
-      >{{ menuTotali.netto | currency: 'EUR' : '' }}€</ion-col
-    >
-    <ion-col size="2" class="ion-text-right">{{ menuTotali.iva | currency: 'EUR' : '' }}%</ion-col>
-    <ion-col size="2" class="ion-text-right"
-      >{{ menuTotali.lordo | currency: 'EUR' : '' }}€</ion-col
-    >
-  </ion-item>
-  <ion-item>
-    <ion-col size="4">Totali Menù</ion-col>
-    <ion-col size="2" class="ion-text-right"
-      >{{ menuTotali.foodcost_tot | currency: 'EUR' : '' }}€</ion-col
-    >
-    <ion-col size="2" class="ion-text-right"
-      >{{ menuTotali.netto_tot | currency: 'EUR' : '' }}€</ion-col
-    >
-    <ion-col size="2" class="ion-text-right">{{ menuTotali.iva | currency: 'EUR' : '' }}%</ion-col>
-    <ion-col size="2" class="ion-text-right"
-      >{{ menuTotali.lordo_tot | currency: 'EUR' : '' }}€</ion-col
-    >
-  </ion-item>
-</ion-card>
+    @if (totali.value(); as t) {
+      <div class="evento__tabella">
+        <table>
+          <thead>
+            <tr>
+              <td></td>
+              <th scope="col">Coperto</th>
+              <th scope="col">Totale menù</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Costo</th>
+              <td class="app-num">{{ (t.foodcost | currency) ?? '—' }}</td>
+              <td class="app-num">{{ (t.foodcost_tot | currency) ?? '—' }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Prezzo netto</th>
+              <td class="app-num">{{ (t.netto | currency) ?? '—' }}</td>
+              <td class="app-num">{{ (t.netto_tot | currency) ?? '—' }}</td>
+            </tr>
+            <tr>
+              <th scope="row">IVA</th>
+              <td class="app-num" colspan="2">{{ (t.iva | number: '1.0-2') ?? '—' }}%</td>
+            </tr>
+            <tr class="evento__lordo">
+              <th scope="row">Prezzo lordo</th>
+              <td class="app-num">{{ (t.lordo | currency) ?? '—' }}</td>
+              <td class="app-num">{{ (t.lordo_tot | currency) ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    } @else if (totali.state() === 'loading') {
+      <ric-list-skeleton [rows]="2" />
+    }
+  </section>
+</div>

@@ -11,7 +11,6 @@
     "src/**/*.spec.ts",
     "src/test-setup.ts",
     /* Codice legacy non ancora portato: ogni commit di porting toglie la sua voce. */
-    "src/app/features/ricetta/**",
-    "src/app/features/menu/**"
+    "src/app/features/ricetta/**"
   ]
 }

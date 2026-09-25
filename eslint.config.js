@@ -7,7 +7,7 @@ const angular = require('angular-eslint');
 module.exports = defineConfig([
   {
     // Codice legacy non ancora portato: ogni commit di porting toglie la sua voce.
-    ignores: ['src/app/features/ricetta/**', 'src/app/features/menu/**'],
+    ignores: ['src/app/features/ricetta/**'],
   },
   {
     files: ['**/*.ts'],

@@ -1,4 +1,4 @@
-import { DestroyRef, inject, signal } from '@angular/core';
+import { DestroyRef, inject, signal, WritableSignal } from '@angular/core';
 import { finalize, Observable, Subscription } from 'rxjs';
 
 import { ToastService } from '../../core/ui/toast.service';
@@ -6,18 +6,22 @@ import { ToastService } from '../../core/ui/toast.service';
 export type RemoteListState = 'loading' | 'ready' | 'error';
 
 /**
- * Elenco caricato dal backend in un signal. Ogni `load()` annulla la richiesta precedente
+ * Valore caricato dal backend in un signal. Ogni `load()` annulla la richiesta precedente
  * (niente risposte fuori ordine), gli errori finiscono in un toast e il refresher viene
  * sempre completato. Va creato in un contesto di injection (campo del componente).
  */
-export class RemoteList<T> {
-  readonly items = signal<readonly T[]>([]);
+export class RemoteValue<T> {
+  readonly value: WritableSignal<T>;
   readonly state = signal<RemoteListState>('loading');
 
   private readonly toast = inject(ToastService);
   private subscription?: Subscription;
 
-  constructor(private readonly source: () => Observable<readonly T[]>) {
+  constructor(
+    private readonly source: () => Observable<T>,
+    initial: T,
+  ) {
+    this.value = signal(initial);
     inject(DestroyRef).onDestroy(() => this.subscription?.unsubscribe());
   }
 
@@ -30,8 +34,8 @@ export class RemoteList<T> {
     this.subscription = this.source()
       .pipe(finalize(() => completeIonTarget(event)))
       .subscribe({
-        next: (items) => {
-          this.items.set(items);
+        next: (value) => {
+          this.value.set(value);
           this.state.set('ready');
         },
         error: (error: unknown) => {
@@ -41,6 +45,15 @@ export class RemoteList<T> {
           }
         },
       });
+  }
+}
+
+/** Elenco caricato dal backend: come {@link RemoteValue}, con `items` vuoto all'inizio. */
+export class RemoteList<T> extends RemoteValue<readonly T[]> {
+  readonly items = this.value;
+
+  constructor(source: () => Observable<readonly T[]>) {
+    super(source, []);
   }
 }
 

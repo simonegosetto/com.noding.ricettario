@@ -1,54 +1,57 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-back-button defaultHref="/menus" text="" />
     </ion-buttons>
-    <ion-title class="ion-text-center">Dettaglio Menù</ion-title>
+    <ion-title>{{ titolo() }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button *ngIf="menu?.tipo === 1" (click)="print('')"
-        ><ion-icon style="font-size: 25px" name="print"></ion-icon
-      ></ion-button>
-      <ion-button *ngIf="menu?.tipo === 2" (click)="print('')"
-        ><ion-icon style="font-size: 25px" name="basket"></ion-icon
-      ></ion-button>
-      <ion-button *ngIf="menu?.tipo === 2" (click)="print('&foodcost=1')"
-        ><ion-icon style="font-size: 25px" name="logo-euro"></ion-icon
-      ></ion-button>
-      <ion-button *ngIf="menu?.tipo === 2" (click)="print('&bom=1')">BOM</ion-button>
+      <ion-button aria-label="Stampa" title="Stampa" [disabled]="!menu.value()" (click)="stampa()">
+        <ion-icon slot="icon-only" name="print-outline" />
+      </ion-button>
     </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-select
+      class="menu__listino"
+      label="Listino"
+      labelPlacement="start"
+      interface="popover"
+      [value]="listinoId()"
+      (ionChange)="cambiaListino($event.detail.value)"
+    >
+      @for (listino of listini(); track listino.id) {
+        <ion-select-option [value]="listino.id">{{ listino.descrizione }}</ion-select-option>
+      }
+    </ion-select>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-row class="ion-padding-top">
-    <ion-col class="ion-text-center">
-      <h2>{{ menu?.descrizione }}</h2>
-    </ion-col>
-    <ion-col size="4">
-      <select
-        name="tipo"
-        class="center"
-        style="width: 250px; padding: 8px 8px 8px 0; margin: 8px 8px 8px 0"
-        [(ngModel)]="listinoID"
-      >
-        <option *ngFor="let listino of listiniList" [ngValue]="listino.id">
-          {{ listino.descrizione }}
-        </option>
-      </select>
-    </ion-col>
-  </ion-row>
-  <br />
-
-  <ric-menu-alla-carta
-    *ngIf="menu?.tipo === 1"
-    [menuid]="menu?.id"
-    [listinoid]="listinoID"
-    (onRicettaClick)="navToRicetta($event)"
-  ></ric-menu-alla-carta>
-  <ric-menu-evento
-    *ngIf="menu?.tipo === 2"
-    [menu]="menu"
-    [listinoid]="listinoID"
-    (onRicettaClick)="navToRicetta($event)"
-  ></ric-menu-evento>
+  <div class="app-page ion-padding">
+    @switch (menu.state()) {
+      @case ('loading') {
+        <ric-list-skeleton />
+      }
+      @case ('error') {
+        <ric-empty-state icon="alert-circle-outline" message="Impossibile caricare il menù.">
+          <ion-button fill="outline" (click)="menu.load()">Riprova</ion-button>
+        </ric-empty-state>
+      }
+      @default {
+        @if (menu.value(); as dettaglio) {
+          @if (listiniPronti()) {
+            @if (dettaglio.tipo === tipi.AllaCarta) {
+              <ric-menu-alla-carta [menuId]="dettaglio.id" [listinoId]="listinoId() ?? 0" />
+            } @else {
+              <ric-menu-evento [menu]="dettaglio" [listinoId]="listinoId() ?? 0" />
+            }
+          } @else {
+            <ric-list-skeleton />
+          }
+        } @else {
+          <ric-empty-state icon="restaurant-outline" message="Menù non trovato." />
+        }
+      }
+    }
+  </div>
 </ion-content>

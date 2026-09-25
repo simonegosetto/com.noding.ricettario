@@ -1,178 +1,147 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Categoria } from '../shared/interface/categoria';
-import { GlobalService } from '../core/services/global.service';
-import { MenuRiga, MenuRigaSearch } from '../shared/interface/menu';
-import { ModalService } from '../core/services/modal.service';
-import { ModalSearchRicettaMenuComponent } from './modal-search-ricetta-menu.component';
-import { AlertService } from '../core/services/alert.service';
+import { CurrencyPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonItemDivider } from '@ionic/angular/ion-item-divider';
+import { IonItemGroup } from '@ionic/angular/ion-item-group';
+import { IonLabel } from '@ionic/angular/ion-label';
+import { IonList } from '@ionic/angular/ion-list';
+import { IonSelect } from '@ionic/angular/ion-select';
+import { IonSelectOption } from '@ionic/angular/ion-select-option';
 
+import { AlertService } from '../../core/ui/alert.service';
+import { ModalService } from '../../core/ui/modal.service';
+import { ToastService } from '../../core/ui/toast.service';
+import { MenuRepository } from '../../data/menu.repository';
+import { Categoria } from '../../shared/models/categoria';
+import { RigaMenuAllaCarta } from '../../shared/models/menu';
+import { RicettaCercata } from '../../shared/models/ricetta';
+import { SearchModalComponent } from '../../shared/search-modal/search-modal.component';
+import { schedeTecnicheSource } from '../../shared/search-modal/search-sources';
+import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { ListRowComponent } from '../../shared/ui/list-row.component';
+import { ListSkeletonComponent } from '../../shared/ui/list-skeleton.component';
+import { RemoteList } from '../../shared/ui/remote-list';
+
+type Piatto = Extract<RigaMenuAllaCarta, { kind: 'piatto' }>;
+
+/** Categoria con i suoi piatti, nell'ordine restituito dal DB. */
+interface SezioneMenu {
+  id: number;
+  categoria: string;
+  piatti: Piatto[];
+}
+
+/** Menù alla carta: piatti raggruppati per categoria, con food cost e prezzo del listino. */
 @Component({
   selector: 'ric-menu-alla-carta',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CurrencyPipe,
+    IonButton,
+    IonIcon,
+    IonItemDivider,
+    IonItemGroup,
+    IonLabel,
+    IonList,
+    IonSelect,
+    IonSelectOption,
+    EmptyStateComponent,
+    ListRowComponent,
+    ListSkeletonComponent,
+  ],
   templateUrl: './menu-alla-carta.component.html',
-  styles: [],
+  styleUrl: './menu-sezioni.scss',
 })
-export class MenuAllaCartaComponent implements OnInit {
-  constructor(
-    public gs: GlobalService,
-    private _modal: ModalService,
-    private _alert: AlertService,
-  ) {}
+export class MenuAllaCartaComponent {
+  private readonly repository = inject(MenuRepository);
+  private readonly router = inject(Router);
+  private readonly modals = inject(ModalService);
+  private readonly alerts = inject(AlertService);
+  private readonly toast = inject(ToastService);
 
-  private _listinoid: number;
-  @Input() menuid: number;
-  @Input() // listinoid: number;
-  // tslint:disable-next-line:variable-name
-  set listinoid(_value: number) {
-    if (_value) {
-      this._listinoid = _value;
-      this._estrazione();
-    }
-  }
-  get listinoid(): number {
-    return this._listinoid;
-  }
-  @Output() onRicettaClick = new EventEmitter();
-  public menuRiga: MenuRiga = {} as MenuRiga;
-  public categorieList: Categoria[] = [];
-  public righeList: MenuRigaSearch[] = [];
+  private readonly fonteSchede = schedeTecnicheSource();
 
-  ngOnInit() {
-    this._estrazioneCategorie();
-  }
+  readonly menuId = input.required<number>();
+  readonly listinoId = input.required<number>();
 
-  private _estrazioneCategorie() {
-    this.gs
-      .callGateway(
-        'FNopVUZX6gB8wiOOkcYZoNc/DQsOMebhfWb9Uy5bteItWy0tSVYtWy2RMZrggPg/kUT4un9OQHLCOS1ESKsrvLjZFAvn5tp3VQ@@',
-        ``,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.categorieList = data.recordset ? [...data.recordset] : [];
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
+  protected readonly categorie = signal<readonly Categoria[]>([]);
+  /** Categoria dei piatti da aggiungere: resta scelta per aggiungerne altri. */
+  protected readonly categoria = signal<number | null>(null);
+  protected readonly righe = new RemoteList(() =>
+    this.repository.righeAllaCarta(this.menuId(), this.listinoId()),
+  );
+  protected readonly sezioni = computed(() => raggruppa(this.righe.items()));
+
+  constructor() {
+    this.repository
+      .categorie()
+      .pipe(this.toast.notifyErrors(), takeUntilDestroyed())
+      .subscribe((categorie) => this.categorie.set(categorie));
+    // Primo caricamento e ricarica al cambio di listino (la richiesta precedente si annulla).
+    toObservable(computed(() => [this.menuId(), this.listinoId()]))
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.righe.load());
   }
 
-  searchRicetta() {
-    const modalSearchRicetta = this._modal.present(ModalSearchRicettaMenuComponent, {});
-    modalSearchRicetta.then((result) => {
-      if (result.data) {
-        this.menuRiga.ricettaid = result.data.cod_p;
-        this.menuRiga.nome_ric = result.data.nome_ric;
-      }
-    });
+  protected cambiaCategoria(value: unknown): void {
+    this.categoria.set(Number(value) || null);
   }
 
-  save() {
-    if (
-      this.gs.isnull(this.menuRiga.menucategoriaid, 0) === 0 ||
-      this.gs.isnull(this.menuRiga.ricettaid, 0) === 0 ||
-      this.gs.isnull(this.menuid, 0) === 0
-    ) {
-      this.gs.toast.present('Campi obbligatori mancanti !');
+  protected apri(piatto: Piatto): void {
+    void this.router.navigate(['/ricetta', piatto.ricettaid]);
+  }
+
+  protected async aggiungi(): Promise<void> {
+    const categoria = this.categoria();
+    if (!categoria) {
       return;
     }
-
-    this.gs
-      .callGateway(
-        '4EKFMSLcQErqesydVFFs5MsgUMVAnsk6dEJL6HKiuJ4tWy0tSVYtWy3rWCf0m7d18zKWD0qTdpZ5nrElD4jbP/gbWu8yWlij+A@@',
-        `${this.menuid},${this.menuRiga.ricettaid},${this.menuRiga.menucategoriaid}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this._estrazione();
-          this.menuRiga.ricettaid = 0;
-          this.menuRiga.nome_ric = '';
-          this.menuRiga.id = 0;
-          this.menuRiga.menucategoriaid = 0;
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
-  }
-
-  delete($event, riga: MenuRigaSearch) {
-    $event.stopPropagation();
-    const alertElimina = this._alert.confirm(
-      'Attenzione',
-      `Confermi di eliminare il piatto ${riga.descrizione} ?`,
-    );
-    alertElimina.then((result) => {
-      if (result.role === 'OK') {
-        this.gs
-          .callGateway(
-            'ucPKP4vgLwFswQYd3kYSXH49AtOVNz6n57HE4QChZOAtWy0tSVYtWy1cBMOHmEBYZ5ahYrEc8UnPWdkZo4MLYEwx/AiyDiHvsw@@',
-            riga.id,
-          )
-          .subscribe(
-            (data) => {
-              if (data.hasOwnProperty('error')) {
-                this.gs.toast.present(data.error);
-                return;
-              }
-              this._estrazione();
-              this.gs.loading.dismiss();
-            },
-            (error) => this.gs.toast.present(error.message, 5000),
-          );
-      }
+    const scheda = await this.modals.open<RicettaCercata>(SearchModalComponent, {
+      title: 'Aggiungi piatto',
+      placeholder: 'Cerca una scheda tecnica',
+      source: this.fonteSchede,
     });
+    if (scheda) {
+      this.repository
+        .addPiatto(this.menuId(), scheda.cod_p, categoria)
+        .pipe(this.toast.notifyErrors())
+        .subscribe(() => {
+          this.toast.success(`«${scheda.nome_ric}» aggiunto al menù`);
+          this.righe.load();
+        });
+    }
   }
 
-  updateRicetteOrdinamento(ev: any) {
-    ev.detail.complete();
-    console.log(
-      'sposto codice',
-      this.righeList[ev.detail.from].id,
-      'da',
-      ev.detail.from,
-      'a',
-      ev.detail.to,
+  protected async elimina(piatto: Piatto): Promise<void> {
+    const conferma = await this.alerts.confirm(
+      'Elimina piatto',
+      `Confermi di eliminare «${piatto.descrizione}» dal menù?`,
+      { confirmText: 'Elimina', cancelText: 'Annulla' },
     );
-    this.gs
-      .callGateway(
-        'wQgcfZjoo4BsKUwn1t0+NbzoCkWck6mkuw/a9KY/nXpVZXHo0QuYVoGlQ7vNS2lxQXzp7HvVq3pM3+2UW0H3Vy1bLS1JVi1bLdUd42OAYsvyHLgHO9HEb2f4tL/vbUcenrRISZDDpJiS',
-        `${this.righeList[ev.detail.from - 1].id},${ev.detail.to},${this.menuid}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this._estrazione();
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message),
-      );
+    if (conferma) {
+      this.repository
+        .deleteRiga(piatto.id)
+        .pipe(this.toast.notifyErrors())
+        .subscribe(() => this.righe.load());
+    }
   }
+}
 
-  private _estrazione() {
-    this.gs
-      .callGateway(
-        'psv6VQSAtEEbFZMQFsqECpPHcS39sQCLkeYlWTsSz+QtWy0tSVYtWy3Yp+JgJC//klU7QOi+O80sdHpj9guvh0v/3I34nk2LMg@@',
-        `${this.menuid},${this.listinoid}`,
-      )
-      .subscribe(
-        (data) => {
-          if (data.hasOwnProperty('error')) {
-            this.gs.toast.present(data.error);
-            return;
-          }
-          this.righeList = data.recordset ? [...data.recordset] : [];
-          this.gs.loading.dismiss();
-        },
-        (error) => this.gs.toast.present(error.message, 5000),
-      );
+/** Le intestazioni di categoria arrivano intercalate ai piatti: le si trasforma in gruppi. */
+function raggruppa(righe: readonly RigaMenuAllaCarta[]): SezioneMenu[] {
+  const sezioni: SezioneMenu[] = [];
+  for (const riga of righe) {
+    if (riga.kind === 'categoria') {
+      sezioni.push({ id: riga.id, categoria: riga.categoria, piatti: [] });
+    } else {
+      if (!sezioni.length) {
+        sezioni.push({ id: 0, categoria: 'Senza categoria', piatti: [] });
+      }
+      sezioni[sezioni.length - 1].piatti.push(riga);
+    }
   }
+  return sezioni;
 }
