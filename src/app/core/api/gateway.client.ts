@@ -19,6 +19,12 @@ const FORM_HEADERS = new HttpHeaders({ 'content-type': 'application/x-www-form-u
 
 const SESSION_EXPIRED_MESSAGE = 'Sessione scaduta! Rifai l’accesso.';
 
+/**
+ * Parametri posizionali già formattati con `sql.*`. Un numero semplice viene inviato come numero
+ * JSON: è quello che faceva la versione legacy per le cancellazioni per id.
+ */
+export type GatewayParams = string | number;
+
 /** Azioni del proxy Dropbox FD_DropboxGateway.php. */
 export type DropboxAction =
   | { mode: 1; path: string; id: number; name: string; type: string; data: string }
@@ -51,7 +57,7 @@ export class GatewayClient {
   /** Esegue un process e restituisce la risposta completa. Gli errori arrivano come GatewayError. */
   call<R = GatewayRow, O = GatewayRow>(
     process: GatewayProcess,
-    params = '',
+    params: GatewayParams = '',
   ): Observable<GatewayResponse<R, O>> {
     const body = { type: 1, process: process.id, params, token: this.session.token() };
     return this.post<GatewayResponse<R, O>>(environment.apiDBox, body, process).pipe(
@@ -60,22 +66,28 @@ export class GatewayClient {
   }
 
   /** Righe del recordset (vuoto se assente). */
-  rows<R = GatewayRow>(process: GatewayProcess, params = ''): Observable<R[]> {
+  rows<R = GatewayRow>(process: GatewayProcess, params: GatewayParams = ''): Observable<R[]> {
     return this.call<R>(process, params).pipe(map((response) => response.recordset ?? []));
   }
 
   /** Prima riga del recordset. */
-  first<R = GatewayRow>(process: GatewayProcess, params = ''): Observable<R | undefined> {
+  first<R = GatewayRow>(
+    process: GatewayProcess,
+    params: GatewayParams = '',
+  ): Observable<R | undefined> {
     return this.rows<R>(process, params).pipe(map((rows) => rows[0]));
   }
 
   /** Parametri OUT della stored procedure (`output[0]`). */
-  output<O = GatewayRow>(process: GatewayProcess, params = ''): Observable<O | undefined> {
+  output<O = GatewayRow>(
+    process: GatewayProcess,
+    params: GatewayParams = '',
+  ): Observable<O | undefined> {
     return this.call<GatewayRow, O>(process, params).pipe(map((response) => response.output?.[0]));
   }
 
   /** Esegue un process di cui interessa solo l'esito. */
-  exec(process: GatewayProcess, params = ''): Observable<void> {
+  exec(process: GatewayProcess, params: GatewayParams = ''): Observable<void> {
     return this.call(process, params).pipe(map(() => undefined));
   }
 

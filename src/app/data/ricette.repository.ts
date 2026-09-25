@@ -94,7 +94,7 @@ export class GatewayRicetteRepository extends RicetteRepository {
   }
 
   delete(codP: number): Observable<void> {
-    return this.gateway.exec(PROCESS.RICETTA_DELETE, sql.num(codP));
+    return this.gateway.exec(PROCESS.RICETTA_DELETE, codP);
   }
 
   righe(codP: number): Observable<RicettaRiga[]> {

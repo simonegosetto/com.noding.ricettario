@@ -100,6 +100,6 @@ export class GatewayArchivioRepository extends ArchivioRepository {
   }
 
   deleteFile(arcCodi: number): Observable<void> {
-    return this.gateway.exec(PROCESS.ARCHIVIO_FILE_DELETE, sql.num(arcCodi));
+    return this.gateway.exec(PROCESS.ARCHIVIO_FILE_DELETE, arcCodi);
   }
 }

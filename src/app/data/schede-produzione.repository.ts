@@ -32,7 +32,7 @@ export class GatewaySchedeProduzioneRepository extends SchedeProduzioneRepositor
   }
 
   delete(id: number): Observable<void> {
-    return this.gateway.exec(PROCESS.SCHEDA_DELETE, sql.num(id));
+    return this.gateway.exec(PROCESS.SCHEDA_DELETE, id);
   }
 
   righe(schedaId: number): Observable<SchedaProduzioneRiga[]> {
@@ -51,6 +51,6 @@ export class GatewaySchedeProduzioneRepository extends SchedeProduzioneRepositor
   }
 
   deleteRiga(id: number): Observable<void> {
-    return this.gateway.exec(PROCESS.SCHEDA_RIGA_DELETE, sql.num(id));
+    return this.gateway.exec(PROCESS.SCHEDA_RIGA_DELETE, id);
   }
 }

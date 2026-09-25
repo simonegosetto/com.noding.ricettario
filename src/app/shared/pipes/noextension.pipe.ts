@@ -1,19 +1,13 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({
-  name: 'noextension'
-})
+/** Nome del file senza l'ultima estensione ("menu.v2.pdf" → "menu.v2"). */
+@Pipe({ name: 'noextension' })
 export class NoextensionPipe implements PipeTransform {
-
-  transform(value: string): any {
-    if (value === undefined || value === null) {
+  transform(value: string | null | undefined): string {
+    if (!value) {
       return '';
-    } else if (value.indexOf('.') === -1){
-      return value;
     }
-    const splitString = value.split(".");
-    splitString.splice(splitString.length-1,1);
-    return splitString.join(".");
+    const dot = value.lastIndexOf('.');
+    return dot > 0 ? value.slice(0, dot) : value;
   }
-
 }

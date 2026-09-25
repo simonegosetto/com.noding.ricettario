@@ -66,7 +66,7 @@ export class GatewayMenuRepository extends MenuRepository {
   }
 
   delete(id: number): Observable<void> {
-    return this.gateway.exec(PROCESS.MENU_DELETE, sql.num(id));
+    return this.gateway.exec(PROCESS.MENU_DELETE, id);
   }
 
   categorie(): Observable<Categoria[]> {
@@ -119,7 +119,7 @@ export class GatewayMenuRepository extends MenuRepository {
   }
 
   deleteRiga(id: number): Observable<void> {
-    return this.gateway.exec(PROCESS.MENU_RIGA_DELETE, sql.num(id));
+    return this.gateway.exec(PROCESS.MENU_RIGA_DELETE, id);
   }
 
   moveRiga(menuId: number, rigaId: number, posizione: number): Observable<void> {
@@ -133,7 +133,7 @@ export class GatewayMenuRepository extends MenuRepository {
   }
 
   deleteSeparatore(id: number): Observable<void> {
-    return this.gateway.exec(PROCESS.MENU_SEPARATORE_DELETE, sql.num(id));
+    return this.gateway.exec(PROCESS.MENU_SEPARATORE_DELETE, id);
   }
 
   updateCoperti(menuId: number, pax: number | null, percRicetta: number | null): Observable<void> {

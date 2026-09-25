@@ -1,5 +1,9 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import {
   PreloadAllModules,
   provideRouter,
@@ -12,6 +16,7 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 import { routes } from './app.routes';
 import { readOnlyInterceptor } from './core/api/read-only.interceptor';
 import { provideRepositories } from './data/providers';
+import { registerAppIcons } from './shared/icons';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,5 +27,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding(), withPreloading(PreloadAllModules)),
     provideHttpClient(withInterceptors([readOnlyInterceptor])),
     provideRepositories(),
+    provideAppInitializer(registerAppIcons),
   ],
 };

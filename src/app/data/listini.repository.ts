@@ -49,7 +49,7 @@ export class GatewayListiniRepository extends ListiniRepository {
   }
 
   delete(id: number): Observable<void> {
-    return this.gateway.exec(PROCESS.LISTINO_DELETE, sql.num(id));
+    return this.gateway.exec(PROCESS.LISTINO_DELETE, id);
   }
 
   righe(listinoId: number, categoriaId: number): Observable<ListinoRiga[]> {
@@ -93,7 +93,7 @@ export class GatewayListiniRepository extends ListiniRepository {
   }
 
   deleteRiga(id: number): Observable<void> {
-    return this.gateway.exec(PROCESS.LISTINO_RIGA_DELETE, sql.num(id));
+    return this.gateway.exec(PROCESS.LISTINO_RIGA_DELETE, id);
   }
 
   addIngrediente(listinoId: number, ingredienteId: number): Observable<void> {
