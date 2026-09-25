@@ -1,5 +1,6 @@
 :host {
   display: block;
+  container-type: inline-size;
 }
 
 ion-card {
@@ -52,10 +53,12 @@ ion-card-title {
 
 .card__corpo {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
-@media (min-width: 992px) {
+// Procedimento affiancato agli ingredienti solo se la card è abbastanza larga.
+@container (min-width: 640px) {
   .card__corpo--affiancato {
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }

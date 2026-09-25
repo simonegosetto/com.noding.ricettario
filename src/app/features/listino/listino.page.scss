@@ -23,7 +23,12 @@
   }
 }
 
-// Colonne condivise da intestazione e righe (su schermi larghi).
+// Il contenuto decide se c'è posto per le colonne (col menu laterale aperto il viewport non basta).
+.app-page {
+  container-type: inline-size;
+}
+
+// Colonne condivise da intestazione e righe (quando c'è spazio).
 $colonne: minmax(0, 1fr) repeat(4, 96px);
 
 .listino__intestazione {
@@ -78,7 +83,7 @@ $colonne: minmax(0, 1fr) repeat(4, 96px);
   }
 }
 
-@media (min-width: 768px) {
+@container (min-width: 760px) {
   .listino__intestazione {
     display: grid;
   }
