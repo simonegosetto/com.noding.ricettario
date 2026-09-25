@@ -51,7 +51,7 @@ import { ListSkeletonComponent } from '../../shared/ui/list-skeleton.component';
 import { RemoteList } from '../../shared/ui/remote-list';
 
 /** Oltre questa dimensione il file (inviato in base64 dentro un JSON) non viene caricato. */
-export const MAX_FILE_MB = 25;
+const MAX_FILE_MB = 25;
 const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 
 type CartellaMostrata = Omit<ArchivioContenuto, 'elementi'>;

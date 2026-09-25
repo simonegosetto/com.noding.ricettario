@@ -97,10 +97,11 @@ export class MenuPage implements ViewWillEnter {
     }
     // La finestra va aperta nel click: per questo si usa l'handler e non onDidDismiss.
     const sheet = await this.actionSheets.create({
-      header: 'Stampa del menù',
+      header: 'Stampa dell’evento',
       buttons: [
-        { text: 'Menù', handler: () => this.apriStampa('standard') },
-        { text: 'Menù con food cost', handler: () => this.apriStampa('foodcost') },
+        // La stampa standard dell'evento è la lista della spesa (icona cestino nella legacy).
+        { text: 'Lista della spesa', handler: () => this.apriStampa('standard') },
+        { text: 'Con food cost', handler: () => this.apriStampa('foodcost') },
         { text: 'Distinta base (BOM)', handler: () => this.apriStampa('bom') },
         { text: 'Annulla', role: 'cancel' },
       ],

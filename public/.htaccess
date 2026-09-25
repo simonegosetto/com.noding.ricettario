@@ -1,9 +1,33 @@
+# Ricettario: SPA Angular servita da Apache (contenuto di www/).
+
 <IfModule mod_rewrite.c>
-    RewriteEngine on
+    RewriteEngine On
+
+    # File, link e cartelle esistenti vengono serviti così come sono.
     RewriteCond %{REQUEST_FILENAME} -s [OR]
     RewriteCond %{REQUEST_FILENAME} -l [OR]
     RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^.*$ - [NC,L]
+    RewriteRule ^ - [L]
 
-    RewriteRule ^(.*) /index.html [NC,L]
+    # Tutto il resto (es. /ricetta/12) è una rotta dell'app. Percorso relativo alla cartella
+    # di questo file: funziona anche se l'app non sta nella radice del sito.
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # index.html si riconvalida sempre: dopo un deploy il browser carica subito i nuovi bundle.
+    <FilesMatch "^index\.html$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+
+    # Bundle con l'hash nel nome (main-XXXXXXXX.js, chunk-*.js, styles-*.css): non cambiano mai.
+    <FilesMatch "^(main|chunk|polyfills|styles)-[A-Z0-9]{8}\.(js|css)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
 </IfModule>

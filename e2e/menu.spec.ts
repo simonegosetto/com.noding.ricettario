@@ -125,15 +125,26 @@ test.describe('evento', () => {
     await expect.poll(() => backend.callsTo('MENU_TOTALI').length).toBe(2);
   });
 
-  test('stampa con food cost e distinta base', async ({ page }) => {
+  test('stampa lista della spesa, food cost e distinta base', async ({ page }) => {
     await setupBackend(page);
     await recordWindowOpen(page);
     await page.goto('/menu/2');
     await expect(pagina(page).getByText('Lasagne al forno')).toBeVisible();
 
     await pagina(page).getByRole('button', { name: 'Stampa' }).click();
-    await page.getByRole('button', { name: 'Menù con food cost' }).click();
+    await page.getByRole('button', { name: 'Lista della spesa' }).click();
     let url = new URL(await lastOpenedUrl(page));
+    expect(url.searchParams.get('menu')).toBe('2');
+    expect(url.searchParams.has('foodcost')).toBe(false);
+    expect(url.searchParams.has('bom')).toBe(false);
+
+    await expect(page.locator('ion-action-sheet')).toHaveCount(0);
+    await pagina(page).getByRole('button', { name: 'Stampa' }).click();
+    await page.getByRole('button', { name: 'Con food cost' }).click();
+    await expect
+      .poll(async () => new URL(await lastOpenedUrl(page)).searchParams.get('foodcost'))
+      .toBe('1');
+    url = new URL(await lastOpenedUrl(page));
     expect(url.searchParams.get('foodcost')).toBe('1');
     expect(url.searchParams.get('menu')).toBe('2');
 
