@@ -1,6 +1,10 @@
+import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import localeIt from '@angular/common/locales/it';
 import {
   ApplicationConfig,
+  DEFAULT_CURRENCY_CODE,
+  LOCALE_ID,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
@@ -23,6 +27,9 @@ import { reloadOnChunkError } from './core/navigation/chunk-error';
 import { provideRepositories } from './data/providers';
 import { registerAppIcons } from './shared/icons';
 
+// Numeri e valute all'italiana (virgola decimale): la versione legacy usava il formato inglese.
+registerLocaleData(localeIt, 'it-IT');
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -39,5 +46,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([readOnlyInterceptor])),
     provideRepositories(),
     provideAppInitializer(registerAppIcons),
+    { provide: LOCALE_ID, useValue: 'it-IT' },
+    { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },
   ],
 };

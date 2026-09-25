@@ -1,77 +1,96 @@
-// Ionic Variables and Theming. For more info, please see:
-// http://ionicframework.com/docs/theming/
+// Tema Ionic del Ricettario: marrone (primary) e ocra (secondary) della versione legacy,
+// con shade/tint/contrast calcolati. Le tinte non ridefinite restano quelle di Ionic 8+,
+// compresa la loro variante scura (palettes/dark.system.css, incluso in angular.json).
+// https://ionicframework.com/docs/theming/colors
 
-/** Ionic CSS Variables **/
 :root {
-  /** primary **/
-  --ion-color-primary: #3880ff;
-  --ion-color-primary-rgb: 56, 128, 255;
+  --ion-color-primary: #796250;
+  --ion-color-primary-rgb: 121, 98, 80;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #3171e0;
-  --ion-color-primary-tint: #4c8dff;
+  --ion-color-primary-shade: #6a5646;
+  --ion-color-primary-tint: #867262;
 
-  /** secondary **/
-  --ion-color-secondary: #0cd1e8;
-  --ion-color-secondary-rgb: 12, 209, 232;
-  --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #0bb8cc;
-  --ion-color-secondary-tint: #24d6ea;
+  // Ocra: testo scuro, il bianco non avrebbe contrasto sufficiente.
+  --ion-color-secondary: #d49850;
+  --ion-color-secondary-rgb: 212, 152, 80;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #bb8646;
+  --ion-color-secondary-tint: #d8a262;
 
-  /** tertiary **/
-  --ion-color-tertiary: #7044ff;
-  --ion-color-tertiary-rgb: 112, 68, 255;
+  --ion-color-tertiary: #5d7358;
+  --ion-color-tertiary-rgb: 93, 115, 88;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #633ce0;
-  --ion-color-tertiary-tint: #7e57ff;
+  --ion-color-tertiary-shade: #52654d;
+  --ion-color-tertiary-tint: #6d8169;
 
-  /** success **/
-  --ion-color-success: #10dc60;
-  --ion-color-success-rgb: 16, 220, 96;
+  // Verde più scuro del default di Ionic, leggibile con il testo bianco dei toast.
+  --ion-color-success: #2e7d32;
+  --ion-color-success-rgb: 46, 125, 50;
   --ion-color-success-contrast: #ffffff;
   --ion-color-success-contrast-rgb: 255, 255, 255;
-  --ion-color-success-shade: #0ec254;
-  --ion-color-success-tint: #28e070;
+  --ion-color-success-shade: #286e2c;
+  --ion-color-success-tint: #438a47;
 
-  /** warning **/
-  --ion-color-warning: #ffce00;
-  --ion-color-warning-rgb: 255, 206, 0;
-  --ion-color-warning-contrast: #ffffff;
-  --ion-color-warning-contrast-rgb: 255, 255, 255;
-  --ion-color-warning-shade: #e0b500;
-  --ion-color-warning-tint: #ffd31a;
+  // Superfici: fondo caldo chiaro al posto del grigio #d6d7d2, card e liste bianche.
+  --ion-background-color: #f5f2ee;
+  --ion-background-color-rgb: 245, 242, 238;
+  --ion-text-color: #2b2622;
+  --ion-text-color-rgb: 43, 38, 34;
+  --ion-item-background: #ffffff;
+  --ion-card-background: #ffffff;
+  --ion-toolbar-background: var(--ion-color-primary);
+  --ion-toolbar-color: var(--ion-color-primary-contrast);
 
-  /** danger **/
-  --ion-color-danger: #f04141;
-  --ion-color-danger-rgb: 245, 61, 61;
-  --ion-color-danger-contrast: #ffffff;
-  --ion-color-danger-contrast-rgb: 255, 255, 255;
-  --ion-color-danger-shade: #d33939;
-  --ion-color-danger-tint: #f25454;
+  --app-surface-border: rgba(121, 98, 80, 0.16);
+  --app-muted-text: #6b625b;
+}
 
-  /** dark **/
-  --ion-color-dark: #222428;
-  --ion-color-dark-rgb: 34, 34, 34;
-  --ion-color-dark-contrast: #ffffff;
-  --ion-color-dark-contrast-rgb: 255, 255, 255;
-  --ion-color-dark-shade: #1e2023;
-  --ion-color-dark-tint: #383a3e;
+@media (prefers-color-scheme: dark) {
+  // Stessa specificità dei selettori di dark.system.css (:root.md / :root.ios), definiti prima.
+  :root,
+  :root.md,
+  :root.ios {
+    --ion-color-primary: #c3a58d;
+    --ion-color-primary-rgb: 195, 165, 141;
+    --ion-color-primary-contrast: #000000;
+    --ion-color-primary-contrast-rgb: 0, 0, 0;
+    --ion-color-primary-shade: #ac917c;
+    --ion-color-primary-tint: #c9ae98;
 
-  /** medium **/
-  --ion-color-medium: #989aa2;
-  --ion-color-medium-rgb: 152, 154, 162;
-  --ion-color-medium-contrast: #ffffff;
-  --ion-color-medium-contrast-rgb: 255, 255, 255;
-  --ion-color-medium-shade: #86888f;
-  --ion-color-medium-tint: #a2a4ab;
+    --ion-color-secondary: #e0ac6a;
+    --ion-color-secondary-rgb: 224, 172, 106;
+    --ion-color-secondary-contrast: #000000;
+    --ion-color-secondary-contrast-rgb: 0, 0, 0;
+    --ion-color-secondary-shade: #c5975d;
+    --ion-color-secondary-tint: #e3b479;
 
-  /** light **/
-  --ion-color-light: #f4f5f8;
-  --ion-color-light-rgb: 244, 244, 244;
-  --ion-color-light-contrast: #000000;
-  --ion-color-light-contrast-rgb: 0, 0, 0;
-  --ion-color-light-shade: #d7d8da;
-  --ion-color-light-tint: #f5f6f9;
+    --ion-color-tertiary: #9cb596;
+    --ion-color-tertiary-rgb: 156, 181, 150;
+    --ion-color-tertiary-contrast: #000000;
+    --ion-color-tertiary-contrast-rgb: 0, 0, 0;
+    --ion-color-tertiary-shade: #899f84;
+    --ion-color-tertiary-tint: #a6bca1;
+
+    --ion-color-success: #66bb6a;
+    --ion-color-success-rgb: 102, 187, 106;
+    --ion-color-success-contrast: #000000;
+    --ion-color-success-contrast-rgb: 0, 0, 0;
+    --ion-color-success-shade: #5aa55d;
+    --ion-color-success-tint: #75c279;
+
+    --ion-background-color: #171412;
+    --ion-background-color-rgb: 23, 20, 18;
+    --ion-text-color: #ece6e1;
+    --ion-text-color-rgb: 236, 230, 225;
+    --ion-item-background: #221e1b;
+    --ion-card-background: #221e1b;
+    --ion-toolbar-background: #2b2521;
+    --ion-toolbar-color: #ece6e1;
+
+    --app-surface-border: rgba(236, 230, 225, 0.12);
+    --app-muted-text: #b3aaa2;
+  }
 }
